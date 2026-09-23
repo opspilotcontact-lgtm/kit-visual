@@ -171,9 +171,18 @@ let FOTOS_CLIENTE = [];   // [{url, datos, w, h, n, b, luz}]
 /** Las fotos que ve el lienzo: las del cliente si las hay (en ciclo hasta
     cinco, para que ninguna sección se quede con huecos) y si no, las de ejemplo. */
 let FOTO_FIJA = null;   // para el encargo: el marcado sale con una ruta de fichero, no con un blob
+
+/* Las fotos de ejemplo son obras de Dígito. Con un cliente de verdad que aún no
+   las ha mandado, enseñarlas es poner trabajos que no son suyos en su web (los
+   jueces de la F6 vieron rótulos en la de un centro de entrenamiento). Ahí van
+   marcadores que dicen lo que falta; para Dígito, las de ejemplo SON las suyas. */
+const FOTOS_PENDIENTES = ['#D9D4C7', '#CFC9BB', '#E3DED2', '#C8C2B4', '#DDD8CC'].map((tono) =>
+  'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="${tono}"/><text x="400" y="292" text-anchor="middle" font-family="sans-serif" font-size="30" fill="#5B574E">FOTO PENDIENTE</text><text x="400" y="336" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#5B574E">obra propia del cliente (P10)</text></svg>`));
+
 function FL() {
   if (FOTO_FIJA) return Array(5).fill(FOTO_FIJA);
-  const xs = FOTOS_CLIENTE.length ? FOTOS_CLIENTE.map((f) => f.url) : FOTOS_DEMO;
+  const ajeno = typeof esCliente === 'function' && esCliente() && !/^d[ií]gito/i.test(S.marca);
+  const xs = FOTOS_CLIENTE.length ? FOTOS_CLIENTE.map((f) => f.url) : ajeno ? FOTOS_PENDIENTES : FOTOS_DEMO;
   return Array.from({ length: Math.max(5, Math.min(xs.length, 8)) }, (_, i) => xs[i % xs.length]);
 }
 

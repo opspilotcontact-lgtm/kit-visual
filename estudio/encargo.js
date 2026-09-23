@@ -669,7 +669,8 @@ function prompt() {
     (s.capas || []).includes('marca') && ((SECCIONES[s.t] || {}).admite || []).includes('marca'));
   const juego = MARCAJUEGOS[S.marcaJuego] || {};
   const logo = S.logo
-    ? `el del cliente (${S.logo.tipo.replace('image/', '')}, ${S.logo.w}×${S.logo.h} px). Se usa el fichero original en vector: /img/logo.svg`
+    ? `el del cliente (${S.logo.tipo.replace('image/', '')}, ${S.logo.w}×${S.logo.h} px). Se usa el fichero original en vector: /img/logo.svg` +
+      (S.logo.formaSrc ? '. Para los juegos de forma (ventana, sello…) va aparte /img/logo-forma.svg: su silueta sin detalles sueltos (sin ®), del mismo tamaño de lienzo' : '')
     : `TODO: el logo del cliente en SVG. En el Estudio se compuso con la forma de repuesto «${(FORMAS_MARCA[S.marcaForma] || FORMAS_MARCA.arco)[0]}»; se sustituye por el logo real`;
   const marca = [
     `Logo: ${logo}.`,

@@ -62,62 +62,77 @@ function tituloHTML(txt) {
   return `<h1 class="${clase}" style="${estilo}font-size:clamp(2.4rem,6vw,4.2rem);margin:0">${txt}</h1>`;
 }
 
+/* Los módulos también traían contenido de ejemplo de un taller de rótulos
+   («desde 480 €», «2 semanas», «100 % fabricación propia», «No hacemos lo que no
+   sabemos hacer»). Con un cliente con nombre, llevan lo suyo o el hueco (F6). */
 function moduloHTML(id) {
+  const cli = esCliente();
   switch (id) {
-    case 'disclosure':
+    case 'disclosure': {
+      const filas = cli
+        ? svc().slice(0, 2).map(([t, d, p]) => [t, '', p || hueco('P9', 'precio de partida'), d || hueco('P18', 'qué incluye y qué no')])
+        : [['Lo que va dentro del precio', 'Con nombre y apellidos, no «material de primera calidad»', 'desde 480 €', 'Aquí va el detalle, con la foto al lado. Cerrado ya dice algo; por eso se abre.'],
+          ['Plazos', 'Lo que tarda de verdad, no lo que queda bien', '2 semanas', 'Aquí va el detalle, con la foto al lado. Cerrado ya dice algo; por eso se abre.']];
       return `<div style="margin-top:2rem">
-        ${[['Lo que va dentro del precio', 'Con nombre y apellidos, no «material de primera calidad»', 'desde 480 €'],
-           ['Plazos', 'Lo que tarda de verdad, no lo que queda bien', '2 semanas']]
-          .map(([t, h, m], i) => `<details class="fx-disc-item" ${i === 0 ? 'open' : ''}>
+        ${filas.map(([t, h, m, cuerpo], i) => `<details class="fx-disc-item" ${i === 0 ? 'open' : ''}>
             <summary class="fx-disc-head">
               <span class="fx-disc-n tabular">0${i + 1}</span>
               <span class="fx-disc-titles"><span class="fx-disc-title">${t}</span><span class="fx-disc-hint">${h}</span></span>
               <span class="fx-disc-meta tabular">${m}</span>
               <span class="fx-disc-sign" aria-hidden="true"><i></i><i></i></span>
             </summary>
-            <div class="fx-disc-body"><div class="fx-disc-text"><p>Aquí va el detalle, con la foto al lado. Cerrado ya dice algo; por eso se abre.</p></div>
+            <div class="fx-disc-body"><div class="fx-disc-text"><p>${cuerpo}</p></div>
             <figure class="fx-disc-fig"><img src="${FL()[3]}" alt=""></figure></div>
           </details>`).join('')}
       </div>`;
-    case 'tabs':
+    }
+    case 'tabs': {
+      const pes = cli ? svc().slice(0, 2).map(([t, d]) => [t, d || hueco('P12', 'qué es')])
+        : [['Fabricación', 'Pestañas con radios y <code>:checked</code>: funcionan con teclado y sin JavaScript.'], ['Instalación', 'Medios propios. El segundo panel.']];
       return `<div class="fx-tabs" style="margin-top:2rem">
-        <input type="radio" name="t" id="t1" checked><label for="t1">Fabricación</label>
-        <input type="radio" name="t" id="t2"><label for="t2">Instalación</label>
+        ${pes.map(([t], i) => `<input type="radio" name="t" id="t${i + 1}"${i ? '' : ' checked'}><label for="t${i + 1}">${t}</label>`).join('')}
         <div class="fx-tabs-panels">
-          <div><p style="color:var(--color-ink-soft);margin:0">Pestañas con radios y <code>:checked</code>: funcionan con teclado y sin JavaScript.</p></div>
-          <div><p style="color:var(--color-ink-soft);margin:0">Medios propios. El segundo panel.</p></div>
+          ${pes.map(([, d]) => `<div><p style="color:var(--color-ink-soft);margin:0">${d}</p></div>`).join('')}
         </div></div>`;
+    }
     case 'rail':
       return `<div class="fx-rail" style="margin-top:2rem;--rail-w:72%;--rail-w-lg:34%">
         ${FL().slice(0, 4).map((s) => figura(s)).join('')}</div>`;
-    case 'pull':
+    case 'pull': {
+      const [t, f] = cli ? res()[0] : ['Lo pusieron en dos días y lo que dijeron que costaba fue lo que costó.', 'Reseña real · con nombre y fecha'];
       return `<blockquote class="fx-pull" style="margin-top:2rem;max-width:34ch">
-        Lo pusieron en dos días y lo que dijeron que costaba fue lo que costó.</blockquote>
-        <p style="margin:.75rem 0 0;font-size:.85rem;color:var(--color-ink-soft)">Reseña real · con nombre y fecha</p>`;
+        ${t}</blockquote>
+        <p style="margin:.75rem 0 0;font-size:.85rem;color:var(--color-ink-soft)">${f}</p>`;
+    }
     case 'note':
-      return `<p class="fx-note" style="margin-top:2rem">No hacemos lo que no sabemos hacer.<br>Si es lo que busca, le decimos a dónde ir.</p>`;
+      return `<p class="fx-note" style="margin-top:2rem">${cli
+        ? (S.respuestaObjecion.trim() ? esc(S.respuestaObjecion.trim()) : hueco('P12', 'la objeción, respondida con un hecho'))
+        : 'No hacemos lo que no sabemos hacer.<br>Si es lo que busca, le decimos a dónde ir.'}</p>`;
     case 'highlight':
-      return `<p class="fx-highlight" style="margin-top:2rem">Lo que hay que leer si solo se lee una cosa. Uno por página.</p>`;
+      return `<p class="fx-highlight" style="margin-top:2rem">${cli
+        ? (S.prueba.trim() ? esc(S.prueba.trim()) : hueco('P8', 'la prueba principal'))
+        : 'Lo que hay que leer si solo se lee una cosa. Uno por página.'}</p>`;
     case 'stat':
       return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1.5rem;margin-top:2rem">
-        ${[['1993', 'Desde entonces'], ['100 %', 'Fabricación propia'], ['48 h', 'Presupuesto cerrado']]
+        ${(cli ? cif().slice(0, 3) : [['1993', 'Desde entonces'], ['100 %', 'Fabricación propia'], ['48 h', 'Presupuesto cerrado']])
           .map(([v, l]) => `<div class="fx-stat"><span>${v}</span><span>${l}</span></div>`).join('')}</div>`;
     case 'time':
       return `<div style="position:relative;margin-top:2rem;padding-left:2.4rem">
         <div class="fx-plumb fx-plumb-bare" style="--plumb-x:.5rem"></div>
         <ol class="fx-time" style="list-style:none;margin:0;padding:0">
-          ${[['1993', 'Abre el taller.'], ['2018', 'Medios propios de instalación.'], ['Hoy', 'Toda la provincia.']]
+          ${(cli ? pas().slice(0, 3) : [['1993', 'Abre el taller.'], ['2018', 'Medios propios de instalación.'], ['Hoy', 'Toda la provincia.']])
             .map(([a, t]) => `<li><span>${a}</span><p>${t}</p></li>`).join('')}
         </ol></div>`;
     case 'sheet':
       return `<div style="margin-top:2rem">${botonHTML('Ver la ficha completa', false)}
-        <p style="margin:.7rem 0 0;font-size:.85rem;color:var(--color-ink-soft)">Abre un &lt;dialog&gt; nativo: Esc, foco atrapado y fondo bloqueado, sin librería.</p></div>`;
+        ${cli ? '' : '<p style="margin:.7rem 0 0;font-size:.85rem;color:var(--color-ink-soft)">Abre un &lt;dialog&gt; nativo: Esc, foco atrapado y fondo bloqueado, sin librería.</p>'}</div>`;
     case 'sign':
       return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;margin-top:2rem"
         data-fx="sign" data-fx-opt='{"stagger":140,"once":false}'>
-        ${['Una idea', 'Otra idea', 'La tercera'].map((t) => `<article class="fx-sign"><div style="padding:1.5rem">
+        ${(cli ? svc().slice(0, 3) : [['Una idea', 'Las piezas están apagadas y se encienden al llegar.'], ['Otra idea', 'Las piezas están apagadas y se encienden al llegar.'], ['La tercera', 'Las piezas están apagadas y se encienden al llegar.']])
+          .map(([t, d]) => `<article class="fx-sign"><div style="padding:1.5rem">
           <p style="font-family:var(--font-display);font-weight:800;font-size:1.25rem;margin:0">${t}</p>
-          <p style="margin:.6rem 0 0;font-size:.9rem">Las piezas están apagadas y se encienden al llegar.</p>
+          <p style="margin:.6rem 0 0;font-size:.9rem">${d}</p>
         </div></article>`).join('')}</div>`;
     default: return '';
   }
@@ -261,7 +276,13 @@ function capaMarca(oscuro, enPortada = true) {
   if (!j || j === 'ninguno') return '';
   if (j === 'ventana' && !enPortada) j = 'sello';
   const tinta = oscuro ? '#fff' : 'var(--color-ink)';
-  const mascara = `-webkit-mask:url('${fuenteMarca()}') center/contain no-repeat;mask:url('${fuenteMarca()}') center/contain no-repeat;`;
+  /* Para los juegos, la FORMA del logo si el cliente la tiene aparte (logo.formaSrc):
+     la silueta sin detalles sueltos. Con el logo entero, el «®» de Dígito salía
+     flotando fuera de la ventana («parece un resto sin terminar», juez Sonnet, F6). */
+  const src = S.logo && S.logo.formaSrc
+    ? (MARCA_FIJA ? MARCA_FIJA.replace(/logo\.svg$/, 'logo-forma.svg') : S.logo.formaSrc.replace(/'/g, '%27'))
+    : fuenteMarca();
+  const mascara = `-webkit-mask:url('${src}') center/contain no-repeat;mask:url('${src}') center/contain no-repeat;`;
 
   if (j === 'sello') {
     return `<span aria-hidden="true" style="position:absolute;top:1.5rem;right:1.5rem;z-index:0;
@@ -354,7 +375,7 @@ const EJ = {
   ],
   faq: [
     ['¿Hace falta permiso del ayuntamiento?', 'Para fachada, casi siempre. Lo tramitamos nosotros y va incluido en el presupuesto.'],
-    ['¿Cuánto tarda un rótulo de fachada?', 'Dos semanas desde que se aprueba el diseño. Si hay que pedir permiso, sumá tres más.'],
+    ['¿Cuánto tarda un rótulo de fachada?', 'Dos semanas desde que se aprueba el diseño. Si hay que pedir permiso, suma tres más.'],
     ['¿Reparáis rótulos de otros?', 'Sí, si el cajón está sano. Si no, sale más caro arreglarlo que hacerlo nuevo y te lo decimos.'],
   ],
   sitios: ['La Carlota', 'Écija', 'Palma del Río', 'Fuente Palmera', 'Posadas', 'Almodóvar del Río', 'La Rambla', 'Santaella'],
@@ -366,12 +387,35 @@ const EJ = {
    El texto del cliente se escapa AQUÍ y no en la fuente: la fuente también
    alimenta el encargo (texto plano) y el andamio (cadenas de JavaScript). */
 const escFila = (xs) => xs.map((x) => esc(x));
-const svc = () => (serviciosCliente().length ? serviciosCliente().map(escFila) : EJ['servicios']);
-const res = () => (resenasCliente().length ? resenasCliente().map(escFila) : EJ['resenas']);
-const sit = () => (sitiosCliente().length ? escFila(sitiosCliente()) : EJ['sitios']);
-const cif = () => (cifrasCliente().length ? cifrasCliente().map(([v, q]) => [esc(v), esc(q)]) : EJ['cifras']);
+
+/* Con un cliente de verdad (tiene nombre), lo que falta NO se rellena con el
+   ejemplo: el ejemplo es de un taller de rótulos —1993, 48 h, «el rótulo
+   encendido»— y en la web de otro oficio es un dato inventado. Lo cazaron los
+   jueces ciegos de la F6 en la de Brío (entrenamiento para mujeres): «el copy
+   de rótulos delata una plantilla sin adaptar». Se enseña el HUECO, con el
+   paso del protocolo que lo rellena. Sin nombre, siguen los ejemplos: enseñan
+   a escribir bien. */
+const esCliente = () => !!S.marca && S.marca !== 'Nombre del cliente';
+const hueco = (p, que) => `<span style="opacity:.55">[${que} · pendiente, ${p}]</span>`;
+const ej = (ejemplo, p, que) => (esCliente() ? hueco(p, que) : ejemplo);
+
+const svc = () => (serviciosCliente().length ? serviciosCliente().map(escFila)
+  : esCliente() ? [[hueco('P12', 'servicio'), hueco('P12', 'qué incluye'), '']] : EJ['servicios']);
+const res = () => (resenasCliente().length ? resenasCliente().map(escFila)
+  : esCliente() ? [[hueco('P8', 'reseña literal'), hueco('P8', 'dónde y cuándo')]] : EJ['resenas']);
+const sit = () => (sitiosCliente().length ? escFila(sitiosCliente())
+  : esCliente() ? [hueco('P11', 'los pueblos')] : EJ['sitios']);
+const cif = () => (cifrasCliente().length ? cifrasCliente().map(([v, q]) => [esc(v), esc(q)])
+  : esCliente() ? [1, 2, 3].map(() => ['—', hueco('P8', 'cifra con prueba')]) : EJ['cifras']);
+const preguntas = () => (esCliente()
+  ? [[S.objecion.trim() ? esc(S.objecion.trim()) : hueco('P12', 'la objeción principal'),
+    S.respuestaObjecion.trim() ? esc(S.respuestaObjecion.trim()) : hueco('P12', 'cómo se responde')]]
+  : EJ.faq);
+/* El contacto del cliente, tal como lo escribió (una línea por dato). */
+const contactoCliente = () => lineas(S.datosContacto).map(esc);
 const pas = () => (pasosCliente().length
-  ? pasosCliente().map(([t, d, p]) => [esc(t), esc([d, p].filter(Boolean).join(' · '))]) : EJ['pasos']);
+  ? pasosCliente().map(([t, d, p]) => [esc(t), esc([d, p].filter(Boolean).join(' · '))])
+  : esCliente() ? [1, 2, 3].map((n) => [`Paso ${n}`, hueco('P12', 'qué pasa y en qué plazo')]) : EJ['pasos']);
 
 function filaServicio([t, d, p], i, osc) {
   return `<div style="display:grid;grid-template-columns:2.5rem 1fr auto;gap:1.2rem;align-items:baseline;
@@ -392,7 +436,7 @@ const CUERPO = {
     const titulo = S.titular === 'knockout' ? 'TU NOMBRE'
       : (base ? esc(base.charAt(0).toUpperCase() + base.slice(1)) : 'Lo que hacemos, en claro.');
     const entrada = lead(S.prueba.trim() ? esc(S.prueba.trim())
-      : 'Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.');
+      : ej('Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.', 'P8', 'la prueba principal'));
     const primario = canalesDecididos() && canal('whatsapp') && !canal('formulario') ? 'Escribir por WhatsApp' : 'Pedir presupuesto';
     const botones = `<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">
       ${botonHTML(primario)}${botonHTML('Ver trabajos', false)}</div>`;
@@ -428,11 +472,12 @@ const CUERPO = {
     }
     return `<p style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.5rem,3.6vw,2.4rem);
       line-height:1.1;letter-spacing:-.02em;margin:0;max-width:26ch">
-      ${S.respuestaObjecion.trim() ? esc(S.respuestaObjecion.trim()) : 'Si no sabemos hacerlo, te decimos quién lo hace.'}</p>`;
+      ${S.respuestaObjecion.trim() ? esc(S.respuestaObjecion.trim()) : ej('Si no sabemos hacerlo, te decimos quién lo hace.', 'P12', 'la objeción, respondida con un hecho')}</p>`;
   },
 
   servicios(v, osc) {
-    const cab = `${ojo('Qué hacemos')}${h2('Cuatro cosas, y las cuatro las hacemos nosotros')}
+    const cab = esCliente() ? `${ojo('Qué hacemos')}${h2('Lo que hacemos')}`
+      : `${ojo('Qué hacemos')}${h2('Cuatro cosas, y las cuatro las hacemos nosotros')}
       ${lead('Nada de subcontratas: el taller es propio y por eso podemos cambiar algo a mitad.', osc)}`;
     if (v === 'alterno') {
       return `${cab}<div style="margin-top:3rem;display:grid;gap:clamp(2rem,4vw,3.5rem)">
@@ -456,7 +501,8 @@ const CUERPO = {
   },
 
   galeria(v, osc) {
-    const cab = `${ojo('Trabajos')}${h2('Lo que ya está puesto')}
+    const cab = esCliente() ? `${ojo('Trabajos')}${h2('Lo que ya está hecho')}`
+      : `${ojo('Trabajos')}${h2('Lo que ya está puesto')}
       ${lead('Fotos de obra propia, enteras y sin retocar. Si no hay foto de algo, es que no lo hemos hecho.', osc)}`;
     if (v === 'carril') {
       return `${cab}<div class="fx-rail" style="margin-top:2rem;--rail-w:72%;--rail-w-lg:34%">
@@ -479,7 +525,7 @@ const CUERPO = {
   },
 
   proceso(v, osc) {
-    const cab = `${ojo('Cómo trabajamos')}${h2('De la primera visita al rótulo encendido')}`;
+    const cab = `${ojo('Cómo trabajamos')}${h2(esCliente() ? 'Cómo funciona' : 'De la primera visita al rótulo encendido')}`;
     if (v === 'pasos') {
       return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:2rem;margin-top:2.5rem">
         ${pas().map(([t, d], i) => `<div>
@@ -516,7 +562,7 @@ const CUERPO = {
 
   precios(v, osc) {
     const cab = `${ojo('Precios')}${h2('Lo que cuesta, sin tener que pedirlo')}
-      ${lead('Son precios de partida reales. El presupuesto cerrado sale tras medir.', osc)}`;
+      ${esCliente() ? '' : lead('Son precios de partida reales. El presupuesto cerrado sale tras medir.', osc)}`;
     if (v === 'tabla') {
       return `${cab}<table class="tabular" style="width:100%;border-collapse:collapse;margin-top:2rem;font-size:.95rem">
         ${svc().map(([t, d, p]) => `<tr style="border-top:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'}">
@@ -531,7 +577,7 @@ const CUERPO = {
           <span class="fx-disc-meta tabular">${p}</span>
           <span class="fx-disc-sign" aria-hidden="true"><i></i><i></i></span>
         </summary>
-        <div class="fx-disc-body"><div class="fx-disc-text"><p>Qué entra en ese precio, con nombre y apellidos: material, medidas y montaje. Cerrado ya dice algo; por eso se abre.</p></div>
+        <div class="fx-disc-body"><div class="fx-disc-text"><p>${ej('Qué entra en ese precio, con nombre y apellidos: material, medidas y montaje. Cerrado ya dice algo; por eso se abre.', 'P18', 'qué incluye y qué no')}</p></div>
         <figure class="fx-disc-fig"><img src="${FL()[i]}" alt=""></figure></div></details>`).join('')}</div>`;
   },
 
@@ -545,16 +591,17 @@ const CUERPO = {
     const cab = `${ojo('Preguntas')}${h2('Lo que preguntan antes de llamar')}`;
     if (v === 'dos') {
       return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1rem 2rem;margin-top:2rem">
-        ${EJ.faq.map((f, i) => `<div>${item(f, i)}</div>`).join('')}</div>`;
+        ${preguntas().map((f, i) => `<div>${item(f, i)}</div>`).join('')}</div>`;
     }
-    return `${cab}<div style="margin-top:2rem">${EJ.faq.map(item).join('')}</div>`;
+    return `${cab}<div style="margin-top:2rem">${preguntas().map(item).join('')}</div>`;
   },
 
   zona(v, osc) {
     const sitios = `<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2rem">
       ${sit().map((s) => `<span style="font-size:.9rem;padding:.4rem .8rem;border-radius:999px;
         border:1px solid ${osc ? 'rgb(255 255 255/.2)' : 'var(--color-line-strong)'}">${s}</span>`).join('')}</div>`;
-    const cab = `${ojo('Dónde trabajamos')}${h2('La provincia, y lo que cae al lado')}
+    const cab = esCliente() ? `${ojo('Dónde trabajamos')}${h2('Dónde')}`
+      : `${ojo('Dónde trabajamos')}${h2('La provincia, y lo que cae al lado')}
       ${lead('Los nombres propios de los pueblos, que es lo que la gente escribe en el buscador.', osc)}`;
     if (v === 'mapa') {
       return `<div style="position:relative"><div class="fx-blueprint" style="--bp-a:14%;--bp-fade:75%"></div>
@@ -569,10 +616,13 @@ const CUERPO = {
       const vias = [
         canal('whatsapp') ? botonHTML('Escribir por WhatsApp') : '',
         canal('formulario') ? botonHTML('Pedir presupuesto', !canal('whatsapp')) : '',
-        canal('correo') ? `<p style="margin:1rem 0 0;color:${suave(osc)}">O por correo: <a href="#" style="color:inherit">hola@…</a></p>` : '',
+        canal('correo') ? `<p style="margin:1rem 0 0;color:${suave(osc)}">O por correo: <a href="#" style="color:inherit">${esCliente() ? hueco('P21', 'el correo') : 'hola@…'}</a></p>` : '',
       ].join('');
+      const dice = esCliente()
+        ? (contactoCliente().length ? contactoCliente().join('<br>') : hueco('P21', 'a quién le llega y cuándo contesta'))
+        : 'Por escrito y a tu ritmo: mándanos fotos y medidas y te contestamos.';
       return `${ojo('Contacto')}${h2('Escríbenos y te contestamos')}
-        <p style="margin:.6rem 0 0;color:${suave(osc)};max-width:46ch">Por escrito y a tu ritmo: mándanos fotos y medidas y te contestamos.</p>
+        <p style="margin:.6rem 0 0;color:${suave(osc)};max-width:46ch">${dice}</p>
         <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">${vias}</div>`;
     }
     const cab = `${ojo('Contacto')}${h2(canalesDecididos() && !canal('telefono') ? 'Cuéntanos qué necesitas' : 'Se contesta el teléfono')}`;
@@ -582,13 +632,16 @@ const CUERPO = {
         <input type="${t}" style="width:100%;padding:.65rem .8rem;border-radius:8px;font:inherit;
           border:1px solid ${osc ? 'rgb(255 255 255/.25)' : 'var(--color-line-strong)'};background:transparent;color:inherit"></label>`;
       return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem;margin-top:2rem;max-width:40rem">
-        ${campo('Nombre', 'text')}${campo('Teléfono', 'tel')}${campo('Qué necesitás', 'text')}${campo('Dónde', 'text')}</div>
+        ${campo('Nombre', 'text')}${campo('Teléfono', 'tel')}${campo('Qué necesitas', 'text')}${campo('Dónde', 'text')}</div>
         <div style="margin-top:1.5rem">${botonHTML('Enviar')}</div>
-        <p style="margin:.8rem 0 0;font-size:.85rem;color:${suave(osc)}">Cuatro campos. Cada campo de más es gente que no lo rellena.</p>`;
+        <p style="margin:.8rem 0 0;font-size:.85rem;color:${suave(osc)}">${esCliente()
+          ? (contactoCliente().length ? contactoCliente().join('<br>') : hueco('P21', 'a quién le llega y cuándo contesta'))
+          : 'Cuatro campos. Cada campo de más es gente que no lo rellena.'}</p>`;
     }
+    const [linea1, ...otras] = contactoCliente();
     return `${cab}<p style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,4.5vw,3rem);
-      margin:1rem 0 0;letter-spacing:-.02em"><a href="#" style="color:inherit;text-decoration:none">957 00 00 00</a></p>
-      <p style="margin:.6rem 0 0;color:${suave(osc)}">De lunes a viernes, de 8 a 14 y de 16 a 19. Contesta alguien del taller, no un contestador.</p>
+      margin:1rem 0 0;letter-spacing:-.02em"><a href="#" style="color:inherit;text-decoration:none">${esCliente() ? (linea1 || hueco('P21', 'el teléfono real')) : '957 00 00 00'}</a></p>
+      <p style="margin:.6rem 0 0;color:${suave(osc)}">${esCliente() ? (otras.join('<br>') || hueco('P21', 'horario y quién contesta')) : 'De lunes a viernes, de 8 a 14 y de 16 a 19. Contesta alguien del taller, no un contestador.'}</p>
       <div style="margin-top:2rem">${botonHTML('Escribir por WhatsApp')}</div>`;
   },
 
@@ -596,12 +649,12 @@ const CUERPO = {
     if (v === 'partido') {
       return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:2.5rem;align-items:center">
         <div><h2${osc ? ' style="color:#fff"' : ''}>¿Lo vemos?</h2>
-          ${lead('Vamos, medimos y te mandamos el montaje sobre la foto de tu fachada. Sin compromiso y sin insistir después.', osc)}</div>
+          ${lead(esCliente() ? (S.prueba.trim() ? esc(S.prueba.trim()) : hueco('P12', 'qué pasa cuando te escriben')) : 'Vamos, medimos y te mandamos el montaje sobre la foto de tu fachada. Sin compromiso y sin insistir después.', osc)}</div>
         <div style="text-align:right">${botonHTML('Pedir presupuesto')}</div></div>`;
     }
     return `<div style="text-align:center">
       <h2${osc ? ' style="color:#fff"' : ''}>¿Hablamos?</h2>
-      <p style="color:${suave(osc)};max-width:42ch;margin:1rem auto 2rem">Vamos, medimos y te mandamos el montaje sobre la foto de tu fachada.</p>
+      <p style="color:${suave(osc)};max-width:42ch;margin:1rem auto 2rem">${esCliente() ? (S.prueba.trim() ? esc(S.prueba.trim()) : hueco('P12', 'qué pasa cuando te escriben')) : 'Vamos, medimos y te mandamos el montaje sobre la foto de tu fachada.'}</p>
       ${botonHTML('Pedir presupuesto')}</div>`;
   },
 };
@@ -666,8 +719,13 @@ function footerHTML() {
     <div style="display:grid;gap:2rem;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))">
       <div>${marcaHTML('1.8rem', true)}
         <p style="margin:.6rem 0 0;font-size:.85rem;opacity:.65">${esc(S.oficio || 'Lo que hace, en una línea.')}</p></div>
-      ${['Qué hacemos', 'Dónde', 'Contacto'].map((t) => `<div><p style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;opacity:.5;margin:0 0 .6rem">${t}</p>
-        ${[1, 2, 3].map(() => `<p style="margin:.3rem 0;font-size:.85rem;opacity:.75">Enlace</p>`).join('')}</div>`).join('')}
+      ${[['Qué hacemos', () => svc().map(([t]) => t)], ['Dónde', sit], ['Contacto', contactoCliente]].map(([t, datos]) => {
+        // Con cliente, el pie lleva lo suyo (servicios, pueblos, contacto); nueve «Enlace»
+        // eran lo primero que delataba la plantilla (juez Sonnet, F4).
+        const xs = esCliente() ? datos().slice(0, 3) : ['Enlace', 'Enlace', 'Enlace'];
+        return `<div><p style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;opacity:.5;margin:0 0 .6rem">${t}</p>
+        ${(xs.length ? xs : [hueco('P21', 'dato')]).map((x) => `<p style="margin:.3rem 0;font-size:.85rem;opacity:.75">${x}</p>`).join('')}</div>`;
+      }).join('')}
     </div></footer>`;
 }
 

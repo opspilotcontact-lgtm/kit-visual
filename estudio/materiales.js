@@ -176,7 +176,9 @@ function pintaFotos() {
   const xs = FOTOS_CLIENTE;
   const resumen = xs.length
     ? `${xs.length} ${xs.length === 1 ? 'foto' : 'fotos'} · ${xs.filter((f) => f.w > f.h).length} horizontales · la mayor de ${Math.max(...xs.map((f) => f.w))} px de ancho`
-    : 'Sin fotos del cliente: el lienzo usa fotos de ejemplo (rótulos de Dígito).';
+    : esCliente() && !/^d[ií]gito/i.test(S.marca)
+      ? 'Sin fotos del cliente: el lienzo pone marcadores de «foto pendiente» (enseñar trabajos de otro sería mentir).'
+      : 'Sin fotos del cliente: el lienzo usa fotos de ejemplo (rótulos de Dígito).';
   host.innerHTML = `<p class="ui-hint" style="margin:.5rem 0 0">${resumen}</p>` +
     (fotosNoCaben ? '<div class="ui-aviso" style="margin-top:.45rem"><span>⚠</span><span><b>No caben en el navegador:</b> se ven ahora, pero al recargar habrá que subirlas otra vez.</span></div>' : '') +
     diagnosticoFotos().map(([t, x]) =>

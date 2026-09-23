@@ -209,7 +209,9 @@ function candidato(rnd) {
   const m = [];
   if (serviciosCliente().some(([, , p]) => p) || !serviciosCliente().length) m.push('disclosure');
   if (resenasCliente().length) m.push('pull');
-  if (cifrasCliente().length) m.push('stat');
+  // Las cifras, una vez: si la página ya tiene su banda de datos, el módulo las repetía (F6, Dígito).
+  const conBandaDatos = (S.secciones || []).some((s) => s.t === 'datos' || (s.t === 'banda' && s.v === 'datos'));
+  if (cifrasCliente().length && !conBandaDatos) m.push('stat');
   if (!m.length) m.push('note');
   c.modulos = m.slice(0, 3);
   c.movimiento = ['reveal'];
