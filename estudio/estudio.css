@@ -600,6 +600,22 @@ body.ui-modo-asistente .ui-shell { grid-template-columns: minmax(360px, 460px) 1
 .ui-asis-sec button:hover { background: color-mix(in srgb, #f87171 25%, transparent); color: #fecaca; }
 .ui-sec-add button em { font-style: normal; color: var(--ui-soft); }
 
+/* ── La sorpresa (F3): qué ha hecho, por qué, y deshacer ─────────────────── */
+.ui-sorpresa {
+  display: flex; align-items: center; gap: 0.8rem; flex: none;
+  padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--ui-line);
+  background: color-mix(in srgb, var(--ui-accent) 8%, var(--ui-panel));
+}
+.ui-sorpresa p { flex: 1; margin: 0; font-size: 12px; line-height: 1.45; color: #c9d0d8; min-width: 0; }
+.ui-sorpresa p b { display: block; color: var(--ui-text); font-size: 12.5px; }
+.ui-sorpresa-acc { display: flex; gap: 0.3rem; flex: none; }
+.ui-sorpresa-acc .ui-btn { font-size: 12px; padding: 0.35rem 0.6rem; }
+.ui-sorpresa-acc .ui-btn:disabled { opacity: 0.4; cursor: default; }
+@media (width < 60rem) {
+  .ui-sorpresa { flex-wrap: wrap; }
+  .ui-sorpresa p { flex-basis: 100%; }
+}
+
 /* Al entrar: tres caminos, uno por línea. */
 #inicio[open] { display: grid; place-items: center; }
 .ui-dialog-panel.ui-inicio { height: auto; width: min(100% - 2rem, 38rem); }

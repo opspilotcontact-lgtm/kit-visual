@@ -55,7 +55,7 @@ function enlaza() {
   // «Empezar de cero» es ahora «Proyecto nuevo»: lo lleva asistente.js
   // (proyectoNuevo), que además arranca con la arquitectura de P12.
 
-  $('#dados').addEventListener('click', azar);
+  enlazaSorpresa();   // «Sorpréndeme», con el motor de propuestas (sorpresa.js)
 
   enlazaLogo();
   enlazaFotos();

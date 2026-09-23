@@ -7,7 +7,7 @@
 <title>Estudio de marca · kit OpsPilot</title>
 <meta name="description" content="Herramienta interna: se compone la dirección de arte de una web y sale un encargo ejecutable.">
 <link rel="stylesheet" href="../_astro/kit-completo.css?v=29690652">
-<link rel="stylesheet" href="estudio.css?v=d65a3679">
+<link rel="stylesheet" href="estudio.css?v=08862166">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
   <div class="ui-top-actions">
     <button id="nuevo" class="ui-btn ui-btn-ghost" title="Otro cliente, o elegir cómo trabajar">Proyecto nuevo</button>
     <button id="modo" class="ui-btn ui-btn-ghost">Asistente</button>
-    <button id="dados" class="ui-btn ui-btn-ghost" title="Combina al azar respetando las reglas">Sorpréndeme</button>
+    <button id="dados" class="ui-btn ui-btn-ghost" title="Una propuesta nueva con sus ejes y sus materiales; se puede deshacer">Sorpréndeme</button>
     <button id="enlace" class="ui-btn ui-btn-ghost" title="Copia un enlace con esta composición">Copiar enlace</button>
     <button id="ver-brief" class="ui-btn ui-btn-primary">Generar el encargo</button>
   </div>
@@ -319,6 +319,16 @@
       <button type="button" id="pantalla" class="ui-btn ui-btn-ghost" aria-pressed="false">Ver entero</button>
       <span class="ui-preview-nota">Previsualización real: usa el CSS y los efectos del kit</span>
     </div>
+    <!-- La sorpresa dice qué ha hecho y por qué, y se puede deshacer. Lo pinta sorpresa.js. -->
+    <div class="ui-sorpresa" id="sorpresa" role="status" hidden>
+      <p><b id="sorpresa-n"></b><span id="sorpresa-p"></span></p>
+      <span class="ui-sorpresa-acc">
+        <button type="button" id="sorpresa-otra" class="ui-btn ui-btn-ghost">Otra</button>
+        <button type="button" id="sorpresa-variar" class="ui-btn ui-btn-ghost" title="La misma letra y el mismo color; otra firma">Variar esta</button>
+        <button type="button" id="sorpresa-deshacer" class="ui-btn ui-btn-ghost">Deshacer</button>
+        <button type="button" id="sorpresa-cerrar" class="ui-btn ui-btn-ghost" aria-label="Cerrar">✕</button>
+      </span>
+    </div>
     <div class="ui-preview-stage">
       <iframe id="lienzo" title="Previsualización"></iframe>
     </div>
@@ -389,10 +399,11 @@
 <script src="encargo.js?v=2252238f"></script>
 <script src="materiales.js?v=881e2594"></script>
 <script src="secciones.js?v=30c04890"></script>
-<script src="persistencia.js?v=4e369ada"></script>
+<script src="persistencia.js?v=bad4e3ae"></script>
 <script src="rubrica.js?v=e94f8125"></script>
-<script src="propuestas.js?v=21a532b0"></script>
-<script src="asistente.js?v=8b86da44"></script>
-<script src="arranque.js?v=0e362a10"></script>
+<script src="propuestas.js?v=70be89c0"></script>
+<script src="asistente.js?v=c95f89cc"></script>
+<script src="sorpresa.js?v=203225d6"></script>
+<script src="arranque.js?v=097fd928"></script>
 </body>
 </html>

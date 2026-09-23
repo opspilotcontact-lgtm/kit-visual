@@ -1,10 +1,10 @@
 /* Estudio de marca · persistencia.js
-   Recetas, composiciones, persistencia y el azar.
+   Recetas, composiciones y persistencia.
    Script clásico: comparte el ámbito global con los demás ficheros del
    Estudio y se carga en el orden de index.html. */
 'use strict';
 
-/* ── Recetas, enlace compartible y azar con criterio ─────────────────────── */
+/* ── Recetas y enlace compartible ────────────────────────────────────────── */
 
 function aplicaReceta(id) {
   const r = RECETAS[id];
@@ -98,8 +98,41 @@ function normaliza(d) {
   // La marca, contra el catálogo de hoy.
   if (!FORMAS_MARCA[n.marcaForma]) n.marcaForma = 'arco';
   if (!MARCAJUEGOS[n.marcaJuego]) n.marcaJuego = 'ninguno';
-  // Un logo guardado sin `src` no es un logo: se descarta en vez de pintar un hueco.
-  if (!n.logo || typeof n.logo.src !== 'string' || !n.logo.src.startsWith('data:')) n.logo = null;
+  /* Un logo solo es un logo si es una imagen en base64 de los tipos que se
+     aceptan al subirlo. Antes bastaba con que empezara por «data:», y el src
+     acaba en un <img> y en un mask:url(): con un enlace fabricado se ejecutaba
+     código (revisión adversarial del 23-sep). */
+  const lg = n.logo;
+  const tipoLogo = /^image\/(png|webp|svg\+xml)$/;
+  n.logo = lg && typeof lg.src === 'string' && /^data:image\/(png|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(lg.src)
+    ? { src: lg.src, tipo: tipoLogo.test(lg.tipo) ? lg.tipo : 'image/png',
+      w: Number.isFinite(lg.w) && lg.w > 0 ? Math.round(lg.w) : 96,
+      h: Number.isFinite(lg.h) && lg.h > 0 ? Math.round(lg.h) : 96,
+      bytes: Number.isFinite(lg.bytes) && lg.bytes >= 0 ? Math.round(lg.bytes) : 0 }
+    : null;
+
+  /* Todo lo que acaba dentro de HTML o de CSS se valida contra el catálogo o
+     contra su forma. Un enlace compartido es texto de otra persona: con un
+     acento «#000" onfocus=…» o una display con «</style>» se inyectaba código
+     en el asistente, en el panel y en la muestra (revisión del 23-sep). Si un
+     catálogo aún no está cargado, esa clave no se toca. */
+  const esDe = (cat, v) => cat && Object.keys(cat).length ? Object.prototype.hasOwnProperty.call(cat, v) : true;
+  [['base', BASES], ['fondo', FONDOS], ['escena', ESCENAS], ['foto', FOTOS], ['forma', FORMAS],
+    ['pieza', PIEZAS], ['header', HEADERS], ['boton', BOTONES], ['titular', TITULARES],
+    ['footer', FOOTERS], ['pos', POSICIONES], ['tam', TAMANOS], ['relleno', RELLENOS]]
+    .forEach(([k, cat]) => { if (!esDe(cat, n[k])) n[k] = base[k]; });
+  if (DISPLAY.length && !DISPLAY.some(([id]) => id === n.display)) n.display = base.display;
+  if (TEXTO.length && !TEXTO.some(([id]) => id === n.texto)) n.texto = base.texto;
+  n.modulos = (Array.isArray(n.modulos) ? n.modulos : []).filter((m) => esDe(MODULOS, m) && typeof m === 'string');
+  n.movimiento = (Array.isArray(n.movimiento) ? n.movimiento : []).filter((m) => esDe(MOVIMIENTO, m) && typeof m === 'string');
+  if (!esHex(n.acento)) n.acento = base.acento;
+  if (!esHex(n.tinta)) n.tinta = base.tinta;
+  const ej = n.ejes && typeof n.ejes === 'object' ? n.ejes : {};
+  n.ejes = Object.fromEntries(Object.entries(base.ejes).map(([k, v]) =>
+    [k, Number.isInteger(ej[k]) && ej[k] >= 1 && ej[k] <= 5 ? ej[k] : v]));
+  ['marca', 'oficio', 'gesto'].forEach((k) => { if (typeof n[k] !== 'string') n[k] = base[k]; });
+  n.ancho = !!n.ancho;
+  n.marcaEnChrome = n.marcaEnChrome !== false;
 
   // El contenido: texto, y canales que existan. Un estado de antes de que hubiera
   // bloque de contenido llega sin estas claves y se queda con las vacías.
@@ -111,7 +144,7 @@ function normaliza(d) {
   if (!['', 'propia', 'nueva'].includes(n.identidad)) n.identidad = '';
   n.coloresFijos = !!n.coloresFijos;
   n.displayFija = !!n.displayFija;
-  if (typeof n.materialOficio !== 'string') n.materialOficio = '';
+  if (typeof MATERIAL_OFICIO !== 'undefined' && !esDe(MATERIAL_OFICIO, n.materialOficio)) n.materialOficio = '';
   const j = n.juicio && typeof n.juicio === 'object' ? n.juicio : {};
   const val = (v) => (Number.isInteger(v) && v >= 0 && v <= 2 ? v : null);
   n.juicio = { logo: val(j.logo), cambiazo: val(j.cambiazo), telefono: val(j.telefono) };
@@ -134,57 +167,8 @@ function recupera() {
   return 'nuevo';
 }
 
-/* Azar CON criterio: tira combinaciones hasta dar con una que no se
-   contradiga a sí misma. Si tras 40 intentos no lo consigue, se queda con la
-   que menos conflictos tenía: mejor una propuesta imperfecta que ninguna. */
-function azar() {
-  const uno = (o) => { const k = Object.keys(o); return k[Math.floor(Math.random() * k.length)]; };
-  const displays = DISPLAY.filter(([d]) => d !== 'Bricolage Grotesque' && d !== 'Young Serif').map(([d]) => d);
-  const guardado = { marca: S.marca, oficio: S.oficio, gesto: S.gesto };
-  let mejor = null, mejorN = 99;
-
-  for (let i = 0; i < 40; i++) {
-    S.display = displays[Math.floor(Math.random() * displays.length)];
-    S.texto = TEXTO[Math.floor(Math.random() * TEXTO.length)][0];
-    S.base = uno(BASES);
-    S.fondo = uno(FONDOS);
-    S.escena = uno(ESCENAS);
-    S.foto = uno(FOTOS);
-    S.forma = uno(FORMAS);
-    S.header = uno(HEADERS); S.boton = uno(BOTONES); S.titular = uno(TITULARES); S.footer = uno(FOOTERS);
-    S.pieza = uno(PIEZAS); S.pos = uno(POSICIONES); S.tam = uno(TAMANOS); S.relleno = uno(RELLENOS);
-    S.modulos = Object.keys(MODULOS).sort(() => Math.random() - 0.5).slice(0, 2 + Math.floor(Math.random() * 2));
-    S.movimiento = ['reveal'];
-    S.ancho = Math.random() < 0.35;
-    S.acento = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-    EJES.forEach(([id]) => { S.ejes[id] = 1 + Math.floor(Math.random() * 5); });
-
-    // El gesto y el contenido siempre faltan en una tirada al azar: el dado
-    // decide el estilo, no lo que dice el cliente. No cuentan como conflicto.
-    const n = conflictos().filter(([t]) => !t.startsWith('Falta el')).length;
-    if (n === 0) { mejor = null; break; }
-    if (n < mejorN) { mejorN = n; mejor = JSON.parse(JSON.stringify(S)); }
-  }
-  if (mejor) S = mejor;
-  Object.assign(S, guardado);
-
-  /* También la ARQUITECTURA, que es la mitad de la sorpresa. Portada y cierre
-     se quedan —toda web tiene principio y final—; en medio entran de tres a
-     cinco del resto, sin repetir. La escenografía solo cae en las bisagras,
-     que es lo que manda RECETAS.md, y el fondo en una sola sección para no
-     romper la regla del fondo único. */
-  const medias = Object.keys(SECCIONES).filter((k) => k !== 'hero' && k !== 'cierre');
-  const elegidas = medias.sort(() => Math.random() - 0.5).slice(0, 3 + Math.floor(Math.random() * 3));
-  S.secciones = ['hero', ...elegidas, 'cierre'].map(nuevaSeccion);
-  S.secciones[0].capas = ['fondo', 'escena', 'pieza']
-    .filter((c) => (SECCIONES.hero.admite || []).includes(c));
-  const cierre = S.secciones[S.secciones.length - 1];
-  cierre.capas = ['escena'].filter((c) => (SECCIONES.cierre.admite || []).includes(c));
-  // Los módulos elegidos tienen que verse en alguna parte.
-  const conModulos = S.secciones.find((s) => (SECCIONES[s.t].admite || []).includes('modulos'));
-  if (conModulos) conModulos.capas = [...conModulos.capas, 'modulos'];
-
-  sincronizaCampos();
-  pintaControles(); pintaEjes(); pintaSecciones(); render();
-}
+/* El azar de antes (40 tiradas sobre todo el catálogo, acento con un hex al
+   azar y ejes al azar) se fue el 23-sep: salían webs correctas que no tenían
+   nada que ver con el cliente y, además, le cambiaba los ejes, que son SUYOS.
+   «Sorpréndeme» está ahora en sorpresa.js, sobre el motor de propuestas. */
 

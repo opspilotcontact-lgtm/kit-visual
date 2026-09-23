@@ -94,9 +94,11 @@ function ajustaCapasFirma() {
    Se recalculan solo si cambia algo que el motor mira. Elegir una NO las
    invalida: lo que cambia al elegir (el estilo) no está en la huella. */
 function propuestasAsis() {
+  // logoSirve() y no solo «hay logo»: cambiar un logo recortado por uno con
+  // degradado tiene que quitar la ventana y el sello (revisión del 23-sep).
   const huella = JSON.stringify([S.marca, S.ejes, S.identidad, S.coloresFijos, S.displayFija, S.materialOficio,
     S.coloresFijos ? [S.acento, S.tinta, S.papel, S.base] : 0, S.displayFija ? S.display : 0,
-    !!S.logo, ULTIMO_DIAG_LOGO && ULTIMO_DIAG_LOGO.transparente, S.listaServicios, S.listaResenas, S.cifras,
+    S.logo ? S.logo.src.length : 0, logoSirve(), S.gesto, S.listaServicios, S.listaResenas, S.cifras,
     S.secciones.map((s) => s.t + '/' + s.v), FOTOS_CLIENTE.length, VUELTA]);
   if (huella !== HUELLA_PROP) {
     PROPUESTAS = proponer({ n: 3, semilla: semillaDe(S.marca) + VUELTA * 7919 });
@@ -154,9 +156,9 @@ const PASOS = [
       const colores = `<div class="ui-field"><span>Sus colores <em>— del manual o del SVG, no de un JPG</em></span>
         <div data-vivo="paleta"></div>
         <div class="ui-row">
-          <label class="ui-color"><span>Acento</span><input type="color" data-color="acento" value="${S.acento}"></label>
-          <label class="ui-color"><span>Tinta</span><input type="color" data-color="tinta" value="${S.tinta}"></label>
-          <label class="ui-color"><span>Papel</span><input type="color" data-color="papel" value="${S.papel || (BASES[S.base] || {}).paper || '#F5F6F7'}"></label>
+          <label class="ui-color"><span>Acento</span><input type="color" data-color="acento" value="${esc(S.acento)}"></label>
+          <label class="ui-color"><span>Tinta</span><input type="color" data-color="tinta" value="${esc(S.tinta)}"></label>
+          <label class="ui-color"><span>Papel</span><input type="color" data-color="papel" value="${esc(S.papel || (BASES[S.base] || {}).paper || '#F5F6F7')}"></label>
         </div></div>
         ${casilla('coloresFijos', 'Son los de su marca <em>— ninguna propuesta los cambia</em>')}
         <label class="ui-field"><span>Su letra <em>— si no está en el kit, la más cercana y sin fijar</em></span>
@@ -177,15 +179,18 @@ const PASOS = [
       if (zona('logo')) {
         const d = ULTIMO_DIAG_LOGO;
         zona('logo').innerHTML = !S.logo ? '<p class="ui-hint">Sin logo: la firma se prueba con una forma de repuesto y el encargo lo pedirá.</p>'
-          : `<div class="ui-asis-logo"><img src="${S.logo.src}" alt=""></div>` + (!d ? '<p class="ui-hint">Mirando el logo…</p>'
+          : `<div class="ui-asis-logo"><img src="${esc(S.logo.src)}" alt=""></div>` + (!d ? '<p class="ui-hint">Mirando el logo…</p>'
             : d.transparente === false || (d.colores ?? 0) > 24
               ? aviso('No sirve como forma:', 'trae fondo o demasiados colores. La firma irá por la escenografía; pide el SVG recortado.')
               : aviso('Sirve como forma:', 'recortado y con pocos colores. Puede ser la firma de toda la web.', 'ok'));
       }
       if (zona('paleta')) {
         if (S.logo && PALETA_DE !== S.logo.src) {
-          PALETA_DE = S.logo.src; PALETA_LOGO = [];
-          paletaDeLogo(S.logo.src).then((xs) => { PALETA_LOGO = xs; vivo(); });
+          const src = S.logo.src;
+          PALETA_DE = src; PALETA_LOGO = [];
+          // Solo si sigue siendo el mismo logo: si llega tarde la medición de uno
+          // anterior, se verían sus colores con el logo nuevo.
+          paletaDeLogo(src).then((xs) => { if (PALETA_DE === src) { PALETA_LOGO = xs; vivo(); } });
         }
         zona('paleta').innerHTML = !S.logo ? '' : PALETA_LOGO.length
           ? `<p class="ui-hint" style="margin:0 0 .35rem">Medidos en el logo (toca uno para usarlo de acento):</p>
@@ -247,8 +252,8 @@ const PASOS = [
         aire: 'El espacio: galería respira entre secciones; taller aprieta.',
       };
       return EJES.map(([id, n, a, b]) => `<div class="ui-asis-eje">
-          <div class="ui-asis-eje-top"><b>${esc(n)}</b><output data-out="${id}">${S.ejes[id]}</output></div>
-          <input type="range" min="1" max="5" step="1" value="${S.ejes[id]}" data-eje="${id}" aria-label="${esc(n)}: 1 ${esc(a)}, 5 ${esc(b)}">
+          <div class="ui-asis-eje-top"><b>${esc(n)}</b><output data-out="${id}">${esc(S.ejes[id])}</output></div>
+          <input type="range" min="1" max="5" step="1" value="${esc(S.ejes[id])}" data-eje="${id}" aria-label="${esc(n)}: 1 ${esc(a)}, 5 ${esc(b)}">
           <div class="ui-asis-eje-ext"><span>${esc(a)}</span><span>${esc(b)}</span></div>
           <p class="ui-hint" style="margin-top:.2rem">${QUE[id] || ''}</p></div>`).join('') +
         '<p class="ui-asis-lectura" data-vivo="lectura"></p>';
@@ -483,18 +488,33 @@ function proyectoNuevo() {
   if (p12) S.secciones = normaliza({ ...S, secciones: JSON.parse(JSON.stringify(p12)) }).secciones;
   PROPUESTAS = []; HUELLA_PROP = ''; ELEGIDA = null; VUELTA = 0; VISTOS = new Set(); PASO = 0;
   PALETA_LOGO = []; PALETA_DE = '';
+  // Sin esto, «Deshacer» de una sorpresa anterior devolvía al cliente de antes.
+  SORPRESA = null;
+  if ($('#sorpresa')) $('#sorpresa').hidden = true;
   refrescaPanel(); render();
   modo('asistente');
+}
+
+/* ¿Hay algo que se perdería con «Proyecto nuevo»? Antes solo miraba el nombre,
+   y con el nombre por defecto borraba sin avisar un trabajo con colores,
+   servicios, fotos y logo (revisión del 23-sep). */
+function hayTrabajo() {
+  const v = normaliza({});
+  return (S.marca && S.marca !== MARCA_VACIA) || !!S.logo || FOTOS_CLIENTE.length > 0 ||
+    S.acento !== v.acento || S.tinta !== v.tinta || !!S.papel || !!S.gesto || S.canales.length > 0 ||
+    CAMPOS_CONTENIDO.some((k) => (S[k] || '').trim()) || JSON.stringify(S.ejes) !== JSON.stringify(v.ejes) ||
+    S.display !== v.display || !!S.identidad;
 }
 
 function abreInicio() {
   const d = $('#inicio');
   if (!d || d.open) return;
-  const hay = S.marca && S.marca !== MARCA_VACIA;
+  const hay = hayTrabajo();
+  const quien = S.marca && S.marca !== MARCA_VACIA ? S.marca : 'lo que había';
   $('#inicio-seguir').hidden = !hay;
-  $('#inicio-marca').textContent = hay ? S.marca : '';
+  $('#inicio-marca').textContent = quien;
   $('#inicio-nuevo-d').textContent = hay
-    ? `Ocho pasos en orden. Borra lo de ${S.marca} de este navegador: si lo quieres guardar, copia antes el enlace.`
+    ? `Ocho pasos en orden. Borra ${quien === 'lo que había' ? 'el trabajo guardado' : 'lo de ' + quien} de este navegador (también fotos y logo): si lo quieres guardar, copia antes el enlace.`
     : 'Ocho pasos en orden: primero lo que trae el cliente, luego tres direcciones con su porqué, la firma y la revisión.';
   d.showModal();
 }

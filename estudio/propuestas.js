@@ -99,6 +99,10 @@ const MATERIAL_OFICIO = {
 
 const distEjes = (a, e) => Math.hypot(a[0] - e.peso, a[1] - e.temperatura, a[2] - e.memoria);
 
+/** ¿Sirve el logo como forma? Sin logo, la forma de repuesto sí; con logo, lo dice su diagnóstico. */
+const logoSirve = () => !S.logo ||
+  (ULTIMO_DIAG_LOGO ? ULTIMO_DIAG_LOGO.transparente !== false && (ULTIMO_DIAG_LOGO.colores ?? 1) <= 24 : true);
+
 /** Un candidato completo: solo ESTILO y capas. El contenido del cliente no se toca. */
 function candidato(rnd) {
   const e = S.ejes;
@@ -180,8 +184,7 @@ function candidato(rnd) {
 
   // La firma EN REPOSO (la lección de Córdoba): la forma del logo dentro de la
   // página. Si el logo no sirve como forma, la firma va por la escena.
-  const logoSirve = !S.logo || (ULTIMO_DIAG_LOGO ? ULTIMO_DIAG_LOGO.transparente !== false && (ULTIMO_DIAG_LOGO.colores ?? 1) <= 24 : true);
-  c.marcaJuego = logoSirve
+  c.marcaJuego = logoSirve()
     ? conPeso(rnd, [['ventana', e.peso >= 3 ? 3 : 1.5], ['sello', e.temperatura >= 3 ? 2.5 : 1.2], ['calado', e.peso >= 4 ? 2 : 0.8], ['agua', e.aire >= 4 ? 1 : 0.4]])
     : 'ninguno';
   c.marcaEnChrome = true;
@@ -327,8 +330,15 @@ function proponer({ n = 3, semilla = 1, intentos = 90 } = {}) {
   }));
 }
 
-/** Aplica una propuesta: estilo y capas. El contenido, los ejes y la identidad, intactos. */
+/**
+ * Aplica una propuesta: estilo y capas. El contenido, los ejes y la identidad,
+ * intactos. De las secciones solo se toman las CAPAS: el orden, la variante y
+ * el tono son del panel y pueden haber cambiado después de proponer (revisión
+ * del 23-sep: poner una sección en «Profundo» y luego elegir la propuesta la
+ * devolvía a «Alterno»).
+ */
 function aplicaPropuesta(p) {
-  const { material, ...cambios } = p.cambios;
-  Object.assign(S, JSON.parse(JSON.stringify(cambios)));
+  const { material, secciones, ...cambios } = JSON.parse(JSON.stringify(p.cambios));
+  Object.assign(S, cambios);
+  if (secciones) S.secciones.forEach((s, i) => { if (secciones[i] && secciones[i].t === s.t) s.capas = secciones[i].capas; });
 }
