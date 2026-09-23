@@ -764,7 +764,11 @@ function cssBase() {
   p{line-height:1.65}
   .lead{color:var(--color-ink-soft);max-width:60ch;font-size:1.05rem}
   .sec:has(>.marca-sello) :is(h1,h2){padding-right:5.5rem}
+  @media (max-width:40rem){header nav{display:none!important}}
   ${VENTANA_CSS}`;
+  /* La cabecera en el móvil: marca y botón, sin los enlaces. Con los tres, el
+     botón se salía de la pantalla y había scroll lateral (medido a 375 px en la
+     muestra de Dígito, F6; las dos webs construidas ya lo resolvían así). */
 }
 
 function documento() {

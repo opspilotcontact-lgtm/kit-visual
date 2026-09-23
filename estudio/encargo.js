@@ -586,7 +586,9 @@ function bloqueContenido() {
       ? pasosCliente().map(([t, d, p], i) => `  ${i + 1}. ${[t, d, p].filter(Boolean).join(' — ')}`).join('\n')
       : '  TODO (P12): los pasos, del primer mensaje a la obra terminada. Sin ellos, la sección de proceso se quita.',
     '',
-    'Servicios (P12 · nombre — qué incluye — precio; si falta «para quién» o «plazo», va como TODO (P12) en su ficha):',
+    'Servicios (P12 · nombre — qué incluye — precio; si falta «para quién» o «plazo», va como TODO (P12) en su ficha).',
+    '  Se copian TAL CUAL: ni una frase de adorno («pensado para aguantar años», «el punto de luz que te diferencia»).',
+    '  Una frase de más es una promesa sin prueba (el constructor ciego de Dígito v2, F6, añadió cinco):',
     sv.length ? sv.map(([t, d, p], i) => `  ${i + 1}. ${[t, d, p].filter(Boolean).join(' — ')}`).join('\n')
       : '  TODO (P12): la lista de servicios con sus palabras y su «desde X €» si lo hay',
     '',
@@ -626,6 +628,9 @@ function prompt() {
       const alt = f.sinJs && FONDOS[f.sinJs];
       piezas.push(`Fondo: data-fx="${S.fondo}" (JS, se carga solo)${alt ? ` · vía B: .${alt.clase}${vars(alt.vars)}` : ' · vía B: color plano'}`);
     } else piezas.push(`Fondo: .${f.clase}${vars(f.vars)}`);
+    // Las clases de fondo son capas (position:absolute;inset:0): van en un HIJO de la sección, no
+    // en la sección, o su background las tapa (constructor ciego de Brío v2, F6).
+    piezas.push(`  El fondo es una CAPA: <div class="${(f.js ? (f.sinJs && FONDOS[f.sinJs] || {}).clase : f.clase) || 'fx-…'}" aria-hidden="true"></div> como primer hijo de la sección (que lleva position:relative;isolation:isolate), nunca la clase en la propia <section>.`);
   }
   if (ESCENAS[S.escena].clase) piezas.push(`Escenografía: .${ESCENAS[S.escena].clase}${vars(ESCENAS[S.escena].vars)}`);
   if (ESCENAS[S.escena].borde) piezas.push('Escenografía: .fx-arc-b en el corte de sección');
@@ -685,7 +690,10 @@ function prompt() {
         `  CSS exacto (el mismo que pinta el Estudio; la sección lleva position:relative;isolation:isolate;overflow:hidden y el contenido z-index:1):\n` +
         (S.marcaJuego === 'ventana'
           ? `  En la PORTADA, la ventana (grande, una sola vez):\n  ${recetaMarca('/img/logo.svg', true)}\n  Y en el CSS de la web, sin falta (por debajo de 75rem deja de flotar y va encima del titular; si no, se le monta encima):\n  ${VENTANA_CSS}\n  En las DEMÁS secciones con marca, como sello (pequeño y siempre igual; así se repite sin hacer ruido):\n  ${recetaMarca('/img/logo.svg', false)}`
-          : `  ${recetaMarca('/img/logo.svg')}`)
+          : `  ${recetaMarca('/img/logo.svg')}`) +
+        // El sello sobre fondo profundo: el borde en claro (el constructor ciego de Dígito v2 vio
+        // que con --color-line-strong desaparecía sobre la banda oscura).
+        (['sello', 'ventana'].includes(S.marcaJuego) ? `\n  Sobre una sección de fondo profundo (tono «deep»), el borde del sello va en rgb(255 255 255/.35) en vez de var(--color-line-strong). Y sus titulares le dejan sitio: .sec:has(>.marca-sello) :is(h1,h2){padding-right:5.5rem}` : '')
       : 'Juego: ninguno. El logo solo va en cabecera y pie.',
   ].join('\n');
 
