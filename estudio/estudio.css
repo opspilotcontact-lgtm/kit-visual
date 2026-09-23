@@ -156,6 +156,71 @@ body {
 }
 .ui-aviso.ok b { color: #4ade80; }
 
+
+/* ── Selectores VISUALES ─────────────────────────────────────────────────────
+   Antes eran fichas de texto, y elegir un fondo leyendo su nombre no es elegir:
+   es adivinar. Cada opción enseña ahora lo que hace, con el CSS real del kit
+   donde existe y una aproximación honesta donde el efecto es de JavaScript. */
+
+.ui-ops {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  gap: 0.4rem;
+}
+.ui-ops-2 { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+.ui-ops-3 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+
+.ui-op {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; text-align: left;
+}
+.ui-op-vis {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--color-paper, #f2f3f5);
+  border: 1px solid var(--ui-line);
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+  isolation: isolate;
+}
+.ui-op:hover .ui-op-vis { border-color: #4b5560; transform: translateY(-1px); }
+.ui-op.on .ui-op-vis {
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 45%, transparent);
+}
+.ui-op-lbl {
+  font-size: 11px; font-weight: 600; line-height: 1.25;
+  color: var(--ui-soft);
+  display: flex; align-items: center; gap: 0.25rem;
+}
+.ui-op.on .ui-op-lbl { color: var(--ui-text); }
+.ui-op-js {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .04em;
+  padding: 0.05rem 0.25rem; border-radius: 3px;
+  background: color-mix(in srgb, var(--ui-accent) 22%, transparent);
+  color: var(--ui-accent);
+}
+
+/* Lo que va dentro de la miniatura: el efecto a escala. */
+.ui-op-vis > * { position: absolute; inset: 0; }
+.ui-op-vis .m-nada {
+  display: grid; place-items: center;
+  color: var(--ui-soft); font-size: 9px; font-weight: 700; letter-spacing: .1em;
+}
+/* Bocetos de estructura (cabecera, pie, botón, titular, módulo) */
+.m-bar { position: absolute; background: var(--color-ink, #16181c); border-radius: 2px; opacity: .85; }
+.m-pill { position: absolute; background: var(--color-brand, #fe0); border-radius: 99px; }
+.m-line { position: absolute; background: var(--color-ink, #16181c); border-radius: 99px; opacity: .3; }
+.m-box { position: absolute; background: var(--color-ink, #16181c); opacity: .12; border-radius: 3px; }
+.m-img { position: absolute; background: var(--color-metal, #788088); opacity: .55; border-radius: 3px; }
+.m-txt { position: absolute; font-weight: 800; color: var(--color-ink, #16181c); line-height: 1; }
+
+/* Ejes: etiqueta con el extremo, para no tener que adivinar qué es «peso 5» */
+.ui-eje-tip { font-size: 10px; color: var(--ui-soft); grid-column: 2 / -1; margin-top: -0.25rem; }
+
 /* ── Previsualización ────────────────────────────────────────────────────── */
 .ui-preview { display: flex; flex-direction: column; min-width: 0; background: #0a0c0e; }
 .ui-preview-bar {
@@ -218,3 +283,22 @@ body {
    utilidades forzadas (ver opspilot-kit/build/completo.css). Aquí no se
    redefine ninguna: duplicarlas era deuda, porque al tocar el kit quedaban
    desincronizadas sin avisar. */
+
+/* Rejilla de colocación: nueve casillas, como los tercios de un cartel. */
+.ui-rejilla {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  width: 92px;
+  aspect-ratio: 3 / 2;
+}
+.ui-rejilla button {
+  border: 1px solid var(--ui-line);
+  background: var(--ui-panel-2);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  transition: background .15s, border-color .15s;
+}
+.ui-rejilla button:hover { border-color: #4b5560; }
+.ui-rejilla button.on { background: var(--ui-accent); border-color: var(--ui-accent); }
