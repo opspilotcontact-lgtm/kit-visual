@@ -138,6 +138,12 @@ body {
 .ui-hint { margin: 0.6rem 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ui-soft); }
 .ui-hint code { background: var(--ui-panel-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 11px; }
 
+/* Descargas del diálogo. Un botón por fichero, con su nombre a la vista: si
+   hay que adivinar cómo se llama lo que baja, acaba sin usarse. */
+.ui-bajar { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-right: auto; }
+.ui-bajar > span { font-size: 11.5px; color: var(--ui-soft); }
+.ui-bajar .ui-btn { font-size: 12px; padding: 0.4rem 0.6rem; }
+
 /* ── El compositor de secciones ──────────────────────────────────────────────
    Una fila por sección. Se reordena con botones, no arrastrando: en una lista
    de doce dentro de un panel que ya hace scroll, arrastrar es peor de usar. */

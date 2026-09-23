@@ -1205,8 +1205,8 @@ function documento() {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
-<link rel="stylesheet" href="_astro/kit-completo.css?v=b141c7b7">
-<link rel="stylesheet" href="estudio/estudio.css?v=a8f1002b">
+<link rel="stylesheet" href="_astro/kit-completo.css?v=fd949ab8">
+<link rel="stylesheet" href="estudio/estudio.css?v=9255722f">
 <style>
   :root{${vars}}
   html{scroll-behavior:auto}
@@ -1306,16 +1306,424 @@ function lectura() {
 }
 
 /* ── El encargo ───────────────────────────────────────────────────────────── */
+
+const slugDe = (s) => (s || 'marca').toLowerCase().normalize('NFD')
+  .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/* Los tokens agrupados CON SU PORQUÉ, copiado de themes/_plantilla.css. Un
+   tema exportado que solo lleva valores es peor que el que se copia a mano:
+   el que se copia a mano trae estas notas, y son las que evitan que alguien
+   ponga un gris suelto en las líneas o un texto que no pasa contraste sobre
+   el color de marca. Si se exporta sin ellas, la herramienta empeora el
+   trabajo en vez de ahorrarlo. */
+const BLOQUES_TEMA = [
+  ['Marca', [
+    ['--color-brand', 'Acción y dato. Es el color de los botones y las cifras, no un adorno.'],
+    ['--color-brand-dim', 'El mismo, un punto más apagado: cara inferior de degradados y estados pulsados.'],
+    ['--color-brand-ink', 'Texto que va ENCIMA del color de marca: tiene que pasar contraste AA.'],
+    ['--color-brand-soft', 'Fondo suave del MISMO tono para avisos y destacados. Es el acento diluido en el papel, no el acento aclarado.'],
+  ]],
+  ['Tinta y secciones oscuras', [
+    ['--color-ink', 'Titulares y estructura. Nunca #000.'],
+    ['--color-ink-soft', 'Texto secundario. Sale del MISMO tono que la tinta: una sola familia de grises.'],
+    ['--color-deep', 'Secciones oscuras (un cambio de ritmo por página, no más).'],
+    ['--color-deep-soft', 'La variante de esas secciones, para cajas dentro de lo oscuro.'],
+  ]],
+  ['Fondos', [
+    ['--color-paper', 'El papel de la página.'],
+    ['--color-paper-alt', 'Franja alterna, para separar bloques sin meter una línea.'],
+    ['--color-surface', 'Tarjetas.'],
+  ]],
+  ['Metal', [
+    ['--color-metal', 'Canto de material. Solo si la marca fabrica algo físico; si no, se borra.'],
+    ['--color-metal-hi', 'Su brillo.'],
+    ['--color-metal-lo', 'Su sombra.'],
+  ]],
+  ['Líneas', [
+    ['--color-line', 'Siempre la tinta con alfa, nunca un gris suelto.'],
+    ['--color-line-strong', 'La misma, más presente, para bordes que tienen que verse.'],
+  ]],
+  ['Tipografía', [
+    ['--font-display', 'Titulares.'],
+    ['--font-sans', 'Texto corrido.'],
+  ]],
+];
+
 function temaCSS() {
   const t = tokens();
-  const slug = (S.marca || 'marca').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = slugDe(S.marca);
+  const puestos = new Set();
+
+  const cuerpo = BLOQUES_TEMA.map(([titulo, filas]) => {
+    const lineas = filas.filter(([k]) => t[k] !== undefined).map(([k, por]) => {
+      puestos.add(k);
+      return `  /* ${por} */\n  ${k}: ${t[k]};`;
+    });
+    return lineas.length ? `  /* ── ${titulo} ── */\n${lineas.join('\n')}` : '';
+  }).filter(Boolean).join('\n\n');
+
+  // Red de seguridad: si mañana `tokens()` devuelve algo que no está en los
+  // bloques de arriba, sale igual en vez de perderse en silencio.
+  const sueltos = Object.entries(t).filter(([k]) => !puestos.has(k));
+
   return `/* Tema · ${S.marca}
-   Generado con el Estudio de marca. Va en opspilot-kit/src/styles/themes/${slug}.css
-   y se importa DESPUÉS de kit.css. Solo pisa tokens. */
+   Generado con el Estudio de marca del kit OpsPilot.
+
+   Dónde va:  opspilot-kit/src/styles/themes/${slug}.css
+   Se importa DESPUÉS de kit.css y SOLO pisa tokens; si hace falta CSS propio
+   de la marca, va en su proyecto (marca-${slug}.css), no aquí.
+
+   Reglas que no se saltan:
+   - UN color de marca. Si el logo tiene tres, elige el que manda y usa los
+     otros como apoyo.
+   - Saturación por debajo del 80 % salvo que el logo obligue.
+   - Una sola familia de grises: tinta, tinta suave y líneas salen del MISMO
+     tono. Mezclar cálidos y fríos es lo que hace que una web se vea sucia
+     sin que se sepa por qué. */
 @theme {
-${Object.entries(t).map(([k, v]) => `  ${k}: ${v};`).join('\n')}
+${cuerpo}${sueltos.length ? `\n\n  /* ── Sin clasificar ── */\n${sueltos.map(([k, v]) => `  ${k}: ${v};`).join('\n')}` : ''}
 }
-${S.ancho ? '\n/* Titulares de esta marca: siempre extendidos. */\nh1, h2, .display-brand {\n  font-stretch: 116%;\n}\n' : ''}`;
+${S.ancho ? `
+/* Los titulares de esta marca van siempre extendidos: es parte de la
+   identidad, no un ajuste de una página. */
+h1, h2, .display-brand {
+  font-stretch: 116%;
+}
+` : ''}`;
+}
+
+/* ── El andamio de Astro ──────────────────────────────────────────────────
+   Genera la página con los BLOQUES REALES del kit, no con un HTML inventado
+   que luego habría que traducir. Cada sección deja un TODO visible con lo que
+   falta: el contenido. Un andamio que finge estar terminado es peor que no
+   tenerlo, porque se publica tal cual.
+
+   Dos renderizadores separados a propósito (este y el del lienzo): el lienzo
+   tiene que enseñar el efecto aplicado con CSS suelto, y el proyecto tiene que
+   usar componentes. Intentar que uno solo sirva para las dos cosas obliga a
+   que el lienzo importe Astro, que es justo lo que hace que la herramienta
+   deje de abrirse con doble clic. */
+
+const BLOQUE_DE = {
+  hero: 'HeroSplit',
+  servicios: { indice: 'ServiceIndex', alterno: 'FeatureSplit', bento: 'Bento' },
+  banda: { frase: null, marquesina: 'Marquee', datos: 'StatRow' },
+  galeria: { rejilla: 'Bento', carril: null, destacado: 'Bento' },
+  datos: 'StatRow',
+  proceso: { plomada: 'Steps', pasos: 'Steps', pestanas: null },
+  testimonio: null,
+  precios: { desplegable: 'Disclosure', tabla: null },
+  faq: 'FaqList',
+  zona: null,
+  contacto: null,
+  cierre: 'CtaPanel',
+};
+
+const bloqueDe = (s) => {
+  const b = BLOQUE_DE[s.t];
+  return typeof b === 'string' ? b : (b ? b[s.v] : null) || null;
+};
+
+const TONO_SECCION = { paper: 'paper', alt: 'alt', deep: 'deep' };
+
+/** El cuerpo de cada sección, ya como componentes del kit. */
+function astroSeccion(s, i) {
+  const def = SECCIONES[s.t] || {};
+  const v = (def.variantes || []).find((x) => x.id === s.v) || {};
+  const osc = s.tono === 'deep';
+  const tone = osc ? ' tone="dark"' : '';
+  const bloque = bloqueDe(s);
+  const capas = (s.capas || []).filter((c) => (def.admite || []).includes(c));
+
+  const nota = [
+    `  {/* ${String(i + 1).padStart(2, '0')} · ${def.n} — ${v.n || s.v}`,
+    `      ${v.dice || def.dice || ''}`,
+    capas.length ? `      Capas decididas aquí: ${capas.map((c) => NOMBRE_CAPA[c]).join(', ')}` : null,
+    `      TODO: sustituir el contenido de ejemplo por el del cliente. */}`,
+  ].filter(Boolean).join('\n');
+
+  const dentro = {
+    hero: () => `  <HeroSplit
+    eyebrow="${esc(S.marca)}"
+    titleHtml="TODO: el titular, con <em>énfasis</em> donde toque"
+    lead="TODO: una línea que explique qué se vende y a quién, con palabras del cliente."
+    photo={{ src: '/img/TODO.webp', alt: 'TODO: describe la foto', width: 1200, height: 900 }}
+  />`,
+    servicios: () => bloque === 'ServiceIndex'
+      ? `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Qué hacemos" title="TODO: el titular de servicios"${tone} />
+    <ServiceIndex items={servicios} />
+  </Section>`
+      : bloque === 'Bento'
+        ? `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Qué hacemos" title="TODO: el titular de servicios"${tone} />
+    <Bento items={trabajos} />
+  </Section>`
+        : `  <Section tone="${TONO_SECCION[s.tono]}">
+    <FeatureSplit titleHtml="TODO: el servicio"${tone}>
+      <p>TODO: qué incluye y qué no.</p>
+    </FeatureSplit>
+  </Section>`,
+    banda: () => bloque === 'Marquee'
+      ? `  <Marquee items={['TODO', 'los', 'sitios', 'o', 'servicios']} tone="${osc ? 'deep' : 'paper'}" />`
+      : bloque === 'StatRow'
+        ? `  <Section tone="${TONO_SECCION[s.tono]}" space="sm">
+    <StatRow items={cifras} cols={3}${tone} />
+  </Section>`
+        : `  <Section tone="${TONO_SECCION[s.tono]}" space="sm">
+    <p class="font-display text-d2 max-w-[26ch]">TODO: una afirmación sola, sin nada más.</p>
+  </Section>`,
+    galeria: () => bloque === 'Bento'
+      ? `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Trabajos" title="TODO: el titular de trabajos"${tone} />
+    <Bento items={trabajos} />
+  </Section>`
+      : `  <Section tone="${TONO_SECCION[s.tono]}" bleed>
+    <SectionHead eyebrow="Trabajos" title="TODO: el titular de trabajos"${tone} />
+    {/* Carril horizontal: utilidad del kit, sin componente. */}
+    <div class="fx-rail" style="--rail-w:72%;--rail-w-lg:34%">
+      {trabajos.map((t) => (
+        <figure class="m-0 overflow-hidden ${FORMAS[S.forma].clase || ''}">
+          <img src={t.src} alt={t.alt} width={t.width} height={t.height} loading="lazy" decoding="async" />
+        </figure>
+      ))}
+    </div>
+  </Section>`,
+    datos: () => `  <Section tone="${TONO_SECCION[s.tono]}">
+    <StatRow items={cifras} cols={${s.v === 'rejilla' ? 4 : 3}}${tone} />
+  </Section>`,
+    proceso: () => bloque === 'Steps'
+      ? `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Cómo trabajamos" title="TODO: el titular del proceso"${tone} />
+    <Steps items={pasos}${tone} ring="${s.tono === 'deep' ? 'deep' : s.tono}" />
+  </Section>`
+      : `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Cómo trabajamos" title="TODO: el titular del proceso"${tone} />
+    {/* Pestañas con radios y :checked — funcionan con teclado y sin JavaScript. */}
+    <div class="fx-tabs">
+      {pasos.map((p, n) => (
+        <>
+          <input type="radio" name="proceso" id={\`proc-\${n}\`} checked={n === 0} />
+          <label for={\`proc-\${n}\`}>{p.title}</label>
+        </>
+      ))}
+      <div class="fx-tabs-panels">{pasos.map((p) => <div><p>{p.text}</p></div>)}</div>
+    </div>
+  </Section>`,
+    testimonio: () => `  <Section tone="${TONO_SECCION[s.tono]}">
+    {/* TODO: reseñas REALES, con nombre y fecha. Una inventada se nota y cuesta la venta. */}
+    <blockquote class="fx-pull max-w-[34ch]">TODO: la reseña, literal.</blockquote>
+    <p class="mt-3 text-sm text-ink-soft">TODO: dónde y cuándo se publicó</p>
+  </Section>`,
+    precios: () => bloque === 'Disclosure'
+      ? `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Precios" title="TODO: el titular de precios"${tone} />
+    <Disclosure items={partidas} numbered openFirst${tone} />
+  </Section>`
+      : `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Precios" title="TODO: el titular de precios"${tone} />
+    <table class="w-full border-collapse tabular">
+      {partidas.map((p) => (
+        <tr class="border-t border-line">
+          <td class="py-3">{p.title}<br /><span class="text-sm text-ink-soft">{p.hint}</span></td>
+          <td class="py-3 text-right whitespace-nowrap">{p.meta}</td>
+        </tr>
+      ))}
+    </table>
+  </Section>`,
+    faq: () => `  <Section tone="${TONO_SECCION[s.tono]}">
+    <SectionHead eyebrow="Preguntas" title="TODO: el titular de preguntas"${tone} />
+    {/* schema: solo si estas preguntas están de verdad en la página. */}
+    <FaqList items={preguntas} schema${tone} />
+  </Section>`,
+    zona: () => `  <Section tone="${TONO_SECCION[s.tono]}"${s.v === 'mapa' ? ' class="relative isolate"' : ''}>
+    ${s.v === 'mapa' ? '<div class="fx-blueprint" style="--bp-a:14%;--bp-fade:75%"></div>\n    ' : ''}<SectionHead eyebrow="Dónde trabajamos" title="TODO: el titular de zona"${tone} />
+    {/* Nombres propios: es lo que la gente escribe en el buscador. */}
+    <ul class="flex flex-wrap gap-2 list-none p-0 mt-8">
+      {sitios.map((z) => <li class="text-sm px-3 py-1.5 rounded-full border border-line-strong">{z}</li>)}
+    </ul>
+  </Section>`,
+    contacto: () => `  <Section tone="${TONO_SECCION[s.tono]}" id="contacto">
+    <SectionHead eyebrow="Contacto" title="TODO: el titular de contacto"${tone} />
+    ${s.v === 'formulario'
+      ? `{/* Cuatro campos. Cada campo de más es gente que no lo rellena. */}
+    {/* TODO: conectar el envío. Un formulario que no manda nada es peor que no tenerlo. */}
+    <form class="grid gap-4 max-w-[40rem] sm:grid-cols-2 mt-8">
+      {/* TODO: nombre, teléfono, qué necesita, dónde */}
+      <Button type="submit" variant="primary" class="sm:col-span-2">Enviar</Button>
+    </form>`
+      : `<p class="font-display text-d2 mt-4"><a href="tel:+34TODO" class="text-inherit no-underline">TODO: el teléfono</a></p>
+    <p class="mt-2 text-ink-soft">TODO: el horario REAL. Uno inventado genera la primera queja.</p>
+    <Button href="https://wa.me/34TODO" variant="wa" external class="mt-8">Escribir por WhatsApp</Button>`}
+  </Section>`,
+    cierre: () => `  <CtaPanel title="TODO: la última llamada" text="TODO: qué pasa cuando te escriben." />`,
+  };
+
+  const f = dentro[s.t];
+  return f ? `${nota}\n${f()}` : `${nota}\n  {/* TODO: sección "${s.t}" sin andamio generado. */}`;
+}
+
+/** Los datos de ejemplo que el andamio necesita para compilar. */
+function astroDatos() {
+  const usa = (t) => S.secciones.some((s) => s.t === t);
+  const usaBloque = (b) => S.secciones.some((s) => bloqueDe(s) === b);
+  const d = [];
+  if (usa('servicios') && S.secciones.some((s) => s.t === 'servicios' && s.v === 'indice'))
+    d.push(`const servicios = [
+  { href: '/servicios/todo', name: 'TODO: el servicio', claim: 'TODO: qué es, en una línea', price: 'desde TODO €' },
+];`);
+  if (usaBloque('Bento') || usa('galeria'))
+    d.push(`const trabajos = [
+  { src: '/img/TODO.webp', alt: 'TODO: describe la foto', width: 1200, height: 900 },
+];`);
+  if (usaBloque('StatRow'))
+    d.push(`const cifras = [
+  { value: 'TODO', label: 'TODO: qué mide' },
+];`);
+  if (usaBloque('Steps') || usa('proceso'))
+    d.push(`const pasos = [
+  { title: 'TODO: el paso', text: 'TODO: qué pasa en ese paso.' },
+];`);
+  if (usa('precios'))
+    d.push(`const partidas = [
+  { title: 'TODO: la partida', hint: 'TODO: el gancho', meta: 'desde TODO €', body: 'TODO: qué entra en ese precio.' },
+];`);
+  if (usa('faq'))
+    d.push(`const preguntas = [
+  { q: 'TODO: la pregunta que hacen siempre', a: 'TODO: la respuesta, sin rodeos.' },
+];`);
+  if (usa('zona'))
+    d.push(`const sitios = ['TODO: los pueblos, con su nombre propio'];`);
+  return d;
+}
+
+function astroPagina() {
+  const slug = slugDe(S.marca);
+  const cuerpo = S.secciones.map(astroSeccion).join('\n\n');
+
+  // Solo se importa lo que se usa: un import muerto en Astro no rompe, pero
+  // enseña a copiar imports sin mirar.
+  const bloques = [...new Set(S.secciones.map(bloqueDe).filter(Boolean))].sort();
+  const primitivos = [];
+  if (/<Section\b/.test(cuerpo)) primitivos.push('Section');
+  if (/<SectionHead\b/.test(cuerpo)) primitivos.push('SectionHead');
+  if (/<Button\b/.test(cuerpo)) primitivos.push('Button');
+  const datos = astroDatos();
+  const hayFx = S.movimiento.some((m) => MOVIMIENTO[m]?.js) || /data-fx=/.test(cuerpo);
+
+  return `---
+/* Portada · ${S.marca}
+   Andamio generado por el Estudio de marca. Las secciones y su orden ya están
+   decididos; lo que falta es el CONTENIDO, marcado con TODO.
+
+   Antes de tocar esto: opspilot-kit/ASSETS.md. Sin fotos utilizables, logo en
+   vector y datos reales no hay maquetación que salve la página.
+
+   El CSS del proyecto tiene que importar, en este orden:
+     kit.css → fx.css → themes/${slug}.css → marca-${slug}.css */
+import Layout from '../layouts/Layout.astro';
+${primitivos.map((p) => `import ${p} from '@opspilot/kit/primitives/${p}.astro';`).join('\n')}
+${bloques.map((b) => `import ${b} from '@opspilot/kit/blocks/${b}.astro';`).join('\n')}
+import NavBar from '@opspilot/kit/blocks/NavBar.astro';
+import SiteFooter from '@opspilot/kit/blocks/SiteFooter.astro';${hayFx ? `
+import KitRuntime from '@opspilot/kit/primitives/KitRuntime.astro';` : ''}
+
+${datos.join('\n\n')}
+---
+
+<Layout
+  title="TODO: título de 55-60 caracteres con el servicio y el sitio"
+  description="TODO: 150-160 caracteres. Lo que hace y dónde, sin adjetivos."
+>
+  {/* Cabecera: ${HEADERS[S.header].n} */}
+  <NavBar
+    logo={{ src: '/img/TODO-logo.svg', alt: '${esc(S.marca)}' }}
+    items={[{ href: '/servicios', label: 'Servicios' }, { href: '/trabajos', label: 'Trabajos' }]}
+    cta={{ href: '/contacto', label: 'Presupuesto' }}
+  />
+
+  <main>
+${cuerpo}
+  </main>
+
+  {/* Pie: ${FOOTERS[S.footer].n} */}
+  <SiteFooter
+    logo={{ src: '/img/TODO-logo.svg', alt: '${esc(S.marca)}' }}
+    legal={[{ href: '/aviso-legal', label: 'Aviso legal' }]}
+    copyright="TODO: razón social y NIF reales"
+  />${hayFx ? `
+
+  {/* Los efectos se cargan solos y solo si hay algo que animar. */}
+  <KitRuntime />` : ''}
+</Layout>
+`;
+}
+
+/** Las seis líneas, y la entrada lista para pegar en marcas.json. */
+function direccionArteMD() {
+  const e = S.ejes, b = BASES[S.base], f = FONDOS[S.fondo];
+  const entrada = {
+    id: slugDe(S.marca),
+    n: S.marca,
+    repo: 'TODO',
+    sector: S.oficio || 'TODO',
+    fecha: new Date().toISOString().slice(0, 10),
+    estado: 'en obras',
+    ejes: { ...e },
+    display: S.display,
+    acento: S.acento.toUpperCase(),
+    acento2: null,
+    fondo: S.fondo === 'ninguno' ? 'color plano' : S.fondo,
+    foto: FOTOS[S.foto].n,
+    gesto: S.gesto.trim() || 'TODO',
+    kit: true,
+    doc: `${slugDe(S.marca)}/brand/DIRECCION-ARTE.md`,
+  };
+
+  const problemas = conflictos();
+
+  return `# Dirección de arte · ${S.marca}
+
+Generado con el Estudio de marca. Va en \`<repo>/brand/DIRECCION-ARTE.md\`.
+
+## Las seis líneas
+
+\`\`\`
+Ejes:     peso ${e.peso} · temperatura ${e.temperatura} · memoria ${e.memoria} · aire ${e.aire}
+Display:  ${S.display}${S.ancho ? ' en ancho extendido (font-stretch 116%)' : ''}
+Acento:   ${S.acento.toUpperCase()} sobre base «${b.n}» (${b.hue})
+Fondo:    ${f.n}${f.dice ? ` — ${f.dice}` : ''}
+Foto:     ${FOTOS[S.foto].n}, recorte ${FORMAS[S.forma].n.toLowerCase()}
+Gesto:    ${S.gesto.trim() || '⚠ SIN DEFINIR'}
+\`\`\`
+
+${S.gesto.trim() ? '' : `> **Falta el gesto.** Sin él la web estará bien hecha y será olvidable.
+> Búscalo en las reseñas del cliente, no en su catálogo: ahí es donde la gente
+> escribe por qué le contrató en vez de al de al lado.
+
+`}## La página
+
+${S.secciones.map((s, i) => {
+  const def = SECCIONES[s.t] || {};
+  const v = (def.variantes || []).find((x) => x.id === s.v) || {};
+  return `${i + 1}. **${def.n}** · ${v.n || s.v} — ${v.dice || def.dice || ''}`;
+}).join('\n')}
+
+## Lo que la herramienta avisó
+
+${problemas.length
+  ? problemas.map(([t, d, n]) => `- ${n === 'grave' ? '**✕ SUELO INCUMPLIDO**' : '⚠'} **${t}:** ${d}`).join('\n')
+  : 'Nada: las decisiones se sostienen entre sí y no chocan con ninguna web del registro.'}
+
+## Entrada para el registro
+
+Al cerrar la web, pegá esto en \`opspilot-kit/marcas.json\`. Si no se pega, el
+registro envejece y la comprobación anti-clon deja de servir para la siguiente.
+
+\`\`\`json
+${JSON.stringify(entrada, null, 2)}
+\`\`\`
+`;
 }
 
 function prompt() {
@@ -1399,10 +1807,33 @@ Si se cae, no estabas diseñando: estabas tapando.`;
 }
 
 /* ── Diálogo de salida ────────────────────────────────────────────────────── */
+/* Los ficheros que salen de aquí. Uno por cosa que hay que crear en el repo,
+   con su nombre ya puesto: si el que lo recibe tiene que inventarse dónde va,
+   acaba en la carpeta de descargas y no en el proyecto. */
+const FICHEROS = {
+  prompt: { n: () => `ENCARGO-${slugDe(S.marca)}.md`, tipo: 'text/markdown', texto: () => prompt() },
+  astro: { n: () => 'index.astro', tipo: 'text/plain', texto: astroPagina },
+  tema: { n: () => `${slugDe(S.marca)}.css`, tipo: 'text/css', texto: temaCSS },
+  arte: { n: () => 'DIRECCION-ARTE.md', tipo: 'text/markdown', texto: direccionArteMD },
+  json: { n: () => `estudio-${slugDe(S.marca)}.json`, tipo: 'application/json', texto: () => JSON.stringify(S, null, 2) },
+};
+
+/** Blob + <a download>. Sin dependencias y sin servidor. */
+function descarga(clave) {
+  const f = FICHEROS[clave];
+  if (!f) return;
+  const url = URL.createObjectURL(new Blob([f.texto()], { type: f.tipo + ';charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = f.n();
+  document.body.appendChild(a); a.click(); a.remove();
+  // Sin esto el Blob se queda en memoria hasta recargar. No se nota con uno;
+  // sí con veinte descargas en una sesión larga.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 let vista = 'prompt';
 function pintaSalida() {
-  const m = { prompt, tema: temaCSS, json: () => JSON.stringify(S, null, 2) };
-  $('#salida').value = m[vista]();
+  $('#salida').value = (FICHEROS[vista] || FICHEROS.prompt).texto();
   document.querySelectorAll('.ui-dialog-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.vista === vista));
 }
 
@@ -1682,6 +2113,12 @@ function enlaza() {
     $('#copiado').textContent = 'Copiado al portapapeles';
     setTimeout(() => { $('#copiado').textContent = ''; }, 2200);
   });
+
+  document.querySelectorAll('[data-bajar]').forEach((b) => b.addEventListener('click', () => {
+    descarga(b.dataset.bajar);
+    $('#copiado').textContent = `Descargado ${FICHEROS[b.dataset.bajar].n()}`;
+    setTimeout(() => { $('#copiado').textContent = ''; }, 2600);
+  }));
 
   $('#enlace').addEventListener('click', async () => {
     const u = enlaceDeEstado();
