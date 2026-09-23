@@ -213,29 +213,8 @@ body {
 }
 .ui-copiado { margin: 0 auto 0 0; font-size: 12px; color: #4ade80; }
 
-/* ── Utilidades del kit que no entraron en el CSS publicado ──────────────────
-   El CSS del kit solo incluye lo que se usa en alguna página, así que estas
-   diez no están. Se definen aquí para que el estudio pueda ofrecerlas todas. */
-.fx-lit > *, .fx-sign.is-lit > * {
-  background: linear-gradient(180deg, var(--color-brand) 0%, var(--color-brand-dim, var(--color-brand)) 100%) !important;
-  color: var(--color-brand-ink) !important;
-}
-.fx-lozenge { border-radius: 50% / 50%; overflow: hidden; }
-.fx-capsule { border-radius: 999px; overflow: hidden; }
-.fx-arc-b { border-bottom-left-radius: 50% var(--arc, 5rem); border-bottom-right-radius: 50% var(--arc, 5rem); overflow: hidden; }
-.fx-arc-t { border-top-left-radius: 50% var(--arc, 5rem); border-top-right-radius: 50% var(--arc, 5rem); overflow: hidden; }
-.fx-wedge { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--wedge, 5rem)), 0 100%); }
-.fx-outline { color: transparent; -webkit-text-stroke: var(--outline-w, 1.5px) var(--outline-c, currentColor); }
-.fx-vertical { writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 0.22em; text-transform: uppercase; }
-.fx-photo-grain { position: relative; }
-.fx-photo-grain::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  opacity: var(--pgrain-a, 0.12); mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-.fx-grain-at { position: relative; isolation: isolate; }
-.fx-grain-at::after {
-  content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  opacity: var(--grain-a, 0.04); mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
+/* ── Nota sobre el CSS del kit ───────────────────────────────────────────────
+   El estudio carga `_astro/kit-completo.css`, compilado aparte con TODAS las
+   utilidades forzadas (ver opspilot-kit/build/completo.css). Aquí no se
+   redefine ninguna: duplicarlas era deuda, porque al tocar el kit quedaban
+   desincronizadas sin avisar. */

@@ -133,6 +133,43 @@ const MOVIMIENTO = {
   quieto:  { n: 'Quieto' },
 };
 
+
+/* Las seis recetas de RECETAS.md, como punto de partida. No son plantillas:
+   se cogen y se rompen. Dos webs con la misma receta y distinto color se
+   parecen, y eso es un fallo. */
+const RECETAS = {
+  taller: { n: 'Taller', d: 'oficios que fabrican algo con las manos',
+    S: { ejes: { peso: 5, temperatura: 2, memoria: 4, aire: 2 }, display: 'Archivo', texto: 'Instrument Sans',
+         ancho: true, acento: '#FEFE00', tinta: '#101316', base: 'papelFrio', fondo: 'contour',
+         escena: 'half', foto: 'tint', forma: 'notch', header: 'barra', boton: 'material',
+         titular: 'extendido', footer: 'completo', modulos: ['disclosure', 'stat', 'sign'], movimiento: ['reveal', 'split'] } },
+  galeria: { n: 'Galería', d: 'lo que se vende por gusto, no por precio',
+    S: { ejes: { peso: 2, temperatura: 3, memoria: 3, aire: 5 }, display: 'Instrument Serif', texto: 'Instrument Sans',
+         ancho: false, acento: '#A8836B', tinta: '#1A1713', base: 'galeria', fondo: 'ninguno',
+         escena: 'arco', foto: 'soft', forma: 'arch', header: 'minimo', boton: 'pildora',
+         titular: 'normal', footer: 'franja', modulos: ['pull'], movimiento: ['reveal', 'parallax'] } },
+  escaparate: { n: 'Escaparate', d: 'comercio y servicios de calle',
+    S: { ejes: { peso: 4, temperatura: 4, memoria: 2, aire: 3 }, display: 'Syne', texto: 'Instrument Sans',
+         ancho: false, acento: '#FF5C1A', tinta: '#151217', base: 'papelCalido', fondo: 'orbs',
+         escena: 'disc', foto: 'tint', forma: 'capsule', header: 'isla', boton: 'pildora',
+         titular: 'normal', footer: 'franja', modulos: ['disclosure', 'sheet', 'highlight'], movimiento: ['reveal', 'counter'] } },
+  plano: { n: 'Plano', d: 'lo que se compra por criterio técnico',
+    S: { ejes: { peso: 3, temperatura: 1, memoria: 2, aire: 2 }, display: 'Space Grotesk', texto: 'Schibsted Grotesk',
+         ancho: false, acento: '#2E7DD1', tinta: '#10141A', base: 'papelFrio', fondo: 'gridwarp',
+         escena: 'column', foto: 'duotono', forma: 'recto', header: 'barra', boton: 'recto',
+         titular: 'normal', footer: 'completo', modulos: ['tabs', 'stat', 'time'], movimiento: ['counter'] } },
+  cuaderno: { n: 'Cuaderno', d: 'lo artesanal y lo cercano',
+    S: { ejes: { peso: 3, temperatura: 5, memoria: 4, aire: 3 }, display: 'Fraunces', texto: 'Newsreader',
+         ancho: false, acento: '#8C5A3C', tinta: '#1C1712', base: 'papelCalido', fondo: 'hatch',
+         escena: 'ninguna', foto: 'grano', forma: 'blob', header: 'minimo', boton: 'pildora',
+         titular: 'normal', footer: 'franja', modulos: ['pull', 'note', 'time'], movimiento: ['reveal'] } },
+  noche: { n: 'Noche', d: 'lo que vive de noche y se ve iluminado',
+    S: { ejes: { peso: 4, temperatura: 3, memoria: 2, aire: 4 }, display: 'Unbounded', texto: 'Instrument Sans',
+         ancho: false, acento: '#F5C518', tinta: '#F2F4F6', base: 'noche', fondo: 'halo',
+         escena: 'disc', foto: 'duotono', forma: 'redondo', header: 'isla', boton: 'material',
+         titular: 'knockout', footer: 'franja', modulos: ['rail', 'pull'], movimiento: ['reveal', 'spot'] } },
+};
+
 const EJES = [
   ['peso', 'Peso', 'ligero', 'contundente'],
   ['temperatura', 'Temperatura', 'frío/técnico', 'cálido/humano'],
@@ -265,7 +302,7 @@ function tokens() {
 }
 
 /* ── Avisos de coherencia · las reglas de la skill, comprobadas ───────────── */
-function avisos() {
+function conflictos() {
   const a = [];
   const e = S.ejes;
 
@@ -294,6 +331,11 @@ function avisos() {
   if (!S.gesto.trim())
     a.push(['Falta el gesto', 'sin él la web estará bien hecha y será olvidable. Búscalo en las reseñas del cliente, no en su catálogo.']);
 
+  return a;
+}
+
+function avisos() {
+  const a = conflictos();
   const host = $('#avisos');
   host.innerHTML = '';
   if (!a.length) {
@@ -475,7 +517,7 @@ function documento() {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
-<link rel="stylesheet" href="_astro/index.13ee7bc9.css">
+<link rel="stylesheet" href="_astro/kit-completo.css">
 <link rel="stylesheet" href="estudio/estudio.css">
 <style>
   :root{${vars}}
@@ -537,6 +579,7 @@ let t0;
 function render() {
   clearTimeout(t0);
   avisos();
+  guardaEnURL();
   lectura();
   t0 = setTimeout(() => { $('#lienzo').srcdoc = documento(); }, 220);
 }
@@ -634,6 +677,81 @@ function pintaSalida() {
   document.querySelectorAll('.ui-dialog-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.vista === vista));
 }
 
+
+/* ── Recetas, enlace compartible y azar con criterio ─────────────────────── */
+
+function aplicaReceta(id) {
+  const r = RECETAS[id];
+  if (!r) return;
+  S = { ...S, ...JSON.parse(JSON.stringify(r.S)) };
+  sincronizaCampos();
+  pintaControles(); pintaEjes(); render();
+}
+
+/** Los campos que no son fichas hay que ponerlos a mano. */
+function sincronizaCampos() {
+  $('#marca').value = S.marca;
+  $('#oficio').value = S.oficio;
+  $('#gesto').value = S.gesto;
+  $('#acento').value = S.acento;
+  $('#tinta').value = S.tinta;
+  $('#ancho').checked = S.ancho;
+}
+
+/* El estado cabe en el hash: así una composición se comparte por enlace y
+   sobrevive a recargar. Se codifica en base64 para no llenar la barra de
+   comillas y llaves. */
+function guardaEnURL() {
+  try {
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+    history.replaceState(null, '', '#' + b64);
+  } catch { /* si falla, la herramienta sigue funcionando sin enlace */ }
+}
+function leeDeURL() {
+  if (!location.hash || location.hash.length < 4) return false;
+  try {
+    const d = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+    if (!d || typeof d !== 'object' || !d.display) return false;
+    S = { ...inicial(), ...d, ejes: { ...inicial().ejes, ...(d.ejes || {}) } };
+    return true;
+  } catch { return false; }
+}
+
+/* Azar CON criterio: tira combinaciones hasta dar con una que no se
+   contradiga a sí misma. Si tras 40 intentos no lo consigue, se queda con la
+   que menos conflictos tenía: mejor una propuesta imperfecta que ninguna. */
+function azar() {
+  const uno = (o) => { const k = Object.keys(o); return k[Math.floor(Math.random() * k.length)]; };
+  const displays = DISPLAY.filter(([d]) => d !== 'Bricolage Grotesque' && d !== 'Young Serif').map(([d]) => d);
+  const guardado = { marca: S.marca, oficio: S.oficio, gesto: S.gesto };
+  let mejor = null, mejorN = 99;
+
+  for (let i = 0; i < 40; i++) {
+    S.display = displays[Math.floor(Math.random() * displays.length)];
+    S.texto = TEXTO[Math.floor(Math.random() * TEXTO.length)][0];
+    S.base = uno(BASES);
+    S.fondo = uno(FONDOS);
+    S.escena = uno(ESCENAS);
+    S.foto = uno(FOTOS);
+    S.forma = uno(FORMAS);
+    S.header = uno(HEADERS); S.boton = uno(BOTONES); S.titular = uno(TITULARES); S.footer = uno(FOOTERS);
+    S.modulos = Object.keys(MODULOS).sort(() => Math.random() - 0.5).slice(0, 2 + Math.floor(Math.random() * 2));
+    S.movimiento = ['reveal'];
+    S.ancho = Math.random() < 0.35;
+    S.acento = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+    EJES.forEach(([id]) => { S.ejes[id] = 1 + Math.floor(Math.random() * 5); });
+
+    // El gesto siempre falta en una tirada al azar: no cuenta como conflicto.
+    const n = conflictos().filter(([t]) => t !== 'Falta el gesto').length;
+    if (n === 0) { mejor = null; break; }
+    if (n < mejorN) { mejorN = n; mejor = JSON.parse(JSON.stringify(S)); }
+  }
+  if (mejor) S = mejor;
+  Object.assign(S, guardado);
+  sincronizaCampos();
+  pintaControles(); pintaEjes(); render();
+}
+
 /* ── Arranque ─────────────────────────────────────────────────────────────── */
 function enlaza() {
   $('#marca').addEventListener('input', (e) => { S.marca = e.target.value || 'Nombre del cliente'; render(); });
@@ -660,33 +778,27 @@ function enlaza() {
     setTimeout(() => { $('#copiado').textContent = ''; }, 2200);
   });
 
+  $('#enlace').addEventListener('click', async () => {
+    guardaEnURL();
+    try { await navigator.clipboard.writeText(location.href); $('#enlace').textContent = 'Enlace copiado'; }
+    catch { $('#enlace').textContent = 'Copia la barra de direcciones'; }
+    setTimeout(() => { $('#enlace').textContent = 'Copiar enlace'; }, 2200);
+  });
+
   $('#reset').addEventListener('click', () => {
     S = inicial();
-    $('#marca').value = S.marca; $('#oficio').value = ''; $('#gesto').value = '';
-    $('#acento').value = S.acento; $('#tinta').value = S.tinta; $('#ancho').checked = false;
+    history.replaceState(null, '', location.pathname);
+    sincronizaCampos();
     pintaControles(); pintaEjes(); render();
   });
 
-  // Combina al azar, pero solo entre opciones que no se pisan entre sí.
-  $('#dados').addEventListener('click', () => {
-    const uno = (o) => { const k = Object.keys(o); return k[Math.floor(Math.random() * k.length)]; };
-    S.display = DISPLAY.filter(([d]) => d !== 'Bricolage Grotesque')[Math.floor(Math.random() * (DISPLAY.length - 1))][0];
-    S.base = uno(BASES);
-    S.fondo = uno(FONDOS);
-    S.escena = uno(ESCENAS);
-    S.foto = uno(FOTOS);
-    S.forma = uno(FORMAS);
-    S.header = uno(HEADERS); S.boton = uno(BOTONES); S.titular = uno(TITULARES); S.footer = uno(FOOTERS);
-    const mods = Object.keys(MODULOS).sort(() => Math.random() - 0.5).slice(0, 3);
-    S.modulos = mods;
-    S.acento = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-    $('#acento').value = S.acento;
-    EJES.forEach(([id]) => { S.ejes[id] = 1 + Math.floor(Math.random() * 5); });
-    pintaControles(); pintaEjes(); render();
-  });
+  $('#dados').addEventListener('click', azar);
 }
 
+leeDeURL();
+chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
 pintaControles();
 pintaEjes();
 enlaza();
+sincronizaCampos();
 render();
