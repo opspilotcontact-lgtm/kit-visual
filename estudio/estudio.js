@@ -685,6 +685,18 @@ function piezaHTML() {
 /* ── Tokens del tema ──────────────────────────────────────────────────────── */
 function tokens() {
   const b = BASES[S.base];
+  /* La tinta suave y las líneas salen de LA TINTA, no de la base. Antes la
+     línea iba fija con la tinta de Dígito (rgb 16 19 22) y la tinta suave con
+     el gris de la base: con una tinta verde eran tres familias de grises —el
+     error que el suelo prohíbe— mientras la nota del token decía lo contrario.
+     La suave se busca a mitad de camino hacia el papel y, si no llega a 4.5:1
+     sobre la banda alterna, se corrige hasta que llegue. */
+  const [tr, tg, tb] = canales(S.tinta);
+  let suaveTinta = b.soft;
+  if (!b.oscuro) {
+    const s0 = mezcla(S.tinta, b.paper, 0.64);
+    suaveTinta = ratio(s0, b.alt) >= 4.5 ? s0 : (corrige(s0, b.alt, 4.5) || b.soft);
+  }
   return {
     '--color-brand': S.acento,
     '--color-brand-dim': ajusta(S.acento, 0.82),
@@ -694,7 +706,7 @@ function tokens() {
     // naranja chillón #FFAB72). Va al tema exportado y a fx-highlight.
     '--color-brand-soft': mezcla(S.acento, b.paper, 0.16),
     '--color-ink': b.oscuro ? '#F2F4F6' : S.tinta,
-    '--color-ink-soft': b.soft,
+    '--color-ink-soft': suaveTinta,
     '--color-deep': b.deep,
     '--color-deep-soft': b.deepSoft,
     '--color-paper': b.paper,
@@ -703,8 +715,8 @@ function tokens() {
     '--color-metal': '#788088',
     '--color-metal-hi': '#C9CDD2',
     '--color-metal-lo': '#4A5057',
-    '--color-line': b.oscuro ? 'rgb(255 255 255 / 12%)' : 'rgb(16 19 22 / 10%)',
-    '--color-line-strong': b.oscuro ? 'rgb(255 255 255 / 22%)' : 'rgb(16 19 22 / 18%)',
+    '--color-line': b.oscuro ? 'rgb(255 255 255 / 12%)' : `rgb(${tr} ${tg} ${tb} / 10%)`,
+    '--color-line-strong': b.oscuro ? 'rgb(255 255 255 / 22%)' : `rgb(${tr} ${tg} ${tb} / 18%)`,
     '--font-display': `'${S.display}', system-ui, sans-serif`,
     '--font-sans': `'${S.texto}', system-ui, sans-serif`,
   };
@@ -767,19 +779,25 @@ const familia = (f) => String(f || '').split(' ')[0];   // «Archivo Black» →
 
 function problemasClon() {
   const a = [];
-  if (!MARCAS.length) return a;
+  /* Una marca no choca consigo misma. Al rehacer el encargo de una web que ya
+     está en el registro (pasó con Córdoba Soluciona el 23-sep), el Estudio
+     avisaba de que su tipografía «ya está en Córdoba Soluciona»: quien leyera
+     el encargo cambiaría la letra de la propia marca. */
+  const yo = slugDe(S.marca);
+  const registro = MARCAS.filter((m) => m.id !== yo && slugDe(m.n) !== yo);
+  if (!registro.length) return a;
 
   // 1) La display. Se compara por FAMILIA: «Archivo» y «Archivo Black» son la
   //    misma letra con otro peso, y contarlas como distintas es justo cómo se
   //    coló cuatro veces sin que saltara nada.
-  const repes = MARCAS.filter((m) => familia(m.display) === familia(S.display));
+  const repes = registro.filter((m) => familia(m.display) === familia(S.display));
   if (repes.length)
     a.push([`${S.display} ya está en ${repes.length === 1 ? 'otra web' : repes.length + ' webs'}`,
       `la llevan ${lista(repes.map((m) => m.n))}. La letra es lo primero que identifica una marca: repetida, las dos se leen como la misma plantilla con otro logo.`]);
 
   // 2) El acento, en OKLCH.
   const mio = oklch(S.acento);
-  MARCAS.forEach((m) => {
+  registro.forEach((m) => {
     if (!esHex(m.acento) || mio.C < 0.04) return;
     const o = oklch(m.acento);
     if (o.C < 0.04) return;                     // un gris no tiene tono que comparar
@@ -792,7 +810,7 @@ function problemasClon() {
   // 3) El temperamento. La skill pide al menos DOS ejes de diferencia; se
   //    comprueba contra todas las webs que tengan ejes escritos, no solo las
   //    del mismo sector: el clon no distingue de oficios.
-  MARCAS.forEach((m) => {
+  registro.forEach((m) => {
     if (!m.ejes) return;
     const d = CLAVES_EJE.filter((k) => Math.abs(S.ejes[k] - m.ejes[k]) >= 1).length;
     if (d < 2)
@@ -803,7 +821,7 @@ function problemasClon() {
   // 4) El gesto. Nunca se repite, y el cliché del sector no cuenta como gesto.
   const g = S.gesto.trim().toLowerCase();
   if (g) {
-    const igual = MARCAS.find((m) => m.gesto && m.gesto.toLowerCase().includes(g.slice(0, 24)));
+    const igual = registro.find((m) => m.gesto && m.gesto.toLowerCase().includes(g.slice(0, 24)));
     if (igual) a.push([`El gesto ya es el de ${igual.n}`, `«${igual.gesto}». El gesto es lo único que no se puede compartir: si se repite, deja de ser de nadie.`]);
     if (/antes\s*(y|\/)\s*despu/.test(g))
       a.push(['El antes/después es del gremio', 'lo hacen los cuarenta competidores de la provincia. Es correcto y no diferencia nada: busca el gesto en las reseñas del cliente, no en su catálogo.']);
