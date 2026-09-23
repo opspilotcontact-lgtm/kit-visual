@@ -205,8 +205,13 @@ function miniMarca(id) {
   if (id === 'sello') return capa(base) + capa('top:5px;right:5px;width:20px;height:20px;border-radius:999px;border:1px solid var(--color-ink);opacity:.5') +
     capa('top:9px;right:9px;width:12px;height:12px;background:var(--color-brand);' + mask('contain'));
   if (id === 'agua') return capa(base) + capa('right:-10%;bottom:-25%;width:70%;height:120%;background:var(--color-ink);opacity:.14;' + mask('contain'));
-  if (id === 'ventana') return capa(base + 'background:repeating-linear-gradient(45deg,var(--color-ink) 0 2px,transparent 2px 5px);opacity:.35') +
-    capa('left:50%;top:50%;transform:translate(-50%,-50%);width:60%;height:70%;background:var(--color-brand);' + mask('contain'));
+  if (id === 'ventana') {
+    // Como en el lienzo: la foto se ve por dentro de la forma. Las de ejemplo
+    // son relativas a la raíz del repo; aquí la página está en /estudio/.
+    const f = String(FL()[0] || '');
+    const foto = (/^(blob:|data:|https?:|file:)/.test(f) ? f : '../' + f).replace(/'/g, '%27');
+    return capa(base) + capa(`left:50%;top:50%;transform:translate(-50%,-50%);width:70%;height:80%;background:var(--color-brand) url('${foto}') center/cover;` + mask('contain'));
+  }
   if (id === 'trama') return capa(base) + capa('inset:0;background:var(--color-ink);opacity:.16;' + mask('13px 13px', 'repeat', '0 0'));
   if (id === 'calado') return capa(base) + capa('left:-14%;bottom:-30%;width:55%;height:95%;background:var(--color-brand);opacity:.5;' + mask('contain'));
   return capa(base);
@@ -277,13 +282,13 @@ function pintaControles() {
   if (hostF) {
     hostF.className = 'ui-ops';
     hostF.innerHTML = '';
-    Object.entries(FORMAS_MARCA).forEach(([id, [n, d]]) => {
+    Object.entries(FORMAS_MARCA).forEach(([id, [n, d, memoria]]) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'ui-op' + (!S.logo && S.marcaForma === id ? ' on' : '');
-      b.title = n;
+      b.title = memoria ? `${n}: ${memoria}` : n;
       b.innerHTML = `<span class="ui-op-vis" style="display:grid;place-items:center">
-        <svg viewBox="0 0 96 96" width="34" height="34" aria-hidden="true"><path d="${d}" fill="var(--color-ink)"/></svg>
+        <svg viewBox="0 0 96 96" width="34" height="34" aria-hidden="true"><path d="${d}" fill="var(--color-ink)" fill-rule="evenodd"/></svg>
       </span><span class="ui-op-lbl">${esc(n)}</span>`;
       b.addEventListener('click', () => { S.logo = null; $('#logo-file') && ($('#logo-file').value = ''); $('#logo-diag') && ($('#logo-diag').innerHTML = ''); set('marcaForma', id); });
       hostF.appendChild(b);

@@ -88,6 +88,14 @@ async function diagnosticaLogo(src, tipo) {
 
 function pintaDiagnostico(d) {
   ULTIMO_DIAG_LOGO = S.logo ? d : null;
+  /* Si es a color, va como imagen en cabecera y pie (lienzo.js, logoAColor).
+     En un SVG, dos pinturas ya son dos colores; en un mapa de bits el suavizado
+     de los bordes suma tonos, así que el umbral es más alto. Se guarda EN el
+     logo para que viaje al encargo sin volver a diagnosticar. */
+  if (S.logo && d && Number.isFinite(d.colores)) {
+    const aColor = d.colores > (S.logo.tipo === 'image/svg+xml' ? 1 : 3);
+    if (S.logo.aColor !== aColor) { S.logo.aColor = aColor; firmaPrevia = null; render(); }
+  }
   // El diagnóstico llega DESPUÉS del repintado (es asíncrono): se avisa otra vez.
   ALRENDER.forEach((f) => { try { f(); } catch (e) { console.error(e); } });
   const host = $('#logo-diag');

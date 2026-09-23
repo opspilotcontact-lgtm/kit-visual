@@ -108,7 +108,8 @@ function normaliza(d) {
     ? { src: lg.src, tipo: tipoLogo.test(lg.tipo) ? lg.tipo : 'image/png',
       w: Number.isFinite(lg.w) && lg.w > 0 ? Math.round(lg.w) : 96,
       h: Number.isFinite(lg.h) && lg.h > 0 ? Math.round(lg.h) : 96,
-      bytes: Number.isFinite(lg.bytes) && lg.bytes >= 0 ? Math.round(lg.bytes) : 0 }
+      bytes: Number.isFinite(lg.bytes) && lg.bytes >= 0 ? Math.round(lg.bytes) : 0,
+      aColor: lg.aColor === true }
     : null;
 
   /* Todo lo que acaba dentro de HTML o de CSS se valida contra el catálogo o

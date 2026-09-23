@@ -142,22 +142,37 @@ function moduloHTML(id) {
    El precio: el logo tiene que ser una silueta. Si trae fondo blanco, la
    máscara es un rectángulo y no hay nada que mirar. Por eso hay diagnóstico. */
 
-/** Formas de repuesto, para poder jugar antes de tener el logo del cliente. */
+/** Formas de repuesto, para poder jugar antes de tener el logo del cliente.
+    [nombre, trazado en 96×96, cuándo aporta]. Las ocho primeras son geometría;
+    las de «con memoria» (F5, 23-sep) salen de un lugar o de un oficio, que es
+    lo que hace que una forma se recuerde como de alguien. El arco ya es de
+    Córdoba Soluciona: para otro cliente de Córdoba, mejor otra. */
 const FORMAS_MARCA = {
-  arco: ['Arco', 'M6 96V54A42 42 0 1 1 90 54V96H78V56A30 30 0 1 0 18 56V96Z'],
-  disco: ['Disco', 'M48 8A40 40 0 1 1 48 88A40 40 0 1 1 48 8ZM48 26A22 22 0 1 0 48 70A22 22 0 1 0 48 26Z'],
-  triangulo: ['Triángulo', 'M48 10L90 84H6Z'],
-  rombo: ['Rombo', 'M48 6L90 48L48 90L6 48Z'],
-  hexagono: ['Hexágono', 'M48 6L85 27V69L48 90L11 69V27Z'],
-  cruz: ['Cruz', 'M38 6H58V38H90V58H58V90H38V58H6V38H38Z'],
-  galon: ['Galón', 'M14 18L48 52L82 18L92 30L48 76L4 30Z'],
-  barra: ['Barra', 'M6 30H90V48H6ZM6 60H62V78H6Z'],
+  arco: ['Arco', 'M6 96V54A42 42 0 1 1 90 54V96H78V56A30 30 0 1 0 18 56V96Z', 'La puerta o la ventana: reformas, casa. Ya es la firma de Córdoba Soluciona.'],
+  disco: ['Disco', 'M48 8A40 40 0 1 1 48 88A40 40 0 1 1 48 8ZM48 26A22 22 0 1 0 48 70A22 22 0 1 0 48 26Z', 'Geometría neutra: sello, moneda, pieza.'],
+  triangulo: ['Triángulo', 'M48 10L90 84H6Z', 'Geometría neutra: dirección, cubierta.'],
+  rombo: ['Rombo', 'M48 6L90 48L48 90L6 48Z', 'Geometría neutra: señal, aviso.'],
+  hexagono: ['Hexágono', 'M48 6L85 27V69L48 90L11 69V27Z', 'Geometría neutra: técnica, tuerca, panal.'],
+  cruz: ['Cruz', 'M38 6H58V38H90V58H58V90H38V58H6V38H38Z', 'Suma, salud, farmacia: úsala solo si es literal.'],
+  galon: ['Galón', 'M14 18L48 52L82 18L92 30L48 76L4 30Z', 'Movimiento hacia abajo o rango: cuidado, lee a militar.'],
+  barra: ['Barra', 'M6 30H90V48H6ZM6 60H62V78H6Z', 'Texto, listado, ficha técnica.'],
+  // ── Con memoria (F5) ──
+  estrella: ['Estrella', 'M48 4L61 18L79 17L79 35L92 48L79 61L79 79L61 79L48 92L35 79L17 79L18 61L4 48L18 35L17 17L35 18Z', 'La estrella andalusí de ocho puntas: Andalucía, alicatado, artesanía.'],
+  azulejo: ['Azulejo', 'M8 8H88V88H8ZM40 28L27 27L28 40L18 48L28 56L27 69L40 68L48 78L56 68L69 69L68 56L78 48L68 40L69 27L56 28L48 18Z', 'El azulejo del patio con su estrella calada: casa andaluza, cerámica, patio.'],
+  maceta: ['Maceta', 'M48 10A20 20 0 1 1 48 50A20 20 0 1 1 48 10ZM26 56H70L63 90H33Z', 'La maceta del patio: plantas, patio cordobés, cuidado, crecer.'],
+  reja: ['Reja', 'M14 6H82V90H14ZM26 18V78H36V18ZM43 18V78H53V18ZM60 18V78H70V18Z', 'La reja de ventana: forja, carpintería metálica, seguridad, casco antiguo.'],
+  casa: ['Casa', 'M48 8L90 44H78V88H18V44H6Z', 'El tejado: inmobiliaria, reformas, hogar. Muy vista: solo si no hay otra.'],
+  gota: ['Gota', 'M48 6C48 6 20 42 20 62A28 28 0 0 0 76 62C76 42 48 6 48 6Z', 'Agua, fontanería, limpieza, piscinas.'],
+  hoja: ['Hoja', 'M48 6C82 22 86 64 48 90C10 64 14 22 48 6Z', 'Planta, jardín, lo natural. Muy vista en «eco»: con algo más.'],
+  ola: ['Ola', 'M4 58C20 38 36 38 48 58C60 78 76 78 92 58V86H4Z', 'Mar, movimiento, ritmo: costa, náutica, baile.'],
 };
 
 /** La forma elegida como SVG en data URL, para poder usarla de máscara. */
 function marcaSVG() {
   const f = FORMAS_MARCA[S.marcaForma] || FORMAS_MARCA.arco;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="${f[1]}" fill="#000"/></svg>`;
+  // evenodd: los huecos (el disco, la estrella calada del azulejo, la reja) se
+  // vacían dibujen en el sentido que dibujen.
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="${f[1]}" fill="#000" fill-rule="evenodd"/></svg>`;
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
@@ -192,41 +207,91 @@ function marcaMascara(alto, color, extra = '') {
     mask:url('${fuenteMarca()}') center/contain no-repeat;${extra}`;
 }
 
-/** El logo para la cabecera y el pie. En oscuro se recolorea con la máscara. */
+/**
+ * La caja de una capa de marca, por su lado MAYOR. Con la altura fija, un logo
+ * apaisado se desbordaba: el de Dígito (640×300) salía de 64rem de ancho en la
+ * ventana, una mancha detrás de las fotos (medido el 23-sep, F4).
+ */
+function cajaMarca(max) {
+  const p = proporcionMarca();
+  return p >= 1 ? [max, `calc(${max} / ${p.toFixed(3)})`] : [`calc(${max} * ${p.toFixed(3)})`, max];
+}
+
+/* ¿El logo es a color? Lo decide el diagnóstico al subirlo (logo.aColor). Un
+   logo de varios colores recoloreado con máscara pierde lo de dentro: el de
+   Dígito —elipse amarilla, letras negras— salía como una elipse negra en la
+   cabecera, sin nombre. A color va como imagen; de una tinta, como máscara. */
+const logoAColor = () => !!(S.logo && S.logo.aColor);
+
+/** El logo para la cabecera y el pie. De una tinta, en oscuro se recolorea con la máscara. */
 function marcaHTML(alto, oscuro) {
   if (!S.marcaEnChrome) {
     return `<strong style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;${S.ancho ? 'font-stretch:116%' : ''}">${esc(S.marca)}</strong>`;
   }
+  if (logoAColor()) {
+    return `<img src="${fuenteMarca()}" alt="${esc(S.marca)}" style="display:block;height:${alto};width:auto">`;
+  }
   const color = oscuro ? '#fff' : 'var(--color-ink)';
-  return `<span aria-label="${esc(S.marca)}" role="img" style="display:inline-block;${marcaMascara(alto, color)}"></span>`;
+  const forma = `<span aria-label="${esc(S.marca)}" role="img" style="display:inline-block;${marcaMascara(alto, color)}"></span>`;
+  // Sin logo, la forma sola no dice quién es: va con el nombre, como un logo provisional.
+  if (S.logo) return forma;
+  return `<span style="display:inline-flex;align-items:center;gap:.5rem">${forma}<strong style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;${S.ancho ? 'font-stretch:116%;' : ''}color:${oscuro ? '#fff' : 'var(--color-ink)'}">${esc(S.marca)}</strong></span>`;
 }
 
-/** La marca como capa de sección: sello, agua, ventana, trama o calado. */
-function capaMarca(oscuro) {
-  const j = S.marcaJuego;
+/* Por debajo de 75rem el titular ocupa todo el ancho y la ventana flotante se
+   le montaba encima (medido en el panel del Estudio a 770 px: el titular
+   cruzaba la foto). Ahí deja de flotar y va ENCIMA del titular, a la derecha.
+   Viaja igual en el encargo: sin esta regla la ventana rompe el suelo. */
+const VENTANA_CSS = '@media (max-width:75rem){.marca-ventana{position:relative!important;display:block;right:auto!important;top:auto!important;margin:0 0 1.5rem auto}}';
+
+/**
+ * La marca como capa de sección: sello, agua, ventana, trama o calado.
+ * `enPortada`: la ventana es grande SOLO en la portada; en las demás secciones
+ * vuelve como sello. Es el patrón de Córdoba (el arco enorme en el primer píxel
+ * y el sello en cada titular) y lo que dijeron los dos jueces ciegos de la F4:
+ * la ventana repetida en grande «es ruidosa»; el sello pequeño y constante «se
+ * repite con disciplina» y es lo que más se recuerda.
+ */
+function capaMarca(oscuro, enPortada = true) {
+  let j = S.marcaJuego;
   if (!j || j === 'ninguno') return '';
+  if (j === 'ventana' && !enPortada) j = 'sello';
   const tinta = oscuro ? '#fff' : 'var(--color-ink)';
+  const mascara = `-webkit-mask:url('${fuenteMarca()}') center/contain no-repeat;mask:url('${fuenteMarca()}') center/contain no-repeat;`;
 
   if (j === 'sello') {
     return `<span aria-hidden="true" style="position:absolute;top:1.5rem;right:1.5rem;z-index:0;
       display:grid;place-items:center;width:5.5rem;height:5.5rem;border-radius:999px;
       border:1px solid ${oscuro ? 'rgb(255 255 255/.35)' : 'var(--color-line-strong)'};">
-      <span style="${marcaMascara('2.6rem', 'var(--color-brand)')}"></span></span>`;
+      <span style="width:${cajaMarca('3rem')[0]};height:${cajaMarca('3rem')[1]};background:var(--color-brand);${mascara}"></span></span>`;
   }
   if (j === 'agua') {
+    const [w, h] = cajaMarca('34rem');
     return `<span aria-hidden="true" style="position:absolute;right:-6%;bottom:-18%;z-index:0;
-      opacity:.07;${marcaMascara('34rem', tinta)}"></span>`;
+      opacity:.07;width:${w};height:${h};background:${tinta};${mascara}"></span>`;
   }
   if (j === 'ventana') {
-    /* Calibrado a la baja a propósito, y me costó verlo: la primera versión
-       iba centrada, a 26rem y opacidad .85, y se comía el titular. Es la
-       regla 10 del suelo —«si ves antes el fondo que el titular, está mal
-       calibrado»— incumplida por la propia herramienta que la comprueba.
-       Va a un lado, no detrás del texto, y a una opacidad en la que se
-       intuye la forma sin disputarle la lectura a nadie. */
-    return `<span aria-hidden="true" style="position:absolute;right:-4%;top:50%;
-      transform:translateY(-50%);z-index:0;opacity:.22;
-      ${marcaMascara('30rem', 'var(--color-brand)')}"></span>`;
+    /* Una VENTANA: la forma del logo con una foto del cliente dentro, como el
+       arco de Córdoba. La versión anterior era la silueta en el color de marca
+       al 22 %, y con un acento claro (el amarillo de Dígito) se quedaba en una
+       mancha pálida que nadie leía como su logo (F4, 23-sep).
+       Sigue sin disputarle la lectura al titular —la regla 10 del suelo—: va a
+       la derecha, arriba, y a lo sumo el 38 % del ancho, no detrás del texto
+       (a 44 %, el juez Sonnet la vio «montada encima del titular»). */
+    /* Y con un aro del color de marca: la foto sola dentro de la silueta se leía
+       como «una foto ovalada», no como SU forma. El aro es el canto del rótulo
+       en Dígito y el marco del arco en Córdoba. Grosor igual en los cuatro
+       lados: se calcula sobre el lado corto. */
+    const [w, h] = cajaMarca('min(26rem, 38vw)');
+    const corto = proporcionMarca() >= 1 ? h : w;
+    // La cuarta foto: las tres primeras ya las enseña la portada en su fila.
+    const fl = FL();
+    const foto = String(fl[Math.min(3, fl.length - 1)] || '').replace(/'/g, '%27');
+    // class="marca-ventana": por debajo de 75rem deja de flotar (VENTANA_CSS).
+    return `<span class="marca-ventana" aria-hidden="true" style="position:absolute;right:clamp(0rem,3vw,3rem);top:clamp(2.5rem,9%,6rem);z-index:0;
+      width:${w};height:${h};">
+      <span style="position:absolute;inset:0;background:var(--color-brand);${mascara}"></span>
+      <span style="position:absolute;inset:calc(${corto} * .07);background:var(--color-metal) url('${foto}') center/cover no-repeat;${mascara}"></span></span>`;
   }
   if (j === 'trama') {
     return `<span aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:.06;
@@ -235,8 +300,9 @@ function capaMarca(oscuro) {
       mask:url('${fuenteMarca()}') 0 0/4.5rem 4.5rem repeat;"></span>`;
   }
   if (j === 'calado') {
+    const [w, h] = cajaMarca('18rem');
     return `<span aria-hidden="true" style="position:absolute;left:-4rem;bottom:-4rem;z-index:0;
-      opacity:.16;${marcaMascara('16rem', 'var(--color-brand)')}"></span>`;
+      opacity:.16;width:${w};height:${h};background:var(--color-brand);${mascara}"></span>`;
   }
   return '';
 }
@@ -541,7 +607,7 @@ function seccionHTML(s) {
   const capas = (s.capas || []).filter((c) => admite.includes(c));
   const osc = s.tono === 'deep';
 
-  const pintadas = (capas.includes('marca') ? capaMarca(osc) : '')
+  const pintadas = (capas.includes('marca') ? capaMarca(osc, s.t === 'hero') : '')
     + (capas.includes('fondo') ? capaFondo(osc) : '')
     + (capas.includes('escena') ? capaEscena() : '')
     + (capas.includes('pieza') ? piezaHTML() : '');
@@ -638,6 +704,7 @@ function documento() {
   h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;${S.ancho ? 'font-stretch:116%;' : ''}font-size:clamp(1.7rem,3.4vw,2.6rem);margin:0 0 1rem;line-height:1.02}
   p{line-height:1.65}
   .lead{color:var(--color-ink-soft);max-width:60ch;font-size:1.05rem}
+  ${VENTANA_CSS}
   /* (Aquí había un display:none para .ui-aviso y .ui-panel: tapaba el mobiliario
      de la herramienta que se colaba con estudio.css. Al dejar de cargarlo, el
      parche sobra — y era el síntoma, no la causa.) */

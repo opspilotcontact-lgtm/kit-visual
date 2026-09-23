@@ -600,6 +600,9 @@ body.ui-modo-asistente .ui-shell { grid-template-columns: minmax(360px, 460px) 1
 .ui-asis-sec button:hover { background: color-mix(in srgb, #f87171 25%, transparent); color: #fecaca; }
 .ui-sec-add button em { font-style: normal; color: var(--ui-soft); }
 
+/* Formas que casan con el material del cliente: una marca discreta, no un sello. */
+.ui-op-suya .ui-op-lbl::after { content: '★'; color: var(--ui-accent); font-size: 9px; }
+
 /* ── La sorpresa (F3): qué ha hecho, por qué, y deshacer ─────────────────── */
 .ui-sorpresa {
   display: flex; align-items: center; gap: 0.8rem; flex: none;

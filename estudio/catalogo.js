@@ -63,7 +63,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=ee845388', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=e3b11db1', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 

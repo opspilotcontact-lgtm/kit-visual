@@ -227,7 +227,7 @@ function candidato(rnd) {
       if (c.marcaJuego !== 'ninguno' && admite(s, 'marca')) s.capas.push('marca');
       if (c.escena !== 'ninguna' && admite(s, 'escena')) s.capas.push('escena');
       if (c.fondo !== 'ninguno' && admite(s, 'fondo') && s.capas.length < 2) s.capas.push('fondo');
-    } else if (c.marcaJuego === 'sello' && admite(s, 'marca')) s.capas.push('marca');
+    } else if ((c.marcaJuego === 'sello' || c.marcaJuego === 'ventana') && admite(s, 'marca')) s.capas.push('marca');
     else if (s === ultima && c.marcaJuego !== 'ninguno') s.capas.push('marca');
     if (admite(s, 'modulos') && ['servicios', 'precios', 'datos'].includes(s.t)) s.capas.push('modulos');
   });
@@ -307,9 +307,12 @@ function proponer({ n = 3, semilla = 1, intentos = 90 } = {}) {
   for (const v of vistos) {
     if (elegidas.length >= n) break;
     if (!encaja(v)) continue;
+    // Con letra y color fijos, lo único que distingue una propuesta de otra es
+    // la FIRMA: tres ventanas con distinto fondo no son tres direcciones.
+    const fija = S.displayFija && S.coloresFijos;
     const clon = elegidas.some((x) => (!S.displayFija && familia(x.c.display) === familia(v.c.display)) ||
       (!S.coloresFijos && x.c.material === v.c.material) ||
-      (x.c.fondo === v.c.fondo && x.c.marcaJuego === v.c.marcaJuego && x.c.escena === v.c.escena));
+      ((fija || x.c.fondo === v.c.fondo) && x.c.marcaJuego === v.c.marcaJuego && x.c.escena === v.c.escena));
     if (!clon) elegidas.push(v);
   }
   // Relleno si faltan (letra fijada, ejes extremos): se admite repetir letra o

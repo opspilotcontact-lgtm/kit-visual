@@ -527,11 +527,12 @@ function ficherosFuente() {
 }
 
 /** La capa de marca tal y como la pinta el lienzo, apuntando al fichero del logo. */
-function recetaMarca(ruta) {
-  MARCA_FIJA = ruta;
+function recetaMarca(ruta, enPortada = true) {
+  // La ventana lleva una foto dentro: en el encargo, un fichero, no un blob.
+  MARCA_FIJA = ruta; FOTO_FIJA = '/img/TODO.webp';
   try {
-    return capaMarca(false).replace(/\s+/g, ' ').replace(/ ;/g, ';').trim();
-  } finally { MARCA_FIJA = null; }
+    return capaMarca(false, enPortada).replace(/\s+/g, ' ').replace(/ ;/g, ';').trim();
+  } finally { MARCA_FIJA = null; FOTO_FIJA = null; }
 }
 
 const vacio = (v, p, que) => (String(v || '').trim() ? String(v).trim() : `TODO (${p}): ${que}`);
@@ -672,10 +673,15 @@ function prompt() {
     : `TODO: el logo del cliente en SVG. En el Estudio se compuso con la forma de repuesto «${(FORMAS_MARCA[S.marcaForma] || FORMAS_MARCA.arco)[0]}»; se sustituye por el logo real`;
   const marca = [
     `Logo: ${logo}.`,
-    `Cabecera y pie: ${S.marcaEnChrome ? 'el logo como forma; en el pie oscuro se recolorea con mask-image (un solo fichero, sin versión en negativo)' : 'el nombre en la tipografía display, sin logo'}.`,
+    `Cabecera y pie: ${!S.marcaEnChrome ? 'el nombre en la tipografía display, sin logo'
+      : logoAColor() ? 'el logo como IMAGEN, a color (<img src="/img/logo.svg">): tiene varios colores y recolorearlo con máscara borraría lo de dentro. En el pie oscuro, su versión para fondo oscuro si la tiene; si no, la misma'
+        : 'el logo como forma; en el pie oscuro se recolorea con mask-image (un solo fichero, sin versión en negativo)'}.`,
     S.marcaJuego && S.marcaJuego !== 'ninguno'
       ? `Juego: ${juego.n}${juego.dice ? ` — ${juego.dice}` : ''}. Va en ${conMarca.length ? conMarca.map(([s, i]) => `${String(i + 1).padStart(2, '0')} ${(SECCIONES[s.t] || {}).n}`).join(', ') : 'ninguna sección todavía (marca la capa «marca» donde toque)'}.\n` +
-        `  CSS exacto (el mismo que pinta el Estudio; la sección lleva position:relative;isolation:isolate;overflow:hidden y el contenido z-index:1):\n  ${recetaMarca('/img/logo.svg')}`
+        `  CSS exacto (el mismo que pinta el Estudio; la sección lleva position:relative;isolation:isolate;overflow:hidden y el contenido z-index:1):\n` +
+        (S.marcaJuego === 'ventana'
+          ? `  En la PORTADA, la ventana (grande, una sola vez):\n  ${recetaMarca('/img/logo.svg', true)}\n  Y en el CSS de la web, sin falta (por debajo de 75rem deja de flotar y va encima del titular; si no, se le monta encima):\n  ${VENTANA_CSS}\n  En las DEMÁS secciones con marca, como sello (pequeño y siempre igual; así se repite sin hacer ruido):\n  ${recetaMarca('/img/logo.svg', false)}`
+          : `  ${recetaMarca('/img/logo.svg')}`)
       : 'Juego: ninguno. El logo solo va en cabecera y pie.',
   ].join('\n');
 

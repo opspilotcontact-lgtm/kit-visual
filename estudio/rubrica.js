@@ -11,6 +11,11 @@
    en reposo. «trama» cuenta para repetir, pero no firma una portada: a 6 % se
    intuye, no se ve. */
 const JUEGOS_FIRMA = ['ventana', 'sello', 'calado', 'agua'];
+/* Y de esos, solo la ventana FIRMA la primera pantalla: grande y a la vista.
+   Medido en las capturas de la IA directora (F4, 23-sep, Dígito): el calado
+   caía al pie de la portada, por debajo de los 800 px; el sello era un punto de
+   3rem y la marca de agua va al 7 %. Están, pero no se recuerdan: valen 1. */
+const JUEGOS_REPOSO = ['ventana'];
 const TITULAR_TRATADO = ['knockout', 'extendido', 'trama', 'escalonado', 'outline'];
 
 const capasDe = (s) => (s.capas || []).filter((c) => ((SECCIONES[s.t] || {}).admite || []).includes(c));
@@ -20,8 +25,11 @@ function pruebaReposo() {
   const hero = S.secciones.find((s) => s.t === 'hero') || S.secciones[0];
   if (!hero) return [0, 'La página no tiene primera sección.'];
   const capas = capasDe(hero);
+  const juego = (MARCAJUEGOS[S.marcaJuego] || {}).n || S.marcaJuego;
+  if (capas.includes('marca') && JUEGOS_REPOSO.includes(S.marcaJuego))
+    return [2, `La forma de la marca está en la primera pantalla (${juego}), grande y en reposo.`];
   if (capas.includes('marca') && JUEGOS_FIRMA.includes(S.marcaJuego))
-    return [2, `La forma de la marca está en la primera pantalla (${(MARCAJUEGOS[S.marcaJuego] || {}).n || S.marcaJuego}), en reposo.`];
+    return [1, `La forma de la marca está en la portada (${juego}), pero pequeña, tenue o fuera de la primera pantalla: se intuye, no firma. La que firma es la ventana.`];
   const forma = (capas.includes('escena') && S.escena !== 'ninguna') || (capas.includes('pieza') && S.pieza !== 'ninguna');
   const titular = TITULAR_TRATADO.includes(S.titular) || S.ancho;
   if (forma || titular)

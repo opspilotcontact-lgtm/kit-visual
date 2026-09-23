@@ -67,6 +67,13 @@ const NECESITA = {
 };
 const faltaEn = (s) => ((NECESITA[s.t] || (() => []))(s)).filter(Boolean);
 
+/* Las formas con memoria que casan con cada material del oficio (F5). */
+const FORMAS_DEL_MATERIAL = {
+  madera: ['reja', 'casa', 'hoja'], piedra: ['azulejo', 'estrella', 'arco'], metal: ['reja', 'hexagono'],
+  tierra: ['azulejo', 'maceta'], vegetal: ['hoja', 'maceta'], agua: ['gota', 'ola'],
+  textil: ['estrella', 'rombo'], cuerpo: ['ola', 'disco', 'maceta'], papel: ['barra', 'estrella'], digital: ['hexagono', 'barra'],
+};
+
 /* ── La firma, donde puntúa ───────────────────────────────────────────────
    En la portada si el juego firma en reposo; con sello, en todas las
    secciones que lo admiten (Córdoba); con los demás, también en la última que
@@ -79,7 +86,8 @@ function ajustaCapasFirma() {
   const hero = S.secciones.find((s) => s.t === 'hero');
   const ultima = [...S.secciones].reverse().find(admite);
   S.secciones.forEach((s) => {
-    if (admite(s) && (S.marcaJuego === 'sello' || s === hero || s === ultima)) s.capas.push('marca');
+    // Con ventana, también en todas: fuera de la portada vuelve como sello (lienzo.js).
+    if (admite(s) && (S.marcaJuego === 'sello' || S.marcaJuego === 'ventana' || s === hero || s === ultima)) s.capas.push('marca');
   });
   if (!hero) return;
   const visibles = () => capasDe(hero).filter((c) => (c === 'fondo' && S.fondo !== 'ninguno') ||
@@ -354,9 +362,12 @@ function pintaFirma(c) {
   }
   const hostF = c.querySelector('[data-formas]');
   if (hostF) {
-    hostF.innerHTML = Object.entries(FORMAS_MARCA).map(([id, [n, d]]) =>
-      `<button type="button" class="ui-op${S.marcaForma === id ? ' on' : ''}" data-forma="${id}" title="${esc(n)}">
-        <span class="ui-op-vis" style="display:grid;place-items:center"><svg viewBox="0 0 96 96" width="30" height="30" aria-hidden="true"><path d="${d}" fill="var(--color-ink)"/></svg></span>
+    // Primero las que casan con su material (F5): una forma se recuerda cuando sale de algo suyo.
+    const suyas = FORMAS_DEL_MATERIAL[S.materialOficio] || [];
+    const orden = Object.entries(FORMAS_MARCA).sort(([a], [b]) => (suyas.includes(b) ? 1 : 0) - (suyas.includes(a) ? 1 : 0));
+    hostF.innerHTML = orden.map(([id, [n, d, memoria]]) =>
+      `<button type="button" class="ui-op${S.marcaForma === id ? ' on' : ''}${suyas.includes(id) ? ' ui-op-suya' : ''}" data-forma="${id}" title="${esc(memoria ? n + ': ' + memoria : n)}">
+        <span class="ui-op-vis" style="display:grid;place-items:center"><svg viewBox="0 0 96 96" width="30" height="30" aria-hidden="true"><path d="${d}" fill="var(--color-ink)" fill-rule="evenodd"/></svg></span>
         <span class="ui-op-lbl">${esc(n)}</span></button>`).join('');
   }
 }

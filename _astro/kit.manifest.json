@@ -259,6 +259,13 @@
       "peso": 500
     },
     {
+      "id": "Source Sans 3",
+      "grupo": "texto",
+      "n": "Source Sans 3",
+      "peso": 500,
+      "dice": "Humanista y muy legible: para quien lee en el móvil con vista cansada (40-60)."
+    },
+    {
       "id": "JetBrains Mono",
       "grupo": "texto",
       "n": "JetBrains Mono",
@@ -1894,7 +1901,7 @@
       "mide": "auto",
       "peso": 2,
       "pregunta": "¿Se ve la firma de la marca en la primera pantalla, sin mover nada?",
-      "como": "La portada lleva una firma estática: la forma de marca como capa (ventana, sello, calado, agua), escenografía o forma propia, o un titular tratado. Un efecto que depende del scroll, del cursor o de encenderse NO cuenta.",
+      "como": "2: la forma de la marca GRANDE y a la vista en la primera pantalla (la ventana; el arco de Córdoba). 1: está pero no firma —sello, calado o marca de agua: pequeña, tenue o por debajo de los 800 px—, o hay escenografía, forma propia o un titular tratado. Un efecto que depende del scroll, del cursor o de encenderse NO cuenta. (Recalibrado el 23-sep con las capturas de la IA directora.)",
       "cordoba": 2,
       "digito": 0,
       "porque": "Córdoba: el titular vive dentro de un arco califal enorme desde el primer píxel. Dígito v2: hero partido estándar; su gesto (encender) aparece a 7.617 px de 11.162, al 68 % de la página, y además es un estado."

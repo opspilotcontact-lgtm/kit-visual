@@ -28,7 +28,8 @@ function candidatasSorpresa({ variar = false, semilla = semillaNueva() } = {}) {
   const fijos = { coloresFijos: S.coloresFijos, displayFija: S.displayFija };
   S.coloresFijos = true; S.displayFija = true;
   let ps;
-  try { ps = proponer({ n: 3, semilla }); } finally { Object.assign(S, fijos); }
+  // Seis y no tres: si la actual ya es la mejor firma, hace falta mirar más abajo.
+  try { ps = proponer({ n: 6, semilla }); } finally { Object.assign(S, fijos); }
   const ahora = firmaVisible(S);
   // Primero las que cambian la FIRMA (juego o escena): medido el 23-sep, cuatro
   // de cinco variaciones dejaban el mismo juego y solo movían fondo o foto, y
