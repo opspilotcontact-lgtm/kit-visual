@@ -50,7 +50,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=4bc19480', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=0ea64ce2', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -1006,11 +1006,15 @@ function capaMarca(oscuro) {
       opacity:.07;${marcaMascara('34rem', tinta)}"></span>`;
   }
   if (j === 'ventana') {
-    // La máscara NO se pinta: recorta el fondo de marca, así que por dentro de
-    // la forma se ve el color de acento y alrededor no hay nada.
-    return `<span aria-hidden="true" style="position:absolute;left:50%;top:50%;
-      transform:translate(-50%,-50%);z-index:0;opacity:.85;
-      ${marcaMascara('26rem', 'var(--color-brand)')}"></span>`;
+    /* Calibrado a la baja a propósito, y me costó verlo: la primera versión
+       iba centrada, a 26rem y opacidad .85, y se comía el titular. Es la
+       regla 10 del suelo —«si ves antes el fondo que el titular, está mal
+       calibrado»— incumplida por la propia herramienta que la comprueba.
+       Va a un lado, no detrás del texto, y a una opacidad en la que se
+       intuye la forma sin disputarle la lectura a nadie. */
+    return `<span aria-hidden="true" style="position:absolute;right:-4%;top:50%;
+      transform:translateY(-50%);z-index:0;opacity:.22;
+      ${marcaMascara('30rem', 'var(--color-brand)')}"></span>`;
   }
   if (j === 'trama') {
     return `<span aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:.06;

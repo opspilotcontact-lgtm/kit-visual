@@ -1661,6 +1661,26 @@
         "Falta el gesto",
         "sin él la web estará bien hecha y será olvidable. Búscalo en las reseñas del cliente, no en su catálogo."
       ]
+    },
+    {
+      "si": {
+        "marcaJuego": "trama",
+        "fondo": "en:halftone,dots,hatch,grid,stripes,blueprint"
+      },
+      "aviso": [
+        "La trama de marca contra otra trama",
+        "son dos fondos discutiendo por la misma pared. Elegí uno: o la marca es el fondo, o lo es el fondo."
+      ]
+    },
+    {
+      "si": {
+        "marcaJuego": "ventana",
+        "titular": "knockout"
+      },
+      "aviso": [
+        "Ventana y foto dentro de las letras",
+        "dos recortes en la misma pantalla. El segundo deja de leerse como idea y pasa a parecer un fallo."
+      ]
     }
   ],
   "composicionPorDefecto": [
