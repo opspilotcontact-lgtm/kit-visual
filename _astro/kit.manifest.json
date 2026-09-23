@@ -1078,7 +1078,7 @@
           "dice": "cada fase en su pestaña, sin JavaScript"
         }
       ],
-      "protocolo": "P12 · cómo funciona en 3 pasos, con el plazo real de cada uno."
+      "protocolo": "P12 · cómo funciona en 3 pasos. Plazos solo si están en el CONTENIDO; si no, TODO (P12) — nunca un plazo inventado."
     },
     {
       "id": "testimonio",
@@ -1195,10 +1195,11 @@
         {
           "id": "formulario",
           "n": "Formulario",
-          "dice": "cuatro campos, ni uno más"
+          "dice": "cuatro campos, ni uno más",
+          "protocolo": "P12 · el formulario: nombre, WhatsApp o teléfono, qué necesita y dónde (cuatro campos, ni uno más). A dónde llega y quién lo atiende: «Datos de contacto»."
         }
       ],
-      "protocolo": "P12 · la llamada por el canal que el cliente usa DE VERDAD; horario y tiempo de respuesta reales (P19/P21)."
+      "protocolo": "P12 · la llamada por el canal que el cliente usa DE VERDAD; horario y tiempo de respuesta reales, del bloque «Datos de contacto» (si no están: TODO)."
     },
     {
       "id": "cierre",
@@ -1224,7 +1225,7 @@
           "dice": "el argumento a un lado, el botón al otro"
         }
       ],
-      "protocolo": "P12 · la llamada final: qué pasa cuando te escriben, por el canal real."
+      "protocolo": "P12 · la llamada final: qué pasa cuando te escriben, por el canal real y con el tiempo de respuesta de «Datos de contacto»."
     },
     {
       "id": "ninguno",

@@ -57,7 +57,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=1967a8c7', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=53a71d5d', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -144,6 +144,30 @@ const FOTOS_DEMO = [
   'img/neon-colores-tubos.webp',
 ];
 
+/* ── Las fotos del cliente ─────────────────────────────────────────────────
+   F5 pide una maqueta con las fotos REALES del cliente, y el lienzo solo
+   aceptaba el logo: la muestra enseñaba los rótulos de Dígito aunque el
+   cliente fuera una peluquería. Ahora se suben (se reducen a 1400 px para el
+   lienzo), se diagnostican con las reglas de ASSETS.md y se ven con el
+   tratamiento elegido — que es cuando se sabe si fx-tint salva SUS fotos.
+
+   No viajan en el enlace ni en el encargo (pesan megas y son del cliente): se
+   guardan en este navegador y el lienzo las lee como URL blob, que es corta y
+   del mismo origen que el iframe. */
+const CLAVE_FOTOS = 'opspilot.estudio.fotos.v1';
+const MAX_FOTOS = 12;
+const LADO_LIENZO = 1400;
+let FOTOS_CLIENTE = [];   // [{url, datos, w, h, n, b, luz}]
+
+/** Las fotos que ve el lienzo: las del cliente si las hay (en ciclo hasta
+    cinco, para que ninguna sección se quede con huecos) y si no, las de ejemplo. */
+let FOTO_FIJA = null;   // para el encargo: el marcado sale con una ruta de fichero, no con un blob
+function FL() {
+  if (FOTO_FIJA) return Array(5).fill(FOTO_FIJA);
+  const xs = FOTOS_CLIENTE.length ? FOTOS_CLIENTE.map((f) => f.url) : FOTOS_DEMO;
+  return Array.from({ length: Math.max(5, Math.min(xs.length, 8)) }, (_, i) => xs[i % xs.length]);
+}
+
 /* ── Estado ───────────────────────────────────────────────────────────────── */
 const inicial = () => ({
   marca: 'Nombre del cliente', oficio: '',
@@ -152,8 +176,13 @@ const inicial = () => ({
      200 KB dentro del hash hace una URL que ningún sitio acepta pegar. */
   logo: null, marcaForma: 'arco', marcaEnChrome: true, marcaJuego: 'ninguno',
   ejes: { peso: 3, temperatura: 3, memoria: 3, aire: 3 },
-  display: 'Archivo', texto: 'Instrument Sans', ancho: false,
-  acento: '#FEFE00', tinta: '#101316', base: 'papelFrio',
+  /* Punto de partida NEUTRO. Antes arrancaba con Archivo y #FEFE00 —la marca de
+     Dígito—: cuatro avisos de clon antes de tocar nada, y quien no los leyera
+     partía de la web de otro. El acento es un gris a propósito: no tiene tono
+     que comparar y deja claro que el color todavía no se ha decidido — sale de
+     la marca del cliente (ASSETS.md), no de aquí. */
+  display: 'Epilogue', texto: 'Instrument Sans', ancho: false,
+  acento: '#6B737B', tinta: '#15181B', base: 'papelFrio',
   fondo: 'ninguno', escena: 'ninguna', foto: 'limpia', forma: 'redondo',
   pieza: 'ninguna', pos: 'cd', tam: 'm', relleno: 'solido',
   header: 'barra', boton: 'pildora', titular: 'normal', footer: 'completo',
@@ -175,6 +204,8 @@ const inicial = () => ({
   objecion: '',         // P12 · la objeción principal que responde la portada
   listaServicios: '',   // P12 · uno por línea: nombre · qué incluye · desde X €
   listaResenas: '',     // P8 · una por línea: texto literal · dónde y cuándo
+  cifras: '',           // P8 · una por línea: cifra · qué mide · de dónde sale la prueba
+  datosContacto: '',    // P21/ASSETS · WhatsApp, horario, a dónde llega el formulario y quién lo atiende
   canales: [],          // P12 · el canal que el cliente usa DE VERDAD
   /* La ARQUITECTURA de la página, no solo su estilo. Antes el lienzo tenía tres
      secciones escritas a mano y se elegía cómo se veían pero no cuáles eran.
@@ -206,6 +237,10 @@ const resenasCliente = () => lineas(S.listaResenas).map((l) => {
   return [t, f];
 });
 const sitiosCliente = () => String(S.zona || '').split(/[,;·\n]/).map((x) => x.trim()).filter(Boolean);
+const cifrasCliente = () => lineas(S.cifras).map((l) => {
+  const [v, q = '', p = ''] = trozos(l);
+  return [v, q, p];
+});
 const canal = (c) => (S.canales || []).includes(c);
 /** Sin canales marcados todavía no se ha decidido: el lienzo enseña el ejemplo. */
 const canalesDecididos = () => (S.canales || []).length > 0;
@@ -944,7 +979,7 @@ function tituloHTML(txt) {
   let clase = '';
   if (S.titular === 'knockout') {
     clase = 'fx-knockout';
-    estilo += `--knockout:url(${FOTOS_DEMO[1]});`;
+    estilo += `--knockout:url(${FL()[1]});`;
   } else if (S.titular === 'outline') {
     clase = 'fx-outline'; estilo += '--outline-c:var(--color-ink);--outline-w:2px;';
   } else if (S.titular === 'trama') {
@@ -967,7 +1002,7 @@ function moduloHTML(id) {
               <span class="fx-disc-sign" aria-hidden="true"><i></i><i></i></span>
             </summary>
             <div class="fx-disc-body"><div class="fx-disc-text"><p>Aquí va el detalle, con la foto al lado. Cerrado ya dice algo; por eso se abre.</p></div>
-            <figure class="fx-disc-fig"><img src="${FOTOS_DEMO[3]}" alt=""></figure></div>
+            <figure class="fx-disc-fig"><img src="${FL()[3]}" alt=""></figure></div>
           </details>`).join('')}
       </div>`;
     case 'tabs':
@@ -980,7 +1015,7 @@ function moduloHTML(id) {
         </div></div>`;
     case 'rail':
       return `<div class="fx-rail" style="margin-top:2rem;--rail-w:72%;--rail-w-lg:34%">
-        ${FOTOS_DEMO.slice(0, 4).map((s) => figura(s)).join('')}</div>`;
+        ${FL().slice(0, 4).map((s) => figura(s)).join('')}</div>`;
     case 'pull':
       return `<blockquote class="fx-pull" style="margin-top:2rem;max-width:34ch">
         Lo pusieron en dos días y lo que dijeron que costaba fue lo que costó.</blockquote>
@@ -1190,6 +1225,7 @@ const escFila = (xs) => xs.map((x) => esc(x));
 const svc = () => (serviciosCliente().length ? serviciosCliente().map(escFila) : EJ['servicios']);
 const res = () => (resenasCliente().length ? resenasCliente().map(escFila) : EJ['resenas']);
 const sit = () => (sitiosCliente().length ? escFila(sitiosCliente()) : EJ['sitios']);
+const cif = () => (cifrasCliente().length ? cifrasCliente().map(([v, q]) => [esc(v), esc(q)]) : EJ['cifras']);
 
 function filaServicio([t, d, p], i, osc) {
   return `<div style="display:grid;grid-template-columns:2.5rem 1fr auto;gap:1.2rem;align-items:baseline;
@@ -1213,15 +1249,15 @@ const CUERPO = {
 
     if (v === 'partida') {
       return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));gap:clamp(2rem,5vw,4rem);align-items:center">
-        <div>${texto}</div><div>${figura(FOTOS_DEMO[0])}</div></div>`;
+        <div>${texto}</div><div>${figura(FL()[0])}</div></div>`;
     }
     if (v === 'centrada') {
       return `<div style="text-align:center;max-width:46rem;margin:0 auto">${texto}
-        <div style="margin-top:3rem">${figura(FOTOS_DEMO[1])}</div></div>`;
+        <div style="margin-top:3rem">${figura(FL()[1])}</div></div>`;
     }
     return `${texto}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;margin-top:3rem">
-        ${FOTOS_DEMO.slice(0, 3).map((s, i) => figura(s, i)).join('')}</div>`;
+        ${FL().slice(0, 3).map((s, i) => figura(s, i)).join('')}</div>`;
   },
 
   banda(v, osc) {
@@ -1237,7 +1273,7 @@ const CUERPO = {
     }
     if (v === 'datos') {
       return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1.5rem;text-align:center">
-        ${EJ.cifras.slice(0, 3).map(([n, l]) => `<div class="fx-stat"><span>${n}</span><span>${l}</span></div>`).join('')}</div>`;
+        ${cif().slice(0, 3).map(([n, l]) => `<div class="fx-stat"><span>${n}</span><span>${l}</span></div>`).join('')}</div>`;
     }
     return `<p style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.5rem,3.6vw,2.4rem);
       line-height:1.1;letter-spacing:-.02em;margin:0;max-width:26ch">
@@ -1254,7 +1290,7 @@ const CUERPO = {
             <div style="${i % 2 ? 'order:2' : ''}">
               <p style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;margin:0">${t}</p>
               <p style="margin:.6rem 0 0;color:${suave(osc)}">${d}</p></div>
-            ${figura(FOTOS_DEMO[i])}</div>`).join('')}</div>`;
+            ${figura(FL()[i])}</div>`).join('')}</div>`;
     }
     if (v === 'bento') {
       return `${cab}<div style="margin-top:2.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
@@ -1273,22 +1309,22 @@ const CUERPO = {
       ${lead('Fotos de obra propia, enteras y sin retocar. Si no hay foto de algo, es que no lo hemos hecho.', osc)}`;
     if (v === 'carril') {
       return `${cab}<div class="fx-rail" style="margin-top:2rem;--rail-w:72%;--rail-w-lg:34%">
-        ${FOTOS_DEMO.map((s) => figura(s)).join('')}</div>`;
+        ${FL().map((s) => figura(s)).join('')}</div>`;
     }
     if (v === 'destacado') {
-      return `${cab}<div style="margin-top:2rem">${figura(FOTOS_DEMO[0])}</div>
+      return `${cab}<div style="margin-top:2rem">${figura(FL()[0])}</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1rem;margin-top:1rem">
-          ${FOTOS_DEMO.slice(1, 4).map((s, i) => figura(s, i)).join('')}</div>`;
+          ${FL().slice(1, 4).map((s, i) => figura(s, i)).join('')}</div>`;
     }
     return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;margin-top:2rem">
-      ${FOTOS_DEMO.map((s, i) => figura(s, i)).join('')}</div>`;
+      ${FL().map((s, i) => figura(s, i)).join('')}</div>`;
   },
 
   datos(v, osc) {
     const n = v === 'rejilla' ? 4 : 3;
     return `${ojo('En números')}${h2('Lo que se puede medir')}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1.5rem;margin-top:2rem">
-        ${EJ.cifras.slice(0, n).map(([x, l]) => `<div class="fx-stat"><span>${x}</span><span>${l}</span></div>`).join('')}</div>`;
+        ${cif().slice(0, n).map(([x, l]) => `<div class="fx-stat"><span>${x}</span><span>${l}</span></div>`).join('')}</div>`;
   },
 
   proceso(v, osc) {
@@ -1345,7 +1381,7 @@ const CUERPO = {
           <span class="fx-disc-sign" aria-hidden="true"><i></i><i></i></span>
         </summary>
         <div class="fx-disc-body"><div class="fx-disc-text"><p>Qué entra en ese precio, con nombre y apellidos: material, medidas y montaje. Cerrado ya dice algo; por eso se abre.</p></div>
-        <figure class="fx-disc-fig"><img src="${FOTOS_DEMO[i]}" alt=""></figure></div></details>`).join('')}</div>`;
+        <figure class="fx-disc-fig"><img src="${FL()[i]}" alt=""></figure></div></details>`).join('')}</div>`;
   },
 
   faq(v, osc) {
@@ -1557,7 +1593,7 @@ function documento() {
 const SOLO_TOKENS = ['acento', 'tinta', 'display', 'texto'];
 /* Campos de contenido que van al encargo pero no se pintan en el lienzo:
    escribir en ellos no puede recargar la muestra en cada tecla. */
-const SOLO_ENCARGO = ['np', 'posicionamiento', 'busqueda', 'voz', 'palabrasSi', 'palabrasNo', 'objecion', 'gesto'];
+const SOLO_ENCARGO = ['np', 'posicionamiento', 'busqueda', 'voz', 'palabrasSi', 'palabrasNo', 'objecion', 'gesto', 'datosContacto'];
 let firmaPrevia = null;
 
 function firmaEstructural() {
@@ -1586,6 +1622,7 @@ function render() {
   avisos();
   guarda();
   lectura();
+  pintaFotos();   // el aviso de luces depende del tratamiento elegido
 
   const f = firmaEstructural();
   const soloColor = f === firmaPrevia;
@@ -1925,10 +1962,14 @@ ${rs.length
     d.push(`const trabajos = [
   { src: '/img/TODO.webp', alt: 'TODO: describe la foto', width: 1200, height: 900 },
 ];`);
-  if (usaBloque('StatRow'))
+  if (usaBloque('StatRow')) {
+    const cf = cifrasCliente();
     d.push(`const cifras = [
-  { value: 'TODO', label: 'TODO: qué mide' },
+${cf.length
+    ? cf.map(([v, l, p]) => `  { value: ${q(v)}, label: ${q(l || 'TODO: qué mide')} },${p ? ` // prueba: ${String(p).replace(/[\r\n]/g, ' ')}` : ' // TODO (P8): de dónde sale la prueba'}`).join('\n')
+    : `  { value: 'TODO', label: 'TODO (P8): qué mide, con prueba enseñable' },`}
 ];`);
+  }
   if (usaBloque('Steps') || usa('proceso'))
     d.push(`const pasos = [
   { title: 'TODO: el paso', text: 'TODO: qué pasa en ese paso.' },
@@ -2142,23 +2183,34 @@ function bloqueContenido() {
     'Lo que falte aquí va a la web como TODO (Pn) y se pide: NO se inventa. Ni cifras, ni reseñas, ni plazos.',
     '',
     `P7  Posicionamiento:    ${vacio(S.posicionamiento, 'P7', 'para [quién] que necesita [qué], [cliente] es [qué] que [prueba que un competidor no podría firmar]')}`,
+    '                        → INTERNO: orienta el titular y el tono. NO se pega literal en la web.',
     `P8  Prueba principal:   ${vacio(S.prueba, 'P8', 'una cifra, foto, nombre o fecha que se pueda enseñar')}`,
     '                        → va en el subtítulo de la portada',
     `P11 Búsqueda principal: ${S.busqueda.trim() ? `«${S.busqueda.trim()}»` : 'TODO (P11): la búsqueda tal como la escribe el cliente'}`,
     '                        → en el <title>, el H1 y la URL de la portada',
     `    Zona:               ${si.length ? si.join(', ') : 'TODO (P11): los pueblos, por su nombre propio'}`,
+    `                        → en la sección «${(SECCIONES.zona || {}).n || 'Dónde trabajás'}» si la página la tiene; si no, en el pie. Una página por pueblo (P15).`,
     `P9  Voz:                ${vacio(S.voz, 'P9', 'tres adjetivos, con un ejemplo de cada')}`,
     `    Decimos:            ${vacio(S.palabrasSi, 'P9', 'palabras que usa el cliente')}`,
     `    Nunca decimos:      ${S.palabrasNo.trim() ? S.palabrasNo.trim() + ' · ' : ''}${prohibidas}`,
     `P12 Objeción principal: ${vacio(S.objecion, 'P12', 'la duda que frena al cliente antes de escribir')}`,
     '',
-    'Servicios (P12 · qué, para quién, plazo y beneficio):',
+    'Servicios (P12 · nombre — qué incluye — precio; si falta «para quién» o «plazo», va como TODO (P12) en su ficha):',
     sv.length ? sv.map(([t, d, p], i) => `  ${i + 1}. ${[t, d, p].filter(Boolean).join(' — ')}`).join('\n')
       : '  TODO (P12): la lista de servicios con sus palabras y su «desde X €» si lo hay',
     '',
     'Reseñas reales (P8 · literales, sin corregir):',
     rs.length ? rs.map(([t, f]) => `  «${t}»${f ? ` — ${f}` : ''}`).join('\n')
       : '  TODO (P8): reseñas literales con nombre (con permiso) y fecha. Si no hay, la sección de testimonio se quita.',
+    '',
+    'Cifras con prueba (P8 · para las bandas y secciones de cifras):',
+    cifrasCliente().length
+      ? cifrasCliente().map(([v, qq, p]) => `  ${v} — ${qq || 'TODO: qué mide'}${p ? ` (prueba: ${p})` : ' (TODO: de dónde sale la prueba)'}`).join('\n')
+      : '  TODO (P8): cifras con prueba enseñable. Sin cifras, las secciones de cifras se QUITAN: no se rellenan con números redondos.',
+    '',
+    'Datos de contacto (ASSETS · tal como van en todas partes):',
+    lineas(S.datosContacto).length ? lineas(S.datosContacto).map((l) => `  ${l}`).join('\n')
+      : `  TODO: ${canal('whatsapp') || !canalesDecididos() ? 'el número de WhatsApp, ' : ''}el horario REAL${canal('formulario') || !canalesDecididos() ? ', a dónde llega el formulario (correo, WhatsApp o CRM) y quién lo atiende y en cuánto tiempo (P16)' : ''}.`,
     '',
     canalesDecididos()
       ? `Canal real (P12): ${(S.canales || []).map((c) => CANALES[c]).join(' y ')}.${noCanales.length ? ` NO poner ${noCanales.join(' ni ')}: lo que no está aquí no existe en la web (ni tel: ni mailto: sueltos).` : ''}`
@@ -2202,8 +2254,22 @@ function prompt() {
   const conModulos = S.secciones.map((s, i) => [s, i]).filter(([s]) =>
     (s.capas || []).includes('modulos') && ((SECCIONES[s.t] || {}).admite || []).includes('modulos'))
     .map(([s, i]) => `${String(i + 1).padStart(2, '0')} ${(SECCIONES[s.t] || {}).n}`);
+  /* Un módulo no se explica con su nombre: la prueba ciega del 23-sep (Haiku)
+     recibió «Módulo: Desplegable» y no usó ni una clase del kit porque no sabía
+     su marcado. Se entrega el marcado EXACTO que pinta el lienzo, con la foto
+     como fichero y el texto de ejemplo para sustituir. */
+  const marcado = (m) => {
+    // La ficha del lienzo es una imitación (botón + nota); la de verdad es el
+    // bloque Sheet del kit o un <dialog> nativo. Dar la imitación como
+    // «marcado exacto» sería mentir.
+    if (m === 'sheet') return '';
+    FOTO_FIJA = '/img/TODO.webp';
+    try { return moduloHTML(m).replace(/\s+/g, ' ').replace(/> </g, '><').trim(); }
+    finally { FOTO_FIJA = null; }
+  };
   S.modulos.forEach((m) => piezas.push(`Módulo: ${MODULOS[m].n} — ${MODULOS[m].nota}${MODULOS[m].js ? ' · vía B: se quita' : ''}` +
-    ` · va en: ${conModulos.length ? conModulos.join(', ') : 'ninguna sección (se usa donde el contenido lo pida, no por tenerlo)'}`));
+    ` · va en: ${conModulos.length ? conModulos.join(', ') : 'ninguna sección (se usa donde el contenido lo pida, no por tenerlo)'}` +
+    (marcado(m) ? `\n  Marcado exacto (el texto es de ejemplo: se sustituye por el del cliente):\n  ${marcado(m)}` : '')));
   S.movimiento.filter((m) => m !== 'quieto').forEach((m) => piezas.push(
     `Movimiento: ${MOVIMIENTO[m].n}${MOVIMIENTO[m].js ? ` (data-fx="${MOVIMIENTO[m].js}") · vía B: se quita` : ''}`));
 
@@ -2237,12 +2303,16 @@ contenido de abajo. No los reinterpretes: están decididos.
 Este encargo se basta solo: trae la paleta completa, las piezas con su clase exacta, el orden
 de la página y lo que va dentro de cada sección. Lo que no se sabe va marcado como TODO con el
 paso del protocolo que lo rellena (P7, P8…): NO lo inventes, pídeselo a quien te pasó el encargo.
+Los «Pn» son pasos del protocolo de la agencia: no hace falta consultarlos, lo que aportan ya
+está en el bloque CONTENIDO. Los textos de sección y botones los redactas tú con la VOZ de abajo;
+los datos (cifras, precios, plazos, reseñas, teléfonos) salen SOLO del CONTENIDO.
 
 ═══ ANTES DE MAQUETAR: MATERIALES ═══
 Mínimo: logo en vector · 12 fotos reales de ≥1600 px · nombre, dirección y teléfono exactos ·
 qué vende y a quién, en sus palabras · razón social y NIF. Sin eso no se arranca: se piden.
 Fotos: nunca de banco ni generadas con IA. Si son de móvil y con luces distintas, el tratamiento
-de foto de abajo las iguala.
+de foto de abajo las iguala.${FOTOS_CLIENTE.length ? `
+Fotos del cliente probadas en el Estudio: ${FOTOS_CLIENTE.length} (${FOTOS_CLIENTE.filter((f) => f.w >= 1600).length} de ≥1600 px, ${FOTOS_CLIENTE.filter((f) => f.w > f.h).length} horizontales).${diagnosticoFotos().map(([t, x]) => `\n  ⚠ ${t}: ${x}`).join('')}` : ''}
 
 ═══ CÓMO SE MONTA: DOS VÍAS ═══
 VÍA A · con el kit (Astro 5 + Tailwind v4), si tienes el repo privado
@@ -2264,6 +2334,11 @@ ${ficherosFuente()}
      de cada visitante a un tercero (RGPD) y Pages cachea diez minutos.
   5. Los efectos con JavaScript (data-fx) no existen en esta vía: cada pieza dice abajo qué va en su
      lugar. La web tiene que entenderse entera sin ellos.
+  6. Utilidades base que trae kit.css, para no reinventarlas: container-kit (ancho y márgenes) ·
+     section-y (aire vertical de sección) · measure (≤65 caracteres) · tabular (cifras alineadas) ·
+     text-d1 / text-d2 / text-d3 (tamaños de titular) · bg-paper / bg-paper-alt / bg-deep ·
+     text-ink / text-ink-soft · font-display. «.reveal» sin el runtime se queda visible: NO pongas
+     la clase kit-js a mano, o lo marcado con .reveal no aparecerá nunca.
 
 ═══ TOKENS · la paleta completa (no se añade ni un color) ═══
 ${lineasTokens()}
@@ -2421,6 +2496,105 @@ function pintaDiagnostico(d) {
   ].filter(Boolean);
   host.innerHTML = `<p class="ui-hint" style="margin:.5rem 0 0">${filas.join(' · ')}</p>` +
     (d.avisos || []).map(([t, x]) => `<div class="ui-aviso" style="margin-top:.45rem"><span>⚠</span><span><b>${esc(t)}:</b> ${esc(x)}</span></div>`).join('');
+}
+
+/* ── Las fotos del cliente: subirlas y saber si sirven ─────────────────────
+   Las reglas son las de ASSETS.md, medidas y no opinadas: cuántas hay (12 es
+   el mínimo para una web), cuántas no llegan a 1600 px (no valen a pantalla
+   completa), si hay horizontales para las cabeceras y si las luces son tan
+   distintas que piden fx-tint, que es lo que más rinde de todo el kit. */
+
+let fotosNoCaben = false;
+
+/** Reduce la foto para el lienzo y mide su luminosidad media. */
+async function preparaFoto(file) {
+  const src = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(file); });
+  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const k = Math.min(1, LADO_LIENZO / Math.max(w, h));
+  const c = Object.assign(document.createElement('canvas'), { width: Math.round(w * k), height: Math.round(h * k) });
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  // Luminosidad media sobre una miniatura de 32 px: basta para comparar luces.
+  const m = Object.assign(document.createElement('canvas'), { width: 32, height: 32 });
+  const mx = m.getContext('2d', { willReadFrequently: true });
+  mx.drawImage(img, 0, 0, 32, 32);
+  const px = mx.getImageData(0, 0, 32, 32).data;
+  let suma = 0;
+  for (let i = 0; i < px.length; i += 4) suma += (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+  return { datos: c.toDataURL('image/jpeg', 0.82), w, h, n: file.name, b: file.size, luz: suma / (px.length / 4) };
+}
+
+const aURL = async (datos) => URL.createObjectURL(await (await fetch(datos)).blob());
+
+function guardaFotos() {
+  try {
+    localStorage.setItem(CLAVE_FOTOS, JSON.stringify(FOTOS_CLIENTE.map(({ url, ...f }) => f)));
+    return true;
+  } catch { return false; }
+}
+
+async function recuperaFotos() {
+  try {
+    const xs = JSON.parse(localStorage.getItem(CLAVE_FOTOS) || '[]');
+    FOTOS_CLIENTE = await Promise.all(xs
+      .filter((f) => f && typeof f.datos === 'string' && f.datos.startsWith('data:image/'))
+      .map(async (f) => ({ ...f, url: await aURL(f.datos) })));
+  } catch { FOTOS_CLIENTE = []; }
+}
+
+/** Lo que dice ASSETS.md de estas fotos, con números. */
+function diagnosticoFotos() {
+  const xs = FOTOS_CLIENTE;
+  if (!xs.length) return [];
+  const a = [];
+  const pequenas = xs.filter((f) => f.w < 1600).length;
+  const horizontales = xs.filter((f) => f.w > f.h).length;
+  const luces = xs.map((f) => f.luz).filter((l) => typeof l === 'number');
+  if (xs.length < 12) a.push(['Pocas fotos', `${xs.length} de las 12 mínimas. Por debajo, la web se nota vacía: úsalas GRANDES y pide el resto con el guion de ASSETS.md.`]);
+  if (pequenas) a.push([`${pequenas} por debajo de 1600 px`, 'no valen a pantalla completa. Pídelas como ARCHIVO, no por chat: el chat las comprime.']);
+  if (!horizontales) a.push(['Ninguna horizontal', 'las cabeceras necesitan fotos apaisadas. Pídelas en horizontal y sin zoom.']);
+  if (luces.length > 1 && Math.max(...luces) - Math.min(...luces) > 0.25 && !['tint', 'duotono', 'ink'].includes(S.foto))
+    a.push(['Luces muy distintas', `la luminosidad media va del ${Math.round(Math.min(...luces) * 100)} % al ${Math.round(Math.max(...luces) * 100)} %. Con el tratamiento «Tinte» (fx-tint) se leen como una serie.`]);
+  return a;
+}
+
+function pintaFotos() {
+  const host = $('#fotos-diag');
+  if (!host) return;
+  const xs = FOTOS_CLIENTE;
+  const resumen = xs.length
+    ? `${xs.length} ${xs.length === 1 ? 'foto' : 'fotos'} · ${xs.filter((f) => f.w > f.h).length} horizontales · la mayor de ${Math.max(...xs.map((f) => f.w))} px de ancho`
+    : 'Sin fotos del cliente: el lienzo usa fotos de ejemplo (rótulos de Dígito).';
+  host.innerHTML = `<p class="ui-hint" style="margin:.5rem 0 0">${resumen}</p>` +
+    (fotosNoCaben ? '<div class="ui-aviso" style="margin-top:.45rem"><span>⚠</span><span><b>No caben en el navegador:</b> se ven ahora, pero al recargar habrá que subirlas otra vez.</span></div>' : '') +
+    diagnosticoFotos().map(([t, x]) =>
+      `<div class="ui-aviso" style="margin-top:.45rem"><span>⚠</span><span><b>${esc(t)}:</b> ${esc(x)}</span></div>`).join('');
+}
+
+function quitaFotos() {
+  FOTOS_CLIENTE.forEach((f) => URL.revokeObjectURL(f.url));
+  FOTOS_CLIENTE = [];
+  fotosNoCaben = false;
+  try { localStorage.removeItem(CLAVE_FOTOS); } catch { /* nada que borrar */ }
+}
+
+function enlazaFotos() {
+  const inp = $('#fotos-file');
+  if (!inp) return;
+  inp.addEventListener('change', async () => {
+    const files = [...(inp.files || [])].filter((f) => /^image\//.test(f.type))
+      .slice(0, Math.max(0, MAX_FOTOS - FOTOS_CLIENTE.length));
+    inp.value = '';
+    if (!files.length) return;
+    for (const f of files) {
+      try { const p = await preparaFoto(f); FOTOS_CLIENTE.push({ ...p, url: await aURL(p.datos) }); }
+      catch { /* una foto ilegible no para las demás */ }
+    }
+    fotosNoCaben = !guardaFotos();
+    firmaPrevia = null;   // las fotos no viven en S: se fuerza a repintar el lienzo
+    render();
+  });
+  $('#fotos-quitar')?.addEventListener('click', () => { quitaFotos(); firmaPrevia = null; render(); });
 }
 
 function enlazaLogo() {
@@ -2596,7 +2770,7 @@ function aplicaComposicion(id) {
 /* Los campos de contenido. Los que se ven en el lienzo lo repintan; los que
    solo van al encargo actualizan avisos y guardan, sin recargar la muestra. */
 const CAMPOS_CONTENIDO = ['np', 'posicionamiento', 'prueba', 'busqueda', 'zona', 'voz',
-  'palabrasSi', 'palabrasNo', 'objecion', 'listaServicios', 'listaResenas'];
+  'palabrasSi', 'palabrasNo', 'objecion', 'listaServicios', 'listaResenas', 'cifras', 'datosContacto'];
 
 /** Los campos que no son fichas hay que ponerlos a mano. */
 function sincronizaCampos() {
@@ -2789,6 +2963,8 @@ function enlaza() {
   $('#reset').addEventListener('click', () => {
     S = normaliza({});
     try { localStorage.removeItem(CLAVE); } catch { /* nada que borrar */ }
+    // Empezar de cero es cliente nuevo: las fotos del anterior no se quedan.
+    quitaFotos(); firmaPrevia = null;
     history.replaceState(null, '', location.pathname);
     sincronizaCampos();
     pintaControles(); pintaEjes(); pintaSecciones(); render();
@@ -2797,6 +2973,7 @@ function enlaza() {
   $('#dados').addEventListener('click', azar);
 
   enlazaLogo();
+  enlazaFotos();
   $('#marca-chrome')?.addEventListener('change', (e) => { S.marcaEnChrome = e.target.checked; render(); });
 
   /* Pantalla completa de la muestra. En un móvil no caben el panel y la
@@ -2810,7 +2987,7 @@ function enlaza() {
 }
 
 /* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */
-Promise.all([cargaManifiesto(), cargaMarcas(), cargaFuentes()]).then(() => {
+Promise.all([cargaManifiesto(), cargaMarcas(), cargaFuentes(), recuperaFotos()]).then(() => {
   recupera();
   chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
   chips('#composiciones', [['defecto', 'La de siempre', 'Portada, servicios, trabajos, reseña y cierre'],

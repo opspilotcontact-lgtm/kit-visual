@@ -51,6 +51,15 @@
         <span>Qué hace, en sus palabras</span>
         <input type="text" id="oficio" placeholder="taller de rotulación desde 1993" autocomplete="off">
       </label>
+      <div class="ui-field">
+        <span>Sus fotos <em>— para ver SUS fotos con el tratamiento; no salen de este navegador</em></span>
+        <div class="ui-logo">
+          <label class="ui-btn ui-btn-ghost" for="fotos-file">Subir fotos…</label>
+          <input type="file" id="fotos-file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+          <button type="button" id="fotos-quitar" class="ui-btn ui-btn-ghost">Quitar</button>
+        </div>
+        <div id="fotos-diag"></div>
+      </div>
       <p class="ui-hint">
         Sin materiales no hay dirección de arte. Antes de esto: <code>ASSETS.md</code>.
       </p>
@@ -104,10 +113,18 @@
         <span>Reseñas reales <em>— una por línea: texto literal · dónde y cuándo</em></span>
         <textarea id="listaResenas" rows="3" placeholder="Lo que dijeron que costaba fue lo que costó. · Google, marzo de 2026"></textarea>
       </label>
+      <label class="ui-field">
+        <span>P8 · Cifras con prueba <em>— una por línea: cifra · qué mide · de dónde sale</em></span>
+        <textarea id="cifras" rows="3" placeholder="48 h · visita en la capital · compromiso escrito en el presupuesto"></textarea>
+      </label>
       <div class="ui-field">
         <span>P12 · El canal que atiende DE VERDAD <em>— lo que no se marque no sale en la web</em></span>
         <div class="ui-chips ui-chips-sm" id="canales"></div>
       </div>
+      <label class="ui-field">
+        <span>Datos de contacto <em>— tal como van en todas partes</em></span>
+        <textarea id="datosContacto" rows="3" placeholder="WhatsApp +34 6XX XX XX XX · lunes a viernes, 9 a 19 h&#10;El formulario llega a info@… y se contesta en el día"></textarea>
+      </label>
     </section>
 
     <section class="ui-group">
@@ -307,6 +324,6 @@
   </article>
 </dialog>
 
-<script src="estudio.js?v=6152dc5c"></script>
+<script src="estudio.js?v=b625a1a0"></script>
 </body>
 </html>
