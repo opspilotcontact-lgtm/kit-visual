@@ -428,6 +428,18 @@ function filaServicio([t, d, p], i, osc) {
   </div>`;
 }
 
+/* El acento como TEXTO solo si se lee (≥3:1, texto grande). Con un acento claro
+   —el amarillo de Dígito— los números de los pasos daban 1,1:1 sobre el papel
+   (revisión adversarial de la F6). Si no llega, van en tinta (o en blanco sobre
+   el fondo profundo): el acento queda para superficies, no para letras. */
+function tintaDeAcento(osc) {
+  const t = tokens();
+  const b = t['--color-brand'];
+  const fondos = osc ? [t['--color-deep']] : [t['--color-paper'], t['--color-paper-alt']];
+  const lee = esHex(b) && fondos.every((f) => !esHex(f) || ratio(b, f) >= 3);
+  return lee ? 'var(--color-brand)' : (osc ? '#fff' : 'var(--color-ink)');
+}
+
 const CUERPO = {
   hero(v) {
     /* P12: el titular dice qué es y dónde CON la búsqueda principal (P11). Antes
@@ -533,7 +545,7 @@ const CUERPO = {
       return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:2rem;margin-top:2.5rem">
         ${pas().map(([t, d], i) => `<div>
           <span class="tabular" style="font-family:var(--font-display);font-weight:800;font-size:2.2rem;
-            line-height:1;color:var(--color-brand)">${i + 1}</span>
+            line-height:1;color:${tintaDeAcento(osc)}">${i + 1}</span>
           <p style="font-family:var(--font-display);font-weight:700;margin:.6rem 0 0">${t}</p>
           <p style="margin:.4rem 0 0;font-size:.9rem;color:${suave(osc)}">${d}</p></div>`).join('')}</div>`;
     }
@@ -764,7 +776,9 @@ function cssBase() {
   p{line-height:1.65}
   .lead{color:var(--color-ink-soft);max-width:60ch;font-size:1.05rem}
   .sec:has(>.marca-sello) :is(h1,h2){padding-right:5.5rem}
-  @media (max-width:40rem){header nav{display:none!important}}
+  @media (max-width:40rem){header nav{display:none!important}
+    .marca-sello{top:1rem!important;right:1rem!important;width:3.6rem!important;height:3.6rem!important}
+    .sec:has(>.marca-sello){padding-top:max(5.5rem,var(--sec-pt,0rem))}.sec:has(>.marca-sello) :is(h1,h2){padding-right:0}}
   ${VENTANA_CSS}`;
   /* La cabecera en el móvil: marca y botón, sin los enlaces. Con los tres, el
      botón se salía de la pantalla y había scroll lateral (medido a 375 px en la
