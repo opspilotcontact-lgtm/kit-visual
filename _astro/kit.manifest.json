@@ -96,7 +96,8 @@
       "n": "Archivo",
       "dice": "industrial, señalética, cartel",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando el oficio es chapa, cartel o nave: extendida es señalética. Ya la llevan cuatro webs del portfolio: solo con otro papel, otro acento y un gesto fuerte."
     },
     {
       "id": "Big Shoulders Display",
@@ -104,7 +105,8 @@
       "n": "Big Shoulders",
       "dice": "condensada de fábrica: ocupa poco y pega fuerte",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando hay que decir mucho en poco ancho: industria, logística, deporte. No en marcas de trato íntimo."
     },
     {
       "id": "Fraunces",
@@ -112,7 +114,8 @@
       "n": "Fraunces",
       "dice": "cálida y con oficio: cuando se vende TRATO",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando se vende trato y oficio con años: reformas de confianza, obradores. La usa Rodríguez: en ese gremio, otra."
     },
     {
       "id": "Bodoni Moda",
@@ -120,7 +123,8 @@
       "n": "Bodoni Moda",
       "dice": "alto contraste, lujo editorial. Pide mucho aire",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando el cliente es caro y lo sabe: joyería, moda, interiorismo. Pide aire 4-5; con densidad se rompe."
     },
     {
       "id": "Young Serif",
@@ -128,7 +132,8 @@
       "n": "Young Serif",
       "dice": "contundente y antigua. Ya en uso en Córdoba Soluciona",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando la marca tiene memoria de lugar y quiere pesar sin ser técnica. Es la de Córdoba Soluciona: no repetir en el mismo encargante."
     },
     {
       "id": "Anton",
@@ -136,7 +141,8 @@
       "n": "Anton",
       "dice": "un martillo: titulares de tres palabras",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando el titular son tres palabras y un precio: gimnasios, ofertas, eventos. Con marca de trato o en párrafos, grita."
     },
     {
       "id": "Unbounded",
@@ -144,7 +150,8 @@
       "n": "Unbounded",
       "dice": "geométrica rotunda, marca joven. Cansa en texto",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando la marca es joven y geométrica: apps, cultura. En titulares largos cansa."
     },
     {
       "id": "Syne",
@@ -152,7 +159,8 @@
       "n": "Syne",
       "dice": "personalidad fuerte, cultural, estudios",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando la marca es cultural o de estudio y quiere rareza controlada. No para un público mayor o conservador."
     },
     {
       "id": "Cormorant",
@@ -160,7 +168,8 @@
       "n": "Cormorant",
       "dice": "fina y delicada. No usar pequeña",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando se vende cuidado y cuerpo (estética, bienestar) y hay aire. Nunca pequeña ni con peso alto."
     },
     {
       "id": "Instrument Serif",
@@ -168,7 +177,8 @@
       "n": "Instrument Serif",
       "dice": "editorial, de revista",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando la web se lee como revista: galerías, arquitectura pequeña. Necesita fotos buenas y grandes."
     },
     {
       "id": "Epilogue",
@@ -176,7 +186,8 @@
       "n": "Epilogue",
       "dice": "carácter sin llegar a display, aguanta densidad",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando todavía no se sabe: neutra con carácter, aguanta densidad. Es el punto de partida, no la decisión."
     },
     {
       "id": "Space Grotesk",
@@ -184,7 +195,8 @@
       "n": "Space Grotesk",
       "dice": "técnica y limpia, producto",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando se compra por criterio técnico: ingeniería, software, instalaciones. A un particular le suena frío."
     },
     {
       "id": "Newsreader",
@@ -192,7 +204,8 @@
       "n": "Newsreader",
       "dice": "serif de lectura, aguanta párrafos",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando la marca escribe mucho y bien: despachos, formación. Como display, solo con titulares largos."
     },
     {
       "id": "Literata",
@@ -200,7 +213,8 @@
       "n": "Literata",
       "dice": "la otra de lectura, más robusta",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando el texto es largo y el público mayor: lectura robusta, display sobria."
     },
     {
       "id": "Schibsted Grotesk",
@@ -208,7 +222,8 @@
       "n": "Schibsted",
       "dice": "texto limpio con buenas cifras",
       "peso": 800,
-      "evitar": false
+      "evitar": false,
+      "aporta": "Cuando mandan las cifras y las tablas (precios, medidas). Funcional: no es memorable por sí sola."
     },
     {
       "id": "Bricolage Grotesque",
@@ -216,7 +231,8 @@
       "n": "Bricolage",
       "dice": "⚠ se reconoce al instante en webs generadas",
       "peso": 800,
-      "evitar": true
+      "evitar": true,
+      "aporta": "Casi nunca: se reconoce al instante como web generada. Solo si el cliente ya la tiene."
     },
     {
       "id": "Instrument Sans",
@@ -308,7 +324,8 @@
       "id": "ninguno",
       "grupo": "fondo",
       "n": "Ninguno",
-      "dice": "que hable el contenido. Opción legítima y a menudo la mejor"
+      "dice": "que hable el contenido. Opción legítima y a menudo la mejor",
+      "aporta": "Cuando la firma ya es fuerte (forma, foto, letra): el vacío la deja hablar. Es la opción de Córdoba y de casi todas las webs buenas."
     },
     {
       "id": "contour",
@@ -316,7 +333,8 @@
       "n": "Curvas",
       "dice": "plano, medida, ingeniería. Es LÍNEA: no come contraste",
       "js": "contour",
-      "sinJs": "blueprint"
+      "sinJs": "blueprint",
+      "aporta": "Cuando el cliente mide terreno o calcula (topografía, instalaciones). Enfría: nunca con temperatura 4-5."
     },
     {
       "id": "flowfield",
@@ -324,7 +342,8 @@
       "n": "Flujo",
       "dice": "mano, trazo, arte. Se pinta y para; distinto en cada visita",
       "js": "flowfield",
-      "sinJs": "hatch"
+      "sinJs": "hatch",
+      "aporta": "Cuando el oficio es de mano y trazo (artesanía, pintura). Distinto en cada visita: no para marcas que venden rigor."
     },
     {
       "id": "gridwarp",
@@ -332,7 +351,8 @@
       "n": "Rejilla viva",
       "dice": "técnico pero vivo. En reposo es un plano serio",
       "js": "gridwarp",
-      "sinJs": "grid"
+      "sinJs": "grid",
+      "aporta": "Cuando es técnico pero quiere parecer vivo (software industrial). En reposo es un plano: aguanta capturas."
     },
     {
       "id": "mesh",
@@ -340,7 +360,8 @@
       "n": "Mesh",
       "dice": "luz, color, ambiente, sin bandas",
       "js": "mesh",
-      "sinJs": "orbs"
+      "sinJs": "orbs",
+      "aporta": "Cuando se vende luz o ambiente (hostelería, eventos), con el acento bajo. Es de los más vistos en webs generadas: con cuidado."
     },
     {
       "id": "halftone",
@@ -348,14 +369,16 @@
       "n": "Semitono",
       "dice": "imprenta, tinta, oficio gráfico",
       "js": "halftone",
-      "sinJs": "dots"
+      "sinJs": "dots",
+      "aporta": "Cuando el oficio es imprenta, rotulación o gráfico. Muy tenue: si se ve antes que el titular, sobra."
     },
     {
       "id": "grid",
       "grupo": "fondo",
       "n": "Rejilla",
       "dice": "plano de taller",
-      "clase": "fx-grid"
+      "clase": "fx-grid",
+      "aporta": "Cuando hay plano de taller y medida. Neutro; va bien con aire bajo."
     },
     {
       "id": "stripes",
@@ -363,14 +386,16 @@
       "n": "Bandas",
       "dice": "señalización, obra, aviso",
       "clase": "fx-stripes",
-      "vars": "--stripe-w:20px;--stripe-a:6%"
+      "vars": "--stripe-w:20px;--stripe-a:6%",
+      "aporta": "Cuando el aviso es parte del negocio: obra, señalización, seguridad. Con aire alto es ruido."
     },
     {
       "id": "hatch",
       "grupo": "fondo",
       "n": "Rayado",
       "dice": "grabado, billete, lámina antigua",
-      "clase": "fx-hatch"
+      "clase": "fx-hatch",
+      "aporta": "Cuando la marca tiene memoria de grabado o lámina. Muy fino o ensucia."
     },
     {
       "id": "blueprint",
@@ -378,21 +403,24 @@
       "n": "Plano técnico",
       "dice": "papel milimetrado con jerarquía: se lee como proyecto, no como fondo",
       "clase": "fx-blueprint",
-      "miniVars": "--bp-major:26px;--bp-minor:6px;--bp-a:34%;--bp-fade:100%"
+      "miniVars": "--bp-major:26px;--bp-minor:6px;--bp-a:34%;--bp-fade:100%",
+      "aporta": "Cuando se entrega un plano antes que un presupuesto: arquitectura, instalaciones. Nunca junto a contour o gridwarp."
     },
     {
       "id": "dots",
       "grupo": "fondo",
       "n": "Puntos",
       "dice": "papel técnico sin parecerlo",
-      "clase": "fx-dots"
+      "clase": "fx-dots",
+      "aporta": "Cuando se quiere papel técnico sin frialdad. Discreto."
     },
     {
       "id": "orbs",
       "grupo": "fondo",
       "n": "Manchas",
       "dice": "color y ambiente por tres degradados",
-      "clase": "fx-orbs"
+      "clase": "fx-orbs",
+      "aporta": "Cuando el color es el producto (escaparate, estética). De los más genéricos: úsalo como luz, no como tema."
     },
     {
       "id": "rays",
@@ -400,7 +428,8 @@
       "n": "Rayos",
       "dice": "luz de foco, letrero encendido",
       "clase": "fx-rays",
-      "vars": "--ray-a:10%"
+      "vars": "--ray-a:10%",
+      "aporta": "Cuando se vende foco o letrero encendido, mejor sobre profundo. En toda la web cansa."
     },
     {
       "id": "halo",
@@ -408,19 +437,22 @@
       "n": "Halo",
       "dice": "resplandor limpio detrás de algo",
       "clase": "fx-halo",
-      "vars": "--halo-a:26%"
+      "vars": "--halo-a:26%",
+      "aporta": "Cuando hay un único objeto que destacar (producto, logo). Uno por página."
     },
     {
       "id": "ninguna",
       "grupo": "escena",
-      "n": "Ninguna"
+      "n": "Ninguna",
+      "aporta": "Cuando la página ya tiene forma de marca (arco, sello). No se añade escenografía por tenerla."
     },
     {
       "id": "half",
       "grupo": "escena",
       "n": "Sección partida",
       "clase": "fx-half",
-      "vars": "--half-color:var(--color-deep)"
+      "vars": "--half-color:var(--color-deep)",
+      "aporta": "Cuando la sección enfrenta dos cosas (problema y solución, antes y ahora). Pide aire 3 o más."
     },
     {
       "id": "disc",
@@ -428,7 +460,8 @@
       "n": "Disco",
       "clase": "fx-disc",
       "vars": "--disc-size:30rem;--disc-x:82%;--disc-y:26%",
-      "miniVars": "--disc-size:3.2rem;--disc-x:64%;--disc-y:40%"
+      "miniVars": "--disc-size:3.2rem;--disc-x:64%;--disc-y:40%",
+      "aporta": "Cuando hay un objeto o una persona que centrar. Detrás del producto, nunca detrás del texto."
     },
     {
       "id": "ring",
@@ -436,19 +469,22 @@
       "n": "Anillo",
       "clase": "fx-disc fx-ring",
       "vars": "--disc-size:26rem;--disc-x:84%;--disc-y:30%;--ring-w:2rem",
-      "miniVars": "--disc-size:3.4rem;--disc-x:50%;--disc-y:50%;--ring-w:.55rem"
+      "miniVars": "--disc-size:3.4rem;--disc-x:50%;--disc-y:50%;--ring-w:.55rem",
+      "aporta": "Cuando se quiere foco sin peso. Discreto; bien sobre profundo."
     },
     {
       "id": "band",
       "grupo": "escena",
       "n": "Faja",
-      "clase": "fx-band"
+      "clase": "fx-band",
+      "aporta": "Cuando hay que cruzar la página con una idea (marquesina, cifra). Una por página."
     },
     {
       "id": "corner",
       "grupo": "escena",
       "n": "Cuña",
-      "clase": "fx-corner"
+      "clase": "fx-corner",
+      "aporta": "Cuando la sección necesita dirección. Mejor en las bisagras."
     },
     {
       "id": "column",
@@ -456,13 +492,15 @@
       "n": "Columna",
       "clase": "fx-column",
       "vars": "--col-color:var(--color-deep);--col-w:34%",
-      "miniVars": "--col-color:var(--color-deep);--col-w:34%"
+      "miniVars": "--col-color:var(--color-deep);--col-w:34%",
+      "aporta": "Cuando el oficio es vertical o de estructura (construcción, arquitectura)."
     },
     {
       "id": "arco",
       "grupo": "escena",
       "n": "Borde en curva",
-      "borde": true
+      "borde": true,
+      "aporta": "Cuando la marca tiene curva (arco, bóveda, puerta). Solo si la forma sale del cliente: en Córdoba el arco ES la marca."
     },
     {
       "id": "ninguna",
@@ -550,14 +588,16 @@
     {
       "id": "limpia",
       "grupo": "foto",
-      "n": "Limpia"
+      "n": "Limpia",
+      "aporta": "Cuando las fotos son buenas y de la misma serie. La más honesta; la de Córdoba."
     },
     {
       "id": "tint",
       "grupo": "foto",
       "n": "Tinte de marca",
       "nota": "iguala fotos de días y luces distintas. El que más rinde",
-      "clase": "fx-tint"
+      "clase": "fx-tint",
+      "aporta": "Cuando las fotos son de móvil, de días y luces distintos: las convierte en serie. Lo que más rinde del kit."
     },
     {
       "id": "ink",
@@ -569,7 +609,8 @@
         "modo": "propio",
         "fn": "ink"
       },
-      "sinJs": "duotono"
+      "sinJs": "duotono",
+      "aporta": "Cuando hay pocas fotos o malas y la marca es gráfica: pasan a dibujo. Sobre oscuro, con invert."
     },
     {
       "id": "duotono",
@@ -581,7 +622,8 @@
       "mini": {
         "modo": "propio",
         "fn": "duotono"
-      }
+      },
+      "aporta": "Cuando hay que meter fotos dispares en la paleta. Resta verdad: no para enseñar acabados."
     },
     {
       "id": "bleed",
@@ -589,21 +631,24 @@
       "n": "Sangrado",
       "nota": "la foto se disuelve en el fondo",
       "clase": "fx-bleed",
-      "vars": "--bleed-b:55%"
+      "vars": "--bleed-b:55%",
+      "aporta": "Cuando la foto parece pegada y el fondo es plano: se funde. No sobre fondos con trama."
     },
     {
       "id": "soft",
       "grupo": "foto",
       "n": "Bordes disueltos",
       "nota": "no termina, se desvanece",
-      "clase": "fx-soft"
+      "clase": "fx-soft",
+      "aporta": "Cuando la periferia de la foto es fea. Suaviza, pero resta rigor."
     },
     {
       "id": "grano",
       "grupo": "foto",
       "n": "Grano",
       "nota": "iguala texturas, disimula fotos de móvil",
-      "clase": "fx-photo-grain"
+      "clase": "fx-photo-grain",
+      "aporta": "Cuando hay que igualar texturas o la marca es analógica. Con fotos buenas sobra."
     },
     {
       "id": "offset",
@@ -614,54 +659,63 @@
       "mini": {
         "modo": "propio",
         "fn": "offset"
-      }
+      },
+      "aporta": "Cuando falta profundidad y el acento puede asomar detrás. Pequeño y se repite bien."
     },
     {
       "id": "recto",
       "grupo": "forma",
-      "n": "Rectángulo"
+      "n": "Rectángulo",
+      "aporta": "Cuando la foto es trabajo y tiene que verse entera. La de Córdoba: «fotos enteras»."
     },
     {
       "id": "redondo",
       "grupo": "forma",
       "n": "Redondeado",
-      "clase": "rounded-xl"
+      "clase": "rounded-xl",
+      "aporta": "Amable por defecto, y por eso también la más genérica."
     },
     {
       "id": "arch",
       "grupo": "forma",
       "n": "Arco",
-      "clase": "fx-arch"
+      "clase": "fx-arch",
+      "aporta": "Cuando la marca tiene arco o puerta. Si el arco es la marca, no en todas las fotos: «parece disfraz» (Córdoba v5)."
     },
     {
       "id": "blob",
       "grupo": "forma",
       "n": "Mancha",
-      "clase": "fx-blob"
+      "clase": "fx-blob",
+      "aporta": "Cuando se vende cercanía y cuerpo (bienestar, infancia). Resta rigor."
     },
     {
       "id": "notch",
       "grupo": "forma",
       "n": "Bisel",
-      "clase": "fx-notch"
+      "clase": "fx-notch",
+      "aporta": "Cuando el oficio es de chapa o corte (metal, taller)."
     },
     {
       "id": "hex",
       "grupo": "forma",
       "n": "Hexágono",
-      "clase": "fx-hex"
+      "clase": "fx-hex",
+      "aporta": "Cuando hay panal, estructura o técnica. Muy marcado: poco."
     },
     {
       "id": "lozenge",
       "grupo": "forma",
       "n": "Elipse",
-      "clase": "fx-lozenge"
+      "clase": "fx-lozenge",
+      "aporta": "Cuando la marca es una elipse (el logo de Dígito)."
     },
     {
       "id": "capsule",
       "grupo": "forma",
       "n": "Cápsula",
-      "clase": "fx-capsule"
+      "clase": "fx-capsule",
+      "aporta": "Cuando se vende rapidez y producto (escaparate)."
     },
     {
       "id": "barra",
@@ -728,42 +782,49 @@
     {
       "id": "normal",
       "grupo": "titular",
-      "n": "Normal"
+      "n": "Normal",
+      "aporta": "Casi siempre: la jerarquía la hacen el tamaño, el peso y el color a la vez."
     },
     {
       "id": "extendido",
       "grupo": "titular",
-      "n": "Extendido"
+      "n": "Extendido",
+      "aporta": "Cuando la display tiene eje de anchura y el oficio es cartel. Es identidad, no un ajuste de una página."
     },
     {
       "id": "knockout",
       "grupo": "titular",
       "n": "Foto dentro",
-      "clase": "fx-knockout"
+      "clase": "fx-knockout",
+      "aporta": "Cuando las letras son el oficio (rotulista, imprenta) y hay una foto oscura y buena."
     },
     {
       "id": "outline",
       "grupo": "titular",
       "n": "Contorno",
-      "clase": "fx-outline"
+      "clase": "fx-outline",
+      "aporta": "Cuando hay un segundo titular que no debe competir. Nunca el principal en pequeño."
     },
     {
       "id": "trama",
       "grupo": "titular",
       "n": "Trama",
-      "clase": "fx-hatch-text"
+      "clase": "fx-hatch-text",
+      "aporta": "Cuando la marca es serigráfica o gráfica. Solo en grande."
     },
     {
       "id": "marcado",
       "grupo": "titular",
       "n": "Resaltado",
-      "nota": "trazo de rotulador tras una palabra"
+      "nota": "trazo de rotulador tras una palabra",
+      "aporta": "Cuando una palabra del titular es la promesa. Es de los tics más vistos: una vez, no en cada titular."
     },
     {
       "id": "escalonado",
       "grupo": "titular",
       "n": "Escalonado",
-      "clase": "fx-stagger-lines"
+      "clase": "fx-stagger-lines",
+      "aporta": "Cuando el titular es un cartel de tres líneas cortas."
     },
     {
       "id": "completo",
@@ -789,55 +850,64 @@
       "id": "disclosure",
       "grupo": "modulo",
       "n": "Desplegable",
-      "nota": "número, gancho visible, precio a la vista y foto dentro"
+      "nota": "número, gancho visible, precio a la vista y foto dentro",
+      "aporta": "Cuando hay precios o partidas que cerrados ya dicen algo: la base de la «partida» de Córdoba."
     },
     {
       "id": "tabs",
       "grupo": "modulo",
       "n": "Pestañas",
-      "nota": "radios + :checked, teclado incluido"
+      "nota": "radios + :checked, teclado incluido",
+      "aporta": "Cuando hay fases o variantes paralelas que no se leen a la vez."
     },
     {
       "id": "rail",
       "grupo": "modulo",
       "n": "Carril",
-      "nota": "scroll-snap; mejor que un carrusel con puntitos"
+      "nota": "scroll-snap; mejor que un carrusel con puntitos",
+      "aporta": "Cuando hay muchas fotos y poco sitio. Mejor que un carrusel con puntitos."
     },
     {
       "id": "sheet",
       "grupo": "modulo",
       "n": "Panel de ficha",
-      "nota": "<dialog> nativo: Esc, foco atrapado, fondo bloqueado"
+      "nota": "<dialog> nativo: Esc, foco atrapado, fondo bloqueado",
+      "aporta": "Cuando cada producto tiene ficha y no merece otra página."
     },
     {
       "id": "pull",
       "grupo": "modulo",
       "n": "Cita grande",
-      "nota": "para una reseña REAL, con nombre y fecha"
+      "nota": "para una reseña REAL, con nombre y fecha",
+      "aporta": "Cuando hay una reseña real con nombre: una, grande."
     },
     {
       "id": "note",
       "grupo": "modulo",
       "n": "Nota de taller",
-      "nota": "para decir lo que NO se hace. Da credibilidad"
+      "nota": "para decir lo que NO se hace. Da credibilidad",
+      "aporta": "Cuando decir lo que NO se hace da credibilidad (oficios con presupuestos imposibles)."
     },
     {
       "id": "highlight",
       "grupo": "modulo",
       "n": "Destacado",
-      "nota": "uno por página; si hay tres, no hay ninguno"
+      "nota": "uno por página; si hay tres, no hay ninguno",
+      "aporta": "Cuando hay una sola cosa que leer si solo se lee una. Una por página."
     },
     {
       "id": "stat",
       "grupo": "modulo",
       "n": "Cifras",
-      "nota": "dato grande y etiqueta, con cifras tabulares"
+      "nota": "dato grande y etiqueta, con cifras tabulares",
+      "aporta": "Cuando hay cifras con prueba. Sin prueba, no."
     },
     {
       "id": "time",
       "grupo": "modulo",
       "n": "Cronología",
-      "nota": "una lista de fechas cuenta más que tres párrafos"
+      "nota": "una lista de fechas cuenta más que tres párrafos",
+      "aporta": "Cuando la memoria es el argumento (años, obras que marcaron)."
     },
     {
       "id": "sign",
@@ -848,36 +918,42 @@
       "mini": {
         "modo": "propio",
         "fn": "sign"
-      }
+      },
+      "aporta": "Cuando la marca es un objeto que se enciende (rotulación). Es un ESTADO: refuerza, no firma. La firma tiene que verse en reposo."
     },
     {
       "id": "reveal",
       "grupo": "movimiento",
-      "n": "Aparición al entrar"
+      "n": "Aparición al entrar",
+      "aporta": "Casi siempre: aparece sin robar. Con reduced-motion, cortado."
     },
     {
       "id": "split",
       "grupo": "movimiento",
       "n": "Titular por líneas",
-      "js": "split"
+      "js": "split",
+      "aporta": "Cuando el titular es un cartel y la marca pesa."
     },
     {
       "id": "counter",
       "grupo": "movimiento",
       "n": "Cifras que suben",
-      "js": "counter"
+      "js": "counter",
+      "aporta": "Cuando hay cifras con prueba que merecen el segundo de espera."
     },
     {
       "id": "parallax",
       "grupo": "movimiento",
       "n": "Parallax",
-      "js": "parallax"
+      "js": "parallax",
+      "aporta": "Cuando hay fotos con profundidad. En móvil, poco."
     },
     {
       "id": "marquee",
       "grupo": "movimiento",
       "n": "Banda en marcha",
-      "js": "marquee"
+      "js": "marquee",
+      "aporta": "Cuando hay nombres propios que pasar (pueblos, clientes). Una por página."
     },
     {
       "id": "spot",
@@ -887,24 +963,28 @@
       "mini": {
         "modo": "propio",
         "fn": "spot"
-      }
+      },
+      "aporta": "Cuando la marca es luz (noche, escenarios). Solo con cursor: no firma."
     },
     {
       "id": "tilt",
       "grupo": "movimiento",
       "n": "Inclinación",
-      "js": "tilt"
+      "js": "tilt",
+      "aporta": "Cuando hay tarjetas-objeto que tocar. Es un juguete: poco."
     },
     {
       "id": "trail",
       "grupo": "movimiento",
       "n": "Rastro de fotos",
-      "js": "trail"
+      "js": "trail",
+      "aporta": "Cuando hay muchas fotos y la marca es juguetona."
     },
     {
       "id": "quieto",
       "grupo": "movimiento",
-      "n": "Quieto"
+      "n": "Quieto",
+      "aporta": "Cuando la marca es seria o el público mayor. Legítimo: la firma no puede depender del movimiento."
     },
     {
       "id": "hero",
@@ -1231,42 +1311,48 @@
       "id": "ninguno",
       "grupo": "marca",
       "n": "Sin juego",
-      "dice": "el logo solo en cabecera y pie, que es lo mínimo"
+      "dice": "el logo solo en cabecera y pie, que es lo mínimo",
+      "aporta": "Cuando el logo no sirve como forma (trae fondo o muchos colores) o la firma va por otro lado (letra, foto)."
     },
     {
       "id": "sello",
       "grupo": "marca",
       "n": "Sello",
       "dice": "la marca dentro de un disco, como un cuño sobre el papel",
-      "nota": "Funciona cuando el logo es un símbolo compacto. Con un logotipo horizontal se lee apretado."
+      "nota": "Funciona cuando el logo es un símbolo compacto. Con un logotipo horizontal se lee apretado.",
+      "aporta": "Cuando el logo es un símbolo compacto y se quiere firma sobre cada titular: la firma que se repite (Córdoba)."
     },
     {
       "id": "agua",
       "grupo": "marca",
       "n": "Marca de agua",
       "dice": "enorme y casi transparente detrás del contenido: se intuye, no se lee",
-      "nota": "Da pertenencia sin gritar. Ojo: si se ve a la primera está demasiado fuerte."
+      "nota": "Da pertenencia sin gritar. Ojo: si se ve a la primera está demasiado fuerte.",
+      "aporta": "Cuando se quiere pertenencia sin gritar, en secciones de texto. Si se ve a la primera, está alta."
     },
     {
       "id": "ventana",
       "grupo": "marca",
       "n": "Ventana",
       "dice": "el logo recortado sobre el fondo: la trama o la foto se ven POR DENTRO de la forma",
-      "nota": "El más potente y el que más pide un logo simple. Con un logo de trazo fino no queda hueco por donde mirar."
+      "nota": "El más potente y el que más pide un logo simple. Con un logo de trazo fino no queda hueco por donde mirar.",
+      "aporta": "Cuando el logo es una silueta simple y fuerte: la foto o la trama se ven por dentro. El más memorable; va en la portada."
     },
     {
       "id": "trama",
       "grupo": "marca",
       "n": "Trama",
       "dice": "el símbolo repetido en rejilla, muy tenue, como un papel de regalo",
-      "nota": "Sirve de fondo de sección entera. Compite con cualquier otro fondo: o uno u otro."
+      "nota": "Sirve de fondo de sección entera. Compite con cualquier otro fondo: o uno u otro.",
+      "aporta": "Cuando una sección entera puede ser de marca (pie, banda). Compite con cualquier otro fondo con trama."
     },
     {
       "id": "calado",
       "grupo": "marca",
       "n": "Calado en el borde",
       "dice": "media marca asomando por el canto de la sección, cortada por el borde",
-      "nota": "Convierte el logo en estructura en vez de en adorno. Pide sitio: con aire bajo estorba."
+      "nota": "Convierte el logo en estructura en vez de en adorno. Pide sitio: con aire bajo estorba.",
+      "aporta": "Cuando se quiere el logo como estructura, cortado por el borde. Pide un símbolo de silueta clara."
     }
   ],
   "posiciones": {
@@ -1799,5 +1885,96 @@
         }
       ]
     }
-  }
+  },
+  "rubricaNota": "Lo que hace memorable una web, medido el 23-sep en las dos del portfolio que mejor lo contrastan: Córdoba Soluciona (la de más personalidad) y Dígito v2 (buena idea mal colocada). Cada prueba vale 0, 1 o 2. «auto» la calcula el Estudio sobre el estado; «juicio» la responde una persona o los jueces de la IA directora. Referencia: Córdoba 13/14, Dígito v2 6/14. La lección que ordena todo: la firma tiene que verse en la primera pantalla y EN REPOSO; los efectos la refuerzan, no la sostienen.",
+  "rubrica": [
+    {
+      "id": "reposo",
+      "n": "Firma en reposo",
+      "mide": "auto",
+      "peso": 2,
+      "pregunta": "¿Se ve la firma de la marca en la primera pantalla, sin mover nada?",
+      "como": "La portada lleva una firma estática: la forma de marca como capa (ventana, sello, calado, agua), escenografía o forma propia, o un titular tratado. Un efecto que depende del scroll, del cursor o de encenderse NO cuenta.",
+      "cordoba": 2,
+      "digito": 0,
+      "porque": "Córdoba: el titular vive dentro de un arco califal enorme desde el primer píxel. Dígito v2: hero partido estándar; su gesto (encender) aparece a 7.617 px de 11.162, al 68 % de la página, y además es un estado."
+    },
+    {
+      "id": "logo",
+      "n": "Logo tapado",
+      "mide": "juicio",
+      "peso": 2,
+      "pregunta": "Tapando el logo, ¿alguien que conozca la marca la reconoce?",
+      "como": "Captura de la primera pantalla con el logo cubierto. Si lo único que la identifica es el logo, 0.",
+      "cordoba": 2,
+      "digito": 0,
+      "porque": "Córdoba: el arco y los dos colores bastan. Dígito: amarillo sobre blanco con subrayado, que comparte con ObraFácil y con cualquier rotulista."
+    },
+    {
+      "id": "cambiazo",
+      "n": "Cambiazo",
+      "mide": "juicio",
+      "peso": 2,
+      "pregunta": "¿Le valdría esta web a un competidor del mismo gremio cambiando solo el nombre?",
+      "como": "Si el gesto sale del lugar, del oficio concreto o de las reseñas del cliente (con fuente), no le vale a otro: 2. Si es el cliché del sector (antes/después, plato, sonrisa): 0.",
+      "cordoba": 2,
+      "digito": 1,
+      "porque": "Córdoba: la Mezquita es de la ciudad y la «partida» es su promesa. Dígito: la idea (su logo es un rótulo) es suya, pero la página visible le valdría a cualquier rotulista."
+    },
+    {
+      "id": "telefono",
+      "n": "Teléfono",
+      "mide": "juicio",
+      "peso": 2,
+      "pregunta": "¿Se puede describir la web en una frase que otra persona reconocería al verla?",
+      "como": "Escribir la frase. Si hace falta el nombre de la marca para que se entienda, 0.",
+      "cordoba": 2,
+      "digito": 1,
+      "porque": "«La del arco de la Mezquita con el titular dentro» frente a «una blanca con amarillo y una foto de un rótulo»."
+    },
+    {
+      "id": "repeticion",
+      "n": "Repetición",
+      "mide": "auto",
+      "peso": 2,
+      "pregunta": "¿La firma se repite como ESTRUCTURA (3 sitios o más), no como adorno de una sección?",
+      "como": "Cuenta los sitios de la forma de marca: cabecera y pie, secciones con la capa «marca», módulos-firma. 3 o más repartidos por la página: 2; 2: 1.",
+      "cordoba": 2,
+      "digito": 1,
+      "porque": "Córdoba: logo, arco del hero, sello sobre los titulares, 10 líneas de partida, banda de arcada y arcada del pie. Dígito: 6 piezas, todas en el último tercio."
+    },
+    {
+      "id": "contencion",
+      "n": "Contención",
+      "mide": "auto",
+      "peso": 2,
+      "pregunta": "¿Dos colores de marca como mucho, una forma de firma y un solo fondo?",
+      "como": "Acento + como mucho un segundo color que sea material del cliente; un fondo principal; como mucho dos formas de recorte.",
+      "cordoba": 2,
+      "digito": 2,
+      "porque": "Los dos cumplen: verde y teja sobre cal; amarillo y el aluminio del logo."
+    },
+    {
+      "id": "registro",
+      "n": "Registro",
+      "mide": "auto",
+      "peso": 2,
+      "pregunta": "¿Se distingue del resto del portfolio (letra, acento, papel, temperamento, gesto)?",
+      "como": "Los avisos de clon del Estudio: ninguno, 2; uno, 1; dos o más, 0.",
+      "cordoba": 1,
+      "digito": 1,
+      "porque": "Córdoba: la teja está en la familia rojo-anaranjado que ya usan cuatro webs. Dígito: Archivo en cuatro webs y el amarillo a 10° del de ObraFácil."
+    }
+  ],
+  "gruposConAporta": [
+    "display",
+    "fondo",
+    "foto",
+    "escena",
+    "marca",
+    "titular",
+    "modulo",
+    "forma",
+    "movimiento"
+  ]
 }

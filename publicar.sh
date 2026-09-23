@@ -53,29 +53,44 @@ cp "$KIT/marcas.json" _astro/marcas.json
 
 # 5) Versionar por hash de contenido
 python - <<'PY'
-import io, hashlib, re
+import io, hashlib, re, glob, os
 h = lambda f: hashlib.sha1(io.open(f,'rb').read()).hexdigest()[:8]
-vcss, vjs = h('estudio/estudio.css'), h('estudio/estudio.js')
+vcss = h('estudio/estudio.css')
 vkit, vman = h('_astro/kit-completo.css'), h('_astro/kit.manifest.json')
 vmar = h('_astro/marcas.json')
 
-p='estudio/index.html'; s=io.open(p,encoding='utf-8').read()
-s=re.sub(r'href="estudio\.css(\?v=[a-f0-9]+)?"', f'href="estudio.css?v={vcss}"', s)
-s=re.sub(r'src="estudio\.js(\?v=[a-f0-9]+)?"', f'src="estudio.js?v={vjs}"', s)
-s=re.sub(r'href="\.\./_astro/kit-completo\.css(\?v=[a-f0-9]+)?"', f'href="../_astro/kit-completo.css?v={vkit}"', s)
-io.open(p,'w',encoding='utf-8').write(s)
+# 5a) Primero, lo que los scripts referencian DENTRO (el CSS del lienzo, el
+# manifiesto, el registro). Va antes de calcular su propio hash: si no, el hash
+# no refleja el contenido que se publica.
+scripts = sorted(glob.glob('estudio/*.js'))
+for p in scripts:
+    s = io.open(p, encoding='utf-8').read()
+    s = re.sub(r'href="_astro/kit-completo\.css(\?v=[a-f0-9]+)?"', f'href="_astro/kit-completo.css?v={vkit}"', s)
+    # El manifiesto también: si cambia una pieza y el navegador sirve el JSON
+    # viejo, el estudio ofrece el catálogo de ayer sin decir nada.
+    s = re.sub(r"'\.\./_astro/kit\.manifest\.json(\?v=[a-f0-9]+)?'", f"'../_astro/kit.manifest.json?v={vman}'", s)
+    # Y el registro de marcas: con el JSON de ayer, la regla anti-clon compara
+    # contra un registro viejo y calla el choque que sí existe.
+    s = re.sub(r"'\.\./_astro/marcas\.json(\?v=[a-f0-9]+)?'", f"'../_astro/marcas.json?v={vmar}'", s)
+    io.open(p, 'w', encoding='utf-8').write(s)
 
-p='estudio/estudio.js'; s=io.open(p,encoding='utf-8').read()
-s=re.sub(r'href="_astro/kit-completo\.css(\?v=[a-f0-9]+)?"', f'href="_astro/kit-completo.css?v={vkit}"', s)
-s=re.sub(r'href="estudio/estudio\.css(\?v=[a-f0-9]+)?"', f'href="estudio/estudio.css?v={vcss}"', s)
-# El manifiesto también: si cambia una pieza y el navegador sirve el JSON viejo,
-# el estudio ofrece el catálogo de ayer sin decir nada.
-s=re.sub(r"'\.\./_astro/kit\.manifest\.json(\?v=[a-f0-9]+)?'", f"'../_astro/kit.manifest.json?v={vman}'", s)
-# Y el registro de marcas: si el navegador sirve el JSON de ayer, la regla
-# anti-clon compara contra un registro viejo y calla el choque que sí existe.
-s=re.sub(r"'\.\./_astro/marcas\.json(\?v=[a-f0-9]+)?'", f"'../_astro/marcas.json?v={vmar}'", s)
-io.open(p,'w',encoding='utf-8').write(s)
-print(f'  versionado css:{vcss} js:{vjs} kit:{vkit} manifiesto:{vman} marcas:{vmar}')
+# 5b) Después, cada <script> de index.html con el hash de SU fichero. El
+# Estudio son varios scripts desde el 23-sep: versionar solo uno dejaría a los
+# demás servidos de la caché de diez minutos de Pages.
+p = 'estudio/index.html'; s = io.open(p, encoding='utf-8').read()
+s = re.sub(r'href="estudio\.css(\?v=[a-f0-9]+)?"', f'href="estudio.css?v={vcss}"', s)
+s = re.sub(r'href="\.\./_astro/kit-completo\.css(\?v=[a-f0-9]+)?"', f'href="../_astro/kit-completo.css?v={vkit}"', s)
+cargados = re.findall(r'<script src="([a-z-]+\.js)(?:\?v=[a-f0-9]+)?"></script>', s)
+faltan = [f for f in cargados if not os.path.exists('estudio/' + f)]
+if faltan:
+    raise SystemExit(f'  index.html carga scripts que no existen: {faltan}')
+sobran = [os.path.basename(f) for f in scripts if os.path.basename(f) not in cargados]
+if sobran:
+    raise SystemExit(f'  hay scripts que index.html no carga (¿olvidados?): {sobran}')
+for f in cargados:
+    s = re.sub(r'src="' + re.escape(f) + r'(\?v=[a-f0-9]+)?"', f'src="{f}?v={h("estudio/" + f)}"', s)
+io.open(p, 'w', encoding='utf-8').write(s)
+print(f'  versionado css:{vcss} kit:{vkit} manifiesto:{vman} marcas:{vmar} · {len(cargados)} scripts')
 PY
 
 # 6) Publicar
