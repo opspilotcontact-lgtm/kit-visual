@@ -1,0 +1,1207 @@
+{
+  "version": 1,
+  "generado": "2026-09-23",
+  "nota": "Fuente única de las piezas del kit. Lo consume kit-visual/estudio. Al añadir una pieza: fx.css + este fichero, y nada más.",
+  "grupos": {
+    "display": {
+      "n": "Tipografía display",
+      "multi": false,
+      "mini": "tipo"
+    },
+    "texto": {
+      "n": "Tipografía de texto",
+      "multi": false,
+      "mini": "tipo"
+    },
+    "base": {
+      "n": "Base de color",
+      "multi": false,
+      "mini": "base"
+    },
+    "fondo": {
+      "n": "Fondo",
+      "multi": false,
+      "mini": "clase"
+    },
+    "escena": {
+      "n": "Escenografía",
+      "multi": false,
+      "mini": "clase"
+    },
+    "pieza": {
+      "n": "Pieza geométrica",
+      "multi": false,
+      "mini": "css"
+    },
+    "foto": {
+      "n": "Tratamiento de foto",
+      "multi": false,
+      "mini": "propio"
+    },
+    "forma": {
+      "n": "Forma de foto",
+      "multi": false,
+      "mini": "clase"
+    },
+    "header": {
+      "n": "Cabecera",
+      "multi": false,
+      "mini": "croquis",
+      "cols": 2
+    },
+    "boton": {
+      "n": "Botón",
+      "multi": false,
+      "mini": "croquis"
+    },
+    "titular": {
+      "n": "Titular",
+      "multi": false,
+      "mini": "croquis"
+    },
+    "footer": {
+      "n": "Pie",
+      "multi": false,
+      "mini": "croquis",
+      "cols": 2
+    },
+    "modulo": {
+      "n": "Módulo",
+      "multi": true,
+      "mini": "croquis",
+      "cols": 2
+    },
+    "movimiento": {
+      "n": "Movimiento",
+      "multi": true,
+      "mini": "croquis"
+    }
+  },
+  "piezas": [
+    {
+      "id": "Archivo",
+      "grupo": "display",
+      "n": "Archivo",
+      "dice": "industrial, señalética, cartel",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Big Shoulders Display",
+      "grupo": "display",
+      "n": "Big Shoulders",
+      "dice": "condensada de fábrica: ocupa poco y pega fuerte",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Fraunces",
+      "grupo": "display",
+      "n": "Fraunces",
+      "dice": "cálida y con oficio: cuando se vende TRATO",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Bodoni Moda",
+      "grupo": "display",
+      "n": "Bodoni Moda",
+      "dice": "alto contraste, lujo editorial. Pide mucho aire",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Young Serif",
+      "grupo": "display",
+      "n": "Young Serif",
+      "dice": "contundente y antigua. Ya en uso en Córdoba Soluciona",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Anton",
+      "grupo": "display",
+      "n": "Anton",
+      "dice": "un martillo: titulares de tres palabras",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Unbounded",
+      "grupo": "display",
+      "n": "Unbounded",
+      "dice": "geométrica rotunda, marca joven. Cansa en texto",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Syne",
+      "grupo": "display",
+      "n": "Syne",
+      "dice": "personalidad fuerte, cultural, estudios",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Cormorant",
+      "grupo": "display",
+      "n": "Cormorant",
+      "dice": "fina y delicada. No usar pequeña",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Instrument Serif",
+      "grupo": "display",
+      "n": "Instrument Serif",
+      "dice": "editorial, de revista",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Epilogue",
+      "grupo": "display",
+      "n": "Epilogue",
+      "dice": "carácter sin llegar a display, aguanta densidad",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Space Grotesk",
+      "grupo": "display",
+      "n": "Space Grotesk",
+      "dice": "técnica y limpia, producto",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Newsreader",
+      "grupo": "display",
+      "n": "Newsreader",
+      "dice": "serif de lectura, aguanta párrafos",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Literata",
+      "grupo": "display",
+      "n": "Literata",
+      "dice": "la otra de lectura, más robusta",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Schibsted Grotesk",
+      "grupo": "display",
+      "n": "Schibsted",
+      "dice": "texto limpio con buenas cifras",
+      "peso": 800,
+      "evitar": false
+    },
+    {
+      "id": "Bricolage Grotesque",
+      "grupo": "display",
+      "n": "Bricolage",
+      "dice": "⚠ se reconoce al instante en webs generadas",
+      "peso": 800,
+      "evitar": true
+    },
+    {
+      "id": "Instrument Sans",
+      "grupo": "texto",
+      "n": "Instrument Sans",
+      "peso": 500
+    },
+    {
+      "id": "Schibsted Grotesk",
+      "grupo": "texto",
+      "n": "Schibsted",
+      "peso": 500
+    },
+    {
+      "id": "Literata",
+      "grupo": "texto",
+      "n": "Literata",
+      "peso": 500
+    },
+    {
+      "id": "Newsreader",
+      "grupo": "texto",
+      "n": "Newsreader",
+      "peso": 500
+    },
+    {
+      "id": "JetBrains Mono",
+      "grupo": "texto",
+      "n": "JetBrains Mono",
+      "peso": 500
+    },
+    {
+      "id": "papelFrio",
+      "grupo": "base",
+      "n": "Papel frío",
+      "paleta": {
+        "paper": "#F5F6F7",
+        "alt": "#E9EBED",
+        "deep": "#14171A",
+        "deepSoft": "#1E2328",
+        "soft": "#5C646C"
+      },
+      "hue": "H≈210 (plateado)",
+      "oscuro": false
+    },
+    {
+      "id": "papelCalido",
+      "grupo": "base",
+      "n": "Papel cálido",
+      "paleta": {
+        "paper": "#F8F6F1",
+        "alt": "#EFEBE3",
+        "deep": "#1A1713",
+        "deepSoft": "#241F19",
+        "soft": "#6B6257"
+      },
+      "hue": "H≈35 (tierra)",
+      "oscuro": false
+    },
+    {
+      "id": "galeria",
+      "grupo": "base",
+      "n": "Galería",
+      "paleta": {
+        "paper": "#FDFCFA",
+        "alt": "#F2EFEA",
+        "deep": "#17150F",
+        "deepSoft": "#221F17",
+        "soft": "#6E675C"
+      },
+      "hue": "H≈40 (crema)",
+      "oscuro": false
+    },
+    {
+      "id": "noche",
+      "grupo": "base",
+      "n": "Noche",
+      "paleta": {
+        "paper": "#14171A",
+        "alt": "#1E2328",
+        "deep": "#0C0E10",
+        "deepSoft": "#171B1F",
+        "soft": "#9AA3AD"
+      },
+      "hue": "H≈210 (oscuro)",
+      "oscuro": true
+    },
+    {
+      "id": "ninguno",
+      "grupo": "fondo",
+      "n": "Ninguno",
+      "dice": "que hable el contenido. Opción legítima y a menudo la mejor"
+    },
+    {
+      "id": "contour",
+      "grupo": "fondo",
+      "n": "Curvas",
+      "dice": "plano, medida, ingeniería. Es LÍNEA: no come contraste",
+      "js": "contour"
+    },
+    {
+      "id": "flowfield",
+      "grupo": "fondo",
+      "n": "Flujo",
+      "dice": "mano, trazo, arte. Se pinta y para; distinto en cada visita",
+      "js": "flowfield"
+    },
+    {
+      "id": "gridwarp",
+      "grupo": "fondo",
+      "n": "Rejilla viva",
+      "dice": "técnico pero vivo. En reposo es un plano serio",
+      "js": "gridwarp"
+    },
+    {
+      "id": "mesh",
+      "grupo": "fondo",
+      "n": "Mesh",
+      "dice": "luz, color, ambiente, sin bandas",
+      "js": "mesh"
+    },
+    {
+      "id": "halftone",
+      "grupo": "fondo",
+      "n": "Semitono",
+      "dice": "imprenta, tinta, oficio gráfico",
+      "js": "halftone"
+    },
+    {
+      "id": "grid",
+      "grupo": "fondo",
+      "n": "Rejilla",
+      "dice": "plano de taller",
+      "clase": "fx-grid"
+    },
+    {
+      "id": "stripes",
+      "grupo": "fondo",
+      "n": "Bandas",
+      "dice": "señalización, obra, aviso",
+      "clase": "fx-stripes",
+      "vars": "--stripe-w:20px;--stripe-a:6%"
+    },
+    {
+      "id": "hatch",
+      "grupo": "fondo",
+      "n": "Rayado",
+      "dice": "grabado, billete, lámina antigua",
+      "clase": "fx-hatch"
+    },
+    {
+      "id": "blueprint",
+      "grupo": "fondo",
+      "n": "Plano técnico",
+      "dice": "papel milimetrado con jerarquía: se lee como proyecto, no como fondo",
+      "clase": "fx-blueprint",
+      "miniVars": "--bp-major:26px;--bp-minor:6px;--bp-a:34%;--bp-fade:100%"
+    },
+    {
+      "id": "dots",
+      "grupo": "fondo",
+      "n": "Puntos",
+      "dice": "papel técnico sin parecerlo",
+      "clase": "fx-dots"
+    },
+    {
+      "id": "orbs",
+      "grupo": "fondo",
+      "n": "Manchas",
+      "dice": "color y ambiente por tres degradados",
+      "clase": "fx-orbs"
+    },
+    {
+      "id": "rays",
+      "grupo": "fondo",
+      "n": "Rayos",
+      "dice": "luz de foco, letrero encendido",
+      "clase": "fx-rays",
+      "vars": "--ray-a:10%"
+    },
+    {
+      "id": "halo",
+      "grupo": "fondo",
+      "n": "Halo",
+      "dice": "resplandor limpio detrás de algo",
+      "clase": "fx-halo",
+      "vars": "--halo-a:26%"
+    },
+    {
+      "id": "ninguna",
+      "grupo": "escena",
+      "n": "Ninguna"
+    },
+    {
+      "id": "half",
+      "grupo": "escena",
+      "n": "Sección partida",
+      "clase": "fx-half",
+      "vars": "--half-color:var(--color-deep)"
+    },
+    {
+      "id": "disc",
+      "grupo": "escena",
+      "n": "Disco",
+      "clase": "fx-disc",
+      "vars": "--disc-size:30rem;--disc-x:82%;--disc-y:26%",
+      "miniVars": "--disc-size:3.2rem;--disc-x:64%;--disc-y:40%"
+    },
+    {
+      "id": "ring",
+      "grupo": "escena",
+      "n": "Anillo",
+      "clase": "fx-disc fx-ring",
+      "vars": "--disc-size:26rem;--disc-x:84%;--disc-y:30%;--ring-w:2rem",
+      "miniVars": "--disc-size:3.4rem;--disc-x:50%;--disc-y:50%;--ring-w:.55rem"
+    },
+    {
+      "id": "band",
+      "grupo": "escena",
+      "n": "Faja",
+      "clase": "fx-band"
+    },
+    {
+      "id": "corner",
+      "grupo": "escena",
+      "n": "Cuña",
+      "clase": "fx-corner"
+    },
+    {
+      "id": "column",
+      "grupo": "escena",
+      "n": "Columna",
+      "clase": "fx-column",
+      "vars": "--col-color:var(--color-deep);--col-w:34%",
+      "miniVars": "--col-color:var(--color-deep);--col-w:34%"
+    },
+    {
+      "id": "arco",
+      "grupo": "escena",
+      "n": "Borde en curva",
+      "borde": true
+    },
+    {
+      "id": "ninguna",
+      "grupo": "pieza",
+      "n": "Ninguna"
+    },
+    {
+      "id": "circulo",
+      "grupo": "pieza",
+      "n": "Círculo",
+      "css": "border-radius:50%"
+    },
+    {
+      "id": "anillo",
+      "grupo": "pieza",
+      "n": "Anillo",
+      "css": "border-radius:50%;background:none;border:var(--pw,2rem) solid var(--pc)"
+    },
+    {
+      "id": "pildora",
+      "grupo": "pieza",
+      "n": "Píldora",
+      "css": "border-radius:999px;aspect-ratio:2/1"
+    },
+    {
+      "id": "triangulo",
+      "grupo": "pieza",
+      "n": "Triángulo",
+      "css": "clip-path:polygon(50% 0,100% 100%,0 100%)"
+    },
+    {
+      "id": "cuadrado",
+      "grupo": "pieza",
+      "n": "Cuadrado",
+      "css": "border-radius:2px"
+    },
+    {
+      "id": "rombo",
+      "grupo": "pieza",
+      "n": "Rombo",
+      "css": "clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)"
+    },
+    {
+      "id": "semi",
+      "grupo": "pieza",
+      "n": "Semicírculo",
+      "css": "border-radius:999px 999px 0 0;aspect-ratio:2/1"
+    },
+    {
+      "id": "arco",
+      "grupo": "pieza",
+      "n": "Arco",
+      "css": "border-radius:999px 999px 0 0;background:none;border:var(--pw,2rem) solid var(--pc);border-bottom:0;aspect-ratio:2/1"
+    },
+    {
+      "id": "hexagono",
+      "grupo": "pieza",
+      "n": "Hexágono",
+      "css": "clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)"
+    },
+    {
+      "id": "cruz",
+      "grupo": "pieza",
+      "n": "Cruz",
+      "css": "clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%)"
+    },
+    {
+      "id": "blob",
+      "grupo": "pieza",
+      "n": "Mancha",
+      "css": "border-radius:58% 42% 46% 54% / 44% 52% 48% 56%"
+    },
+    {
+      "id": "chevron",
+      "grupo": "pieza",
+      "n": "Galón",
+      "css": "clip-path:polygon(0 0,50% 0,100% 50%,50% 100%,0 100%,50% 50%)"
+    },
+    {
+      "id": "barra",
+      "grupo": "pieza",
+      "n": "Barra",
+      "css": "aspect-ratio:6/1;border-radius:2px"
+    },
+    {
+      "id": "limpia",
+      "grupo": "foto",
+      "n": "Limpia"
+    },
+    {
+      "id": "tint",
+      "grupo": "foto",
+      "n": "Tinte de marca",
+      "nota": "iguala fotos de días y luces distintas. El que más rinde",
+      "clase": "fx-tint"
+    },
+    {
+      "id": "ink",
+      "grupo": "foto",
+      "n": "Tinta",
+      "nota": "deja de ser foto y pasa a ser dibujo: el fondo se ve a través",
+      "js": "ink",
+      "mini": {
+        "modo": "propio",
+        "fn": "ink"
+      }
+    },
+    {
+      "id": "duotono",
+      "grupo": "foto",
+      "n": "Duotono",
+      "nota": "mete cualquier foto en la paleta",
+      "clase": "fx-tint",
+      "vars": "--tint-blend:color;--tint-a:.75",
+      "mini": {
+        "modo": "propio",
+        "fn": "duotono"
+      }
+    },
+    {
+      "id": "bleed",
+      "grupo": "foto",
+      "n": "Sangrado",
+      "nota": "la foto se disuelve en el fondo",
+      "clase": "fx-bleed",
+      "vars": "--bleed-b:55%"
+    },
+    {
+      "id": "soft",
+      "grupo": "foto",
+      "n": "Bordes disueltos",
+      "nota": "no termina, se desvanece",
+      "clase": "fx-soft"
+    },
+    {
+      "id": "grano",
+      "grupo": "foto",
+      "n": "Grano",
+      "nota": "iguala texturas, disimula fotos de móvil",
+      "clase": "fx-photo-grain"
+    },
+    {
+      "id": "offset",
+      "grupo": "foto",
+      "n": "Marco desplazado",
+      "nota": "un rectángulo de marca asomando",
+      "clase": "fx-offset",
+      "mini": {
+        "modo": "propio",
+        "fn": "offset"
+      }
+    },
+    {
+      "id": "recto",
+      "grupo": "forma",
+      "n": "Rectángulo"
+    },
+    {
+      "id": "redondo",
+      "grupo": "forma",
+      "n": "Redondeado",
+      "clase": "rounded-xl"
+    },
+    {
+      "id": "arch",
+      "grupo": "forma",
+      "n": "Arco",
+      "clase": "fx-arch"
+    },
+    {
+      "id": "blob",
+      "grupo": "forma",
+      "n": "Mancha",
+      "clase": "fx-blob"
+    },
+    {
+      "id": "notch",
+      "grupo": "forma",
+      "n": "Bisel",
+      "clase": "fx-notch"
+    },
+    {
+      "id": "hex",
+      "grupo": "forma",
+      "n": "Hexágono",
+      "clase": "fx-hex"
+    },
+    {
+      "id": "lozenge",
+      "grupo": "forma",
+      "n": "Elipse",
+      "clase": "fx-lozenge"
+    },
+    {
+      "id": "capsule",
+      "grupo": "forma",
+      "n": "Cápsula",
+      "clase": "fx-capsule"
+    },
+    {
+      "id": "barra",
+      "grupo": "header",
+      "n": "Barra"
+    },
+    {
+      "id": "isla",
+      "grupo": "header",
+      "n": "Isla flotante"
+    },
+    {
+      "id": "minimo",
+      "grupo": "header",
+      "n": "Mínimo"
+    },
+    {
+      "id": "centrado",
+      "grupo": "header",
+      "n": "Logo centrado"
+    },
+    {
+      "id": "apilado",
+      "grupo": "header",
+      "n": "Apilado"
+    },
+    {
+      "id": "lateral",
+      "grupo": "header",
+      "n": "Con franja"
+    },
+    {
+      "id": "pildora",
+      "grupo": "boton",
+      "n": "Píldora"
+    },
+    {
+      "id": "recto",
+      "grupo": "boton",
+      "n": "Recto"
+    },
+    {
+      "id": "material",
+      "grupo": "boton",
+      "n": "Con material",
+      "nota": "cara con luz + canto, como una pieza fabricada"
+    },
+    {
+      "id": "contorno",
+      "grupo": "boton",
+      "n": "Contorno"
+    },
+    {
+      "id": "bisel",
+      "grupo": "boton",
+      "n": "Biselado"
+    },
+    {
+      "id": "flecha",
+      "grupo": "boton",
+      "n": "Con flecha",
+      "nota": "la flecha en su propio círculo, pegada al borde"
+    },
+    {
+      "id": "normal",
+      "grupo": "titular",
+      "n": "Normal"
+    },
+    {
+      "id": "extendido",
+      "grupo": "titular",
+      "n": "Extendido"
+    },
+    {
+      "id": "knockout",
+      "grupo": "titular",
+      "n": "Foto dentro",
+      "clase": "fx-knockout"
+    },
+    {
+      "id": "outline",
+      "grupo": "titular",
+      "n": "Contorno",
+      "clase": "fx-outline"
+    },
+    {
+      "id": "trama",
+      "grupo": "titular",
+      "n": "Trama",
+      "clase": "fx-hatch-text"
+    },
+    {
+      "id": "marcado",
+      "grupo": "titular",
+      "n": "Resaltado",
+      "nota": "trazo de rotulador tras una palabra"
+    },
+    {
+      "id": "escalonado",
+      "grupo": "titular",
+      "n": "Escalonado",
+      "clase": "fx-stagger-lines"
+    },
+    {
+      "id": "completo",
+      "grupo": "footer",
+      "n": "Completo"
+    },
+    {
+      "id": "franja",
+      "grupo": "footer",
+      "n": "Franja"
+    },
+    {
+      "id": "grande",
+      "grupo": "footer",
+      "n": "Con titular"
+    },
+    {
+      "id": "minimo",
+      "grupo": "footer",
+      "n": "Mínimo"
+    },
+    {
+      "id": "disclosure",
+      "grupo": "modulo",
+      "n": "Desplegable",
+      "nota": "número, gancho visible, precio a la vista y foto dentro"
+    },
+    {
+      "id": "tabs",
+      "grupo": "modulo",
+      "n": "Pestañas",
+      "nota": "radios + :checked, teclado incluido"
+    },
+    {
+      "id": "rail",
+      "grupo": "modulo",
+      "n": "Carril",
+      "nota": "scroll-snap; mejor que un carrusel con puntitos"
+    },
+    {
+      "id": "sheet",
+      "grupo": "modulo",
+      "n": "Panel de ficha",
+      "nota": "<dialog> nativo: Esc, foco atrapado, fondo bloqueado"
+    },
+    {
+      "id": "pull",
+      "grupo": "modulo",
+      "n": "Cita grande",
+      "nota": "para una reseña REAL, con nombre y fecha"
+    },
+    {
+      "id": "note",
+      "grupo": "modulo",
+      "n": "Nota de taller",
+      "nota": "para decir lo que NO se hace. Da credibilidad"
+    },
+    {
+      "id": "highlight",
+      "grupo": "modulo",
+      "n": "Destacado",
+      "nota": "uno por página; si hay tres, no hay ninguno"
+    },
+    {
+      "id": "stat",
+      "grupo": "modulo",
+      "n": "Cifras",
+      "nota": "dato grande y etiqueta, con cifras tabulares"
+    },
+    {
+      "id": "time",
+      "grupo": "modulo",
+      "n": "Cronología",
+      "nota": "una lista de fechas cuenta más que tres párrafos"
+    },
+    {
+      "id": "sign",
+      "grupo": "modulo",
+      "n": "Piezas que se encienden",
+      "nota": "material con canto; se encienden al llegar",
+      "js": "sign",
+      "mini": {
+        "modo": "propio",
+        "fn": "sign"
+      }
+    },
+    {
+      "id": "reveal",
+      "grupo": "movimiento",
+      "n": "Aparición al entrar"
+    },
+    {
+      "id": "split",
+      "grupo": "movimiento",
+      "n": "Titular por líneas",
+      "js": "split"
+    },
+    {
+      "id": "counter",
+      "grupo": "movimiento",
+      "n": "Cifras que suben",
+      "js": "counter"
+    },
+    {
+      "id": "parallax",
+      "grupo": "movimiento",
+      "n": "Parallax",
+      "js": "parallax"
+    },
+    {
+      "id": "marquee",
+      "grupo": "movimiento",
+      "n": "Banda en marcha",
+      "js": "marquee"
+    },
+    {
+      "id": "spot",
+      "grupo": "movimiento",
+      "n": "Foco con el cursor",
+      "js": "spotlight",
+      "mini": {
+        "modo": "propio",
+        "fn": "spot"
+      }
+    },
+    {
+      "id": "tilt",
+      "grupo": "movimiento",
+      "n": "Inclinación",
+      "js": "tilt"
+    },
+    {
+      "id": "trail",
+      "grupo": "movimiento",
+      "n": "Rastro de fotos",
+      "js": "trail"
+    },
+    {
+      "id": "quieto",
+      "grupo": "movimiento",
+      "n": "Quieto"
+    }
+  ],
+  "posiciones": {
+    "ai": {
+      "n": "Arriba izq.",
+      "x": "8%",
+      "y": "10%"
+    },
+    "ac": {
+      "n": "Arriba",
+      "x": "50%",
+      "y": "6%"
+    },
+    "ad": {
+      "n": "Arriba der.",
+      "x": "88%",
+      "y": "12%"
+    },
+    "ci": {
+      "n": "Centro izq.",
+      "x": "6%",
+      "y": "50%"
+    },
+    "cc": {
+      "n": "Centro",
+      "x": "50%",
+      "y": "50%"
+    },
+    "cd": {
+      "n": "Centro der.",
+      "x": "86%",
+      "y": "46%"
+    },
+    "bi": {
+      "n": "Abajo izq.",
+      "x": "10%",
+      "y": "90%"
+    },
+    "bc": {
+      "n": "Abajo",
+      "x": "50%",
+      "y": "94%"
+    },
+    "bd": {
+      "n": "Abajo der.",
+      "x": "90%",
+      "y": "88%"
+    }
+  },
+  "tamanos": {
+    "s": {
+      "n": "Pequeña",
+      "v": "12rem"
+    },
+    "m": {
+      "n": "Media",
+      "v": "22rem"
+    },
+    "l": {
+      "n": "Grande",
+      "v": "34rem"
+    },
+    "xl": {
+      "n": "Enorme",
+      "v": "48rem"
+    }
+  },
+  "rellenos": {
+    "solido": {
+      "n": "Sólido"
+    },
+    "suave": {
+      "n": "Suave"
+    },
+    "contorno": {
+      "n": "Contorno"
+    },
+    "trama": {
+      "n": "Trama"
+    },
+    "difuso": {
+      "n": "Difuso"
+    }
+  },
+  "ejes": [
+    {
+      "id": "peso",
+      "n": "Peso",
+      "min": "ligero",
+      "max": "contundente"
+    },
+    {
+      "id": "temperatura",
+      "n": "Temperatura",
+      "min": "frío/técnico",
+      "max": "cálido/humano"
+    },
+    {
+      "id": "memoria",
+      "n": "Memoria",
+      "min": "presente",
+      "max": "con oficio"
+    },
+    {
+      "id": "aire",
+      "n": "Aire",
+      "min": "galería",
+      "max": "taller"
+    }
+  ],
+  "recetas": {
+    "taller": {
+      "n": "Taller",
+      "d": "oficios que fabrican algo con las manos",
+      "S": {
+        "ejes": {
+          "peso": 5,
+          "temperatura": 2,
+          "memoria": 4,
+          "aire": 2
+        },
+        "display": "Archivo",
+        "texto": "Instrument Sans",
+        "ancho": true,
+        "acento": "#FEFE00",
+        "tinta": "#101316",
+        "base": "papelFrio",
+        "fondo": "contour",
+        "escena": "half",
+        "foto": "tint",
+        "forma": "notch",
+        "header": "barra",
+        "boton": "material",
+        "titular": "extendido",
+        "footer": "completo",
+        "modulos": [
+          "disclosure",
+          "stat",
+          "sign"
+        ],
+        "movimiento": [
+          "reveal",
+          "split"
+        ]
+      }
+    },
+    "galeria": {
+      "n": "Galería",
+      "d": "lo que se vende por gusto, no por precio",
+      "S": {
+        "ejes": {
+          "peso": 2,
+          "temperatura": 3,
+          "memoria": 3,
+          "aire": 5
+        },
+        "display": "Instrument Serif",
+        "texto": "Instrument Sans",
+        "ancho": false,
+        "acento": "#A8836B",
+        "tinta": "#1A1713",
+        "base": "galeria",
+        "fondo": "ninguno",
+        "escena": "arco",
+        "foto": "soft",
+        "forma": "arch",
+        "header": "minimo",
+        "boton": "pildora",
+        "titular": "normal",
+        "footer": "franja",
+        "modulos": [
+          "pull"
+        ],
+        "movimiento": [
+          "reveal",
+          "parallax"
+        ]
+      }
+    },
+    "escaparate": {
+      "n": "Escaparate",
+      "d": "comercio y servicios de calle",
+      "S": {
+        "ejes": {
+          "peso": 4,
+          "temperatura": 4,
+          "memoria": 2,
+          "aire": 3
+        },
+        "display": "Syne",
+        "texto": "Instrument Sans",
+        "ancho": false,
+        "acento": "#FF5C1A",
+        "tinta": "#151217",
+        "base": "papelCalido",
+        "fondo": "orbs",
+        "escena": "disc",
+        "foto": "tint",
+        "forma": "capsule",
+        "header": "isla",
+        "boton": "pildora",
+        "titular": "normal",
+        "footer": "franja",
+        "modulos": [
+          "disclosure",
+          "sheet",
+          "highlight"
+        ],
+        "movimiento": [
+          "reveal",
+          "counter"
+        ]
+      }
+    },
+    "plano": {
+      "n": "Plano",
+      "d": "lo que se compra por criterio técnico",
+      "S": {
+        "ejes": {
+          "peso": 3,
+          "temperatura": 1,
+          "memoria": 2,
+          "aire": 2
+        },
+        "display": "Space Grotesk",
+        "texto": "Schibsted Grotesk",
+        "ancho": false,
+        "acento": "#2E7DD1",
+        "tinta": "#10141A",
+        "base": "papelFrio",
+        "fondo": "gridwarp",
+        "escena": "column",
+        "foto": "duotono",
+        "forma": "recto",
+        "header": "barra",
+        "boton": "recto",
+        "titular": "normal",
+        "footer": "completo",
+        "modulos": [
+          "tabs",
+          "stat",
+          "time"
+        ],
+        "movimiento": [
+          "counter"
+        ]
+      }
+    },
+    "cuaderno": {
+      "n": "Cuaderno",
+      "d": "lo artesanal y lo cercano",
+      "S": {
+        "ejes": {
+          "peso": 3,
+          "temperatura": 5,
+          "memoria": 4,
+          "aire": 3
+        },
+        "display": "Fraunces",
+        "texto": "Newsreader",
+        "ancho": false,
+        "acento": "#8C5A3C",
+        "tinta": "#1C1712",
+        "base": "papelCalido",
+        "fondo": "hatch",
+        "escena": "ninguna",
+        "foto": "grano",
+        "forma": "blob",
+        "header": "minimo",
+        "boton": "pildora",
+        "titular": "normal",
+        "footer": "franja",
+        "modulos": [
+          "pull",
+          "note",
+          "time"
+        ],
+        "movimiento": [
+          "reveal"
+        ]
+      }
+    },
+    "noche": {
+      "n": "Noche",
+      "d": "lo que vive de noche y se ve iluminado",
+      "S": {
+        "ejes": {
+          "peso": 4,
+          "temperatura": 3,
+          "memoria": 2,
+          "aire": 4
+        },
+        "display": "Unbounded",
+        "texto": "Instrument Sans",
+        "ancho": false,
+        "acento": "#F5C518",
+        "tinta": "#F2F4F6",
+        "base": "noche",
+        "fondo": "halo",
+        "escena": "disc",
+        "foto": "duotono",
+        "forma": "redondo",
+        "header": "isla",
+        "boton": "material",
+        "titular": "knockout",
+        "footer": "franja",
+        "modulos": [
+          "rail",
+          "pull"
+        ],
+        "movimiento": [
+          "reveal",
+          "spot"
+        ]
+      }
+    }
+  }
+}

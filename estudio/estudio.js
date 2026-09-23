@@ -9,231 +9,67 @@
    Cada opción trae lo que necesita la previsualización Y lo que necesita el
    encargo. Si una pieza no sabe explicarse, no entra en el catálogo. */
 
-const DISPLAY = [
-  ['Archivo', 'Archivo', 'industrial, señalética, cartel'],
-  ['Big Shoulders Display', 'Big Shoulders', 'condensada de fábrica: ocupa poco y pega fuerte'],
-  ['Fraunces', 'Fraunces', 'cálida y con oficio: cuando se vende TRATO'],
-  ['Bodoni Moda', 'Bodoni Moda', 'alto contraste, lujo editorial. Pide mucho aire'],
-  ['Young Serif', 'Young Serif', 'contundente y antigua. Ya en uso en Córdoba Soluciona'],
-  ['Anton', 'Anton', 'un martillo: titulares de tres palabras'],
-  ['Unbounded', 'Unbounded', 'geométrica rotunda, marca joven. Cansa en texto'],
-  ['Syne', 'Syne', 'personalidad fuerte, cultural, estudios'],
-  ['Cormorant', 'Cormorant', 'fina y delicada. No usar pequeña'],
-  ['Instrument Serif', 'Instrument Serif', 'editorial, de revista'],
-  ['Epilogue', 'Epilogue', 'carácter sin llegar a display, aguanta densidad'],
-  ['Space Grotesk', 'Space Grotesk', 'técnica y limpia, producto'],
-  ['Newsreader', 'Newsreader', 'serif de lectura, aguanta párrafos'],
-  ['Literata', 'Literata', 'la otra de lectura, más robusta'],
-  ['Schibsted Grotesk', 'Schibsted', 'texto limpio con buenas cifras'],
-  ['Bricolage Grotesque', 'Bricolage', '⚠ se reconoce al instante en webs generadas'],
-];
+/* ── Catálogo ─────────────────────────────────────────────────────────────
+   NO se declara aquí: viene de `kit.manifest.json`, la fuente única del kit.
+   Antes estos catálogos vivían en este fichero, y añadir una pieza obligaba a
+   tocar nueve sitios; ahora son dos (fx.css y el manifiesto) y un verificador
+   impide que se separen. Ver opspilot-kit/build/verificar.mjs. */
 
-const TEXTO = [
-  ['Instrument Sans', 'Instrument Sans'], ['Schibsted Grotesk', 'Schibsted'],
-  ['Literata', 'Literata'], ['Newsreader', 'Newsreader'], ['JetBrains Mono', 'JetBrains Mono'],
-];
+let DISPLAY = [], TEXTO = [], BASES = {}, FONDOS = {}, ESCENAS = {}, FOTOS = {},
+    FORMAS = {}, HEADERS = {}, BOTONES = {}, TITULARES = {}, FOOTERS = {},
+    MODULOS = {}, MOVIMIENTO = {}, PIEZAS = {}, POSICIONES = {}, TAMANOS = {},
+    RELLENOS = {}, RECETAS = {}, EJES = [];
 
-const BASES = {
-  papelFrio:   { n: 'Papel frío',   paper: '#F5F6F7', alt: '#E9EBED', deep: '#14171A', deepSoft: '#1E2328', soft: '#5C646C', hue: 'H≈210 (plateado)' },
-  papelCalido: { n: 'Papel cálido', paper: '#F8F6F1', alt: '#EFEBE3', deep: '#1A1713', deepSoft: '#241F19', soft: '#6B6257', hue: 'H≈35 (tierra)' },
-  galeria:     { n: 'Galería',      paper: '#FDFCFA', alt: '#F2EFEA', deep: '#17150F', deepSoft: '#221F17', soft: '#6E675C', hue: 'H≈40 (crema)' },
-  noche:       { n: 'Noche',        paper: '#14171A', alt: '#1E2328', deep: '#0C0E10', deepSoft: '#171B1F', soft: '#9AA3AD', hue: 'H≈210 (oscuro)', oscuro: true },
-};
+/** Índice de piezas por grupo, tal y como las declara el manifiesto. */
+function porGrupo(M, grupo) {
+  const o = {};
+  M.piezas.filter((p) => p.grupo === grupo).forEach((p) => {
+    const v = { n: p.n };
+    if (p.dice) v.dice = p.dice;
+    if (p.nota) v.nota = p.nota;
+    if (p.clase) v.clase = p.clase;
+    if (p.vars) v.vars = p.vars;
+    if (p.js) v.js = p.js;
+    if (p.borde) v.borde = p.borde;
+    if (p.css) v.css = p.css;
+    if (p.miniVars) v.mini = p.miniVars;
+    if (p.paleta) Object.assign(v, p.paleta, { hue: p.hue, oscuro: p.oscuro });
+    o[p.id] = v;
+  });
+  return o;
+}
 
-const FONDOS = {
-  ninguno:   { n: 'Ninguno',     js: false, dice: 'que hable el contenido. Opción legítima y a menudo la mejor' },
-  contour:   { n: 'Curvas',      js: true,  dice: 'plano, medida, ingeniería. Es LÍNEA: no come contraste' },
-  flowfield: { n: 'Flujo',       js: true,  dice: 'mano, trazo, arte. Se pinta y para; distinto en cada visita' },
-  gridwarp:  { n: 'Rejilla viva',js: true,  dice: 'técnico pero vivo. En reposo es un plano serio' },
-  mesh:      { n: 'Mesh',        js: true,  dice: 'luz, color, ambiente, sin bandas' },
-  halftone:  { n: 'Semitono',    js: true,  dice: 'imprenta, tinta, oficio gráfico' },
-  grid:      { n: 'Rejilla',     js: false, clase: 'fx-grid', dice: 'plano de taller' },
-  stripes:   { n: 'Bandas',      js: false, clase: 'fx-stripes', vars: '--stripe-w:20px;--stripe-a:6%', dice: 'señalización, obra, aviso' },
-  hatch:     { n: 'Rayado',      js: false, clase: 'fx-hatch', dice: 'grabado, billete, lámina antigua' },
-  dots:      { n: 'Puntos',      js: false, clase: 'fx-dots', dice: 'papel técnico sin parecerlo' },
-  orbs:      { n: 'Manchas',     js: false, clase: 'fx-orbs', dice: 'color y ambiente por tres degradados' },
-  rays:      { n: 'Rayos',       js: false, clase: 'fx-rays', vars: '--ray-a:10%', dice: 'luz de foco, letrero encendido' },
-  halo:      { n: 'Halo',        js: false, clase: 'fx-halo', vars: '--halo-a:26%', dice: 'resplandor limpio detrás de algo' },
-};
+/** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
+async function cargaManifiesto() {
+  const r = await fetch('../_astro/kit.manifest.json?v=868b91df', { cache: 'no-cache' });
+  if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
+  const M = await r.json();
 
-const ESCENAS = {
-  ninguna: { n: 'Ninguna' },
-  half:    { n: 'Sección partida', clase: 'fx-half', vars: '--half-color:var(--color-deep)' },
-  disc:    { n: 'Disco',           clase: 'fx-disc', vars: '--disc-size:30rem;--disc-x:82%;--disc-y:26%', mini: '--disc-size:3.2rem;--disc-x:64%;--disc-y:40%' },
-  ring:    { n: 'Anillo',          clase: 'fx-disc fx-ring', vars: '--disc-size:26rem;--disc-x:84%;--disc-y:30%;--ring-w:2rem', mini: '--disc-size:3.4rem;--disc-x:50%;--disc-y:50%;--ring-w:.55rem' },
-  band:    { n: 'Faja',            clase: 'fx-band' },
-  corner:  { n: 'Cuña',            clase: 'fx-corner' },
-  column:  { n: 'Columna',         clase: 'fx-column', vars: '--col-color:var(--color-deep);--col-w:34%', mini: '--col-color:var(--color-deep);--col-w:34%' },
-  arco:    { n: 'Borde en curva',  borde: true },
-};
+  // Los dos grupos de tipografía son listas [id, etiqueta, descripción].
+  DISPLAY = M.piezas.filter((p) => p.grupo === 'display').map((p) => [p.id, p.n, p.dice || '']);
+  TEXTO = M.piezas.filter((p) => p.grupo === 'texto').map((p) => [p.id, p.n]);
 
-const FOTOS = {
-  limpia:  { n: 'Limpia' },
-  tint:    { n: 'Tinte de marca', clase: 'fx-tint', nota: 'iguala fotos de días y luces distintas. El que más rinde' },
-  ink:     { n: 'Tinta', js: 'ink', nota: 'deja de ser foto y pasa a ser dibujo: el fondo se ve a través' },
-  duotono: { n: 'Duotono', clase: 'fx-tint', vars: '--tint-blend:color;--tint-a:.75', nota: 'mete cualquier foto en la paleta' },
-  bleed:   { n: 'Sangrado', clase: 'fx-bleed', vars: '--bleed-b:55%', nota: 'la foto se disuelve en el fondo' },
-  soft:    { n: 'Bordes disueltos', clase: 'fx-soft', nota: 'no termina, se desvanece' },
-  grano:   { n: 'Grano', clase: 'fx-photo-grain', nota: 'iguala texturas, disimula fotos de móvil' },
-  offset:  { n: 'Marco desplazado', clase: 'fx-offset', nota: 'un rectángulo de marca asomando' },
-};
+  BASES = porGrupo(M, 'base');
+  FONDOS = porGrupo(M, 'fondo');
+  ESCENAS = porGrupo(M, 'escena');
+  FOTOS = porGrupo(M, 'foto');
+  FORMAS = porGrupo(M, 'forma');
+  HEADERS = porGrupo(M, 'header');
+  BOTONES = porGrupo(M, 'boton');
+  TITULARES = porGrupo(M, 'titular');
+  FOOTERS = porGrupo(M, 'footer');
+  MODULOS = porGrupo(M, 'modulo');
+  MOVIMIENTO = porGrupo(M, 'movimiento');
+  PIEZAS = porGrupo(M, 'pieza');
 
-const FORMAS = {
-  recto:   { n: 'Rectángulo', clase: '' },
-  redondo: { n: 'Redondeado', clase: 'rounded-xl' },
-  arch:    { n: 'Arco', clase: 'fx-arch' },
-  blob:    { n: 'Mancha', clase: 'fx-blob' },
-  notch:   { n: 'Bisel', clase: 'fx-notch' },
-  hex:     { n: 'Hexágono', clase: 'fx-hex' },
-  lozenge: { n: 'Elipse', clase: 'fx-lozenge' },
-  capsule: { n: 'Cápsula', clase: 'fx-capsule' },
-};
+  POSICIONES = M.posiciones;
+  TAMANOS = M.tamanos;
+  RELLENOS = M.rellenos;
+  RECETAS = M.recetas;
+  EJES = M.ejes.map((e) => [e.id, e.n, e.min, e.max]);
 
-const HEADERS = {
-  barra:    { n: 'Barra' },
-  isla:     { n: 'Isla flotante' },
-  minimo:   { n: 'Mínimo' },
-  centrado: { n: 'Logo centrado' },
-  apilado:  { n: 'Apilado' },
-  lateral:  { n: 'Con franja' },
-};
-const BOTONES = {
-  pildora:  { n: 'Píldora' },
-  recto:    { n: 'Recto' },
-  material: { n: 'Con material', nota: 'cara con luz + canto, como una pieza fabricada' },
-  contorno: { n: 'Contorno' },
-  bisel:    { n: 'Biselado' },
-  flecha:   { n: 'Con flecha', nota: 'la flecha en su propio círculo, pegada al borde' },
-};
-const TITULARES = {
-  normal:    { n: 'Normal' },
-  extendido: { n: 'Extendido' },
-  knockout:  { n: 'Foto dentro', clase: 'fx-knockout' },
-  outline:   { n: 'Contorno', clase: 'fx-outline' },
-  trama:     { n: 'Trama', clase: 'fx-hatch-text' },
-  marcado:   { n: 'Resaltado', nota: 'trazo de rotulador tras una palabra' },
-  escalonado:{ n: 'Escalonado', clase: 'fx-stagger-lines' },
-};
-const FOOTERS = {
-  completo: { n: 'Completo' },
-  franja:   { n: 'Franja' },
-  grande:   { n: 'Con titular' },
-  minimo:   { n: 'Mínimo' },
-};
-
-const MODULOS = {
-  disclosure: { n: 'Desplegable', nota: 'número, gancho visible, precio a la vista y foto dentro' },
-  tabs:       { n: 'Pestañas', nota: 'radios + :checked, teclado incluido' },
-  rail:       { n: 'Carril', nota: 'scroll-snap; mejor que un carrusel con puntitos' },
-  sheet:      { n: 'Panel de ficha', nota: '<dialog> nativo: Esc, foco atrapado, fondo bloqueado' },
-  pull:       { n: 'Cita grande', nota: 'para una reseña REAL, con nombre y fecha' },
-  note:       { n: 'Nota de taller', nota: 'para decir lo que NO se hace. Da credibilidad' },
-  highlight:  { n: 'Destacado', nota: 'uno por página; si hay tres, no hay ninguno' },
-  stat:       { n: 'Cifras', nota: 'dato grande y etiqueta, con cifras tabulares' },
-  time:       { n: 'Cronología', nota: 'una lista de fechas cuenta más que tres párrafos' },
-  sign:       { n: 'Piezas que se encienden', js: 'sign', nota: 'material con canto; se encienden al llegar' },
-};
-
-const MOVIMIENTO = {
-  reveal:  { n: 'Aparición al entrar' },
-  split:   { n: 'Titular por líneas', js: 'split' },
-  counter: { n: 'Cifras que suben', js: 'counter' },
-  parallax:{ n: 'Parallax', js: 'parallax' },
-  marquee: { n: 'Banda en marcha', js: 'marquee' },
-  spot:    { n: 'Foco con el cursor', js: 'spotlight' },
-  tilt:    { n: 'Inclinación', js: 'tilt' },
-  trail:   { n: 'Rastro de fotos', js: 'trail' },
-  quieto:  { n: 'Quieto' },
-};
-
-
-/* Las seis recetas de RECETAS.md, como punto de partida. No son plantillas:
-   se cogen y se rompen. Dos webs con la misma receta y distinto color se
-   parecen, y eso es un fallo. */
-const RECETAS = {
-  taller: { n: 'Taller', d: 'oficios que fabrican algo con las manos',
-    S: { ejes: { peso: 5, temperatura: 2, memoria: 4, aire: 2 }, display: 'Archivo', texto: 'Instrument Sans',
-         ancho: true, acento: '#FEFE00', tinta: '#101316', base: 'papelFrio', fondo: 'contour',
-         escena: 'half', foto: 'tint', forma: 'notch', header: 'barra', boton: 'material',
-         titular: 'extendido', footer: 'completo', modulos: ['disclosure', 'stat', 'sign'], movimiento: ['reveal', 'split'] } },
-  galeria: { n: 'Galería', d: 'lo que se vende por gusto, no por precio',
-    S: { ejes: { peso: 2, temperatura: 3, memoria: 3, aire: 5 }, display: 'Instrument Serif', texto: 'Instrument Sans',
-         ancho: false, acento: '#A8836B', tinta: '#1A1713', base: 'galeria', fondo: 'ninguno',
-         escena: 'arco', foto: 'soft', forma: 'arch', header: 'minimo', boton: 'pildora',
-         titular: 'normal', footer: 'franja', modulos: ['pull'], movimiento: ['reveal', 'parallax'] } },
-  escaparate: { n: 'Escaparate', d: 'comercio y servicios de calle',
-    S: { ejes: { peso: 4, temperatura: 4, memoria: 2, aire: 3 }, display: 'Syne', texto: 'Instrument Sans',
-         ancho: false, acento: '#FF5C1A', tinta: '#151217', base: 'papelCalido', fondo: 'orbs',
-         escena: 'disc', foto: 'tint', forma: 'capsule', header: 'isla', boton: 'pildora',
-         titular: 'normal', footer: 'franja', modulos: ['disclosure', 'sheet', 'highlight'], movimiento: ['reveal', 'counter'] } },
-  plano: { n: 'Plano', d: 'lo que se compra por criterio técnico',
-    S: { ejes: { peso: 3, temperatura: 1, memoria: 2, aire: 2 }, display: 'Space Grotesk', texto: 'Schibsted Grotesk',
-         ancho: false, acento: '#2E7DD1', tinta: '#10141A', base: 'papelFrio', fondo: 'gridwarp',
-         escena: 'column', foto: 'duotono', forma: 'recto', header: 'barra', boton: 'recto',
-         titular: 'normal', footer: 'completo', modulos: ['tabs', 'stat', 'time'], movimiento: ['counter'] } },
-  cuaderno: { n: 'Cuaderno', d: 'lo artesanal y lo cercano',
-    S: { ejes: { peso: 3, temperatura: 5, memoria: 4, aire: 3 }, display: 'Fraunces', texto: 'Newsreader',
-         ancho: false, acento: '#8C5A3C', tinta: '#1C1712', base: 'papelCalido', fondo: 'hatch',
-         escena: 'ninguna', foto: 'grano', forma: 'blob', header: 'minimo', boton: 'pildora',
-         titular: 'normal', footer: 'franja', modulos: ['pull', 'note', 'time'], movimiento: ['reveal'] } },
-  noche: { n: 'Noche', d: 'lo que vive de noche y se ve iluminado',
-    S: { ejes: { peso: 4, temperatura: 3, memoria: 2, aire: 4 }, display: 'Unbounded', texto: 'Instrument Sans',
-         ancho: false, acento: '#F5C518', tinta: '#F2F4F6', base: 'noche', fondo: 'halo',
-         escena: 'disc', foto: 'duotono', forma: 'redondo', header: 'isla', boton: 'material',
-         titular: 'knockout', footer: 'franja', modulos: ['rail', 'pull'], movimiento: ['reveal', 'spot'] } },
-};
-
-
-/* ── Piezas geométricas de fondo ──────────────────────────────────────────
-   Lo que en un cartel es «una forma detrás del texto». Cada una trae su
-   clip-path o su radio, y se coloca y dimensiona aparte: la misma pieza en
-   otra esquina es otra composición. */
-const PIEZAS = {
-  ninguna:   { n: 'Ninguna' },
-  circulo:   { n: 'Círculo',      css: 'border-radius:50%' },
-  anillo:    { n: 'Anillo',       css: 'border-radius:50%;background:none;border:var(--pw,2rem) solid var(--pc)' },
-  pildora:   { n: 'Píldora',      css: 'border-radius:999px;aspect-ratio:2/1' },
-  triangulo: { n: 'Triángulo',    css: 'clip-path:polygon(50% 0,100% 100%,0 100%)' },
-  cuadrado:  { n: 'Cuadrado',     css: 'border-radius:2px' },
-  rombo:     { n: 'Rombo',        css: 'clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)' },
-  semi:      { n: 'Semicírculo',  css: 'border-radius:999px 999px 0 0;aspect-ratio:2/1' },
-  arco:      { n: 'Arco',         css: 'border-radius:999px 999px 0 0;background:none;border:var(--pw,2rem) solid var(--pc);border-bottom:0;aspect-ratio:2/1' },
-  hexagono:  { n: 'Hexágono',     css: 'clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)' },
-  cruz:      { n: 'Cruz',         css: 'clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%)' },
-  blob:      { n: 'Mancha',       css: 'border-radius:58% 42% 46% 54% / 44% 52% 48% 56%' },
-  chevron:   { n: 'Galón',        css: 'clip-path:polygon(0 0,50% 0,100% 50%,50% 100%,0 100%,50% 50%)' },
-  barra:     { n: 'Barra',        css: 'aspect-ratio:6/1;border-radius:2px' },
-};
-
-/** Nueve colocaciones, como una retícula de cartel. */
-const POSICIONES = {
-  ai: { n: 'Arriba izq.',  x: '8%',  y: '10%' },
-  ac: { n: 'Arriba',       x: '50%', y: '6%'  },
-  ad: { n: 'Arriba der.',  x: '88%', y: '12%' },
-  ci: { n: 'Centro izq.',  x: '6%',  y: '50%' },
-  cc: { n: 'Centro',       x: '50%', y: '50%' },
-  cd: { n: 'Centro der.',  x: '86%', y: '46%' },
-  bi: { n: 'Abajo izq.',   x: '10%', y: '90%' },
-  bc: { n: 'Abajo',        x: '50%', y: '94%' },
-  bd: { n: 'Abajo der.',   x: '90%', y: '88%' },
-};
-
-const TAMANOS = { s: { n: 'Pequeña', v: '12rem' }, m: { n: 'Media', v: '22rem' }, l: { n: 'Grande', v: '34rem' }, xl: { n: 'Enorme', v: '48rem' } };
-
-const RELLENOS = {
-  solido:   { n: 'Sólido' },
-  suave:    { n: 'Suave' },
-  contorno: { n: 'Contorno' },
-  trama:    { n: 'Trama' },
-  difuso:   { n: 'Difuso' },
-};
-
-const EJES = [
-  ['peso', 'Peso', 'ligero', 'contundente'],
-  ['temperatura', 'Temperatura', 'frío/técnico', 'cálido/humano'],
-  ['memoria', 'Memoria', 'presente', 'con oficio'],
-  ['aire', 'Aire', 'galería', 'taller'],
-];
+  return M;
+}
 
 const FOTOS_DEMO = [
   '../img/letras-corporeas-econatur-nave-industrial-800.webp',
@@ -260,6 +96,13 @@ let S = inicial();
 /* ── Utilidades ───────────────────────────────────────────────────────────── */
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/** Mezcla dos colores en RGB. `t` es cuánto del primero queda. */
+function mezcla(a, b, t) {
+  const v = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+  const [x, y] = [v(a), v(b)];
+  return '#' + x.map((c, i) => Math.round(c * t + y[i] * (1 - t)).toString(16).padStart(2, '0')).join('');
+}
 
 /** Aclara u oscurece un hex, para derivar el degradado de la cara. */
 function ajusta(hex, f) {
@@ -414,8 +257,8 @@ function miniTitular(id) {
   if (id === 'outline') return `<i style="${base};background:none;border:2px solid var(--color-ink);opacity:.7"></i>`;
   if (id === 'trama') return `<i style="${base};background:repeating-linear-gradient(45deg,var(--color-ink) 0 2px,transparent 2px 5px)"></i>`;
   if (id === 'marcado') return `<i style="${base};background:var(--color-ink);opacity:.85"></i><i style="position:absolute;left:10%;width:38%;top:38%;height:10%;background:var(--color-brand);opacity:.9"></i>`;
-  if (id === 'escalonado') return `<i style="${base};height:12%;right:44%"></i><i style="${base};top:44%;height:12%;left:22%;right:26%;background:var(--color-ink)"></i><i style="${base};top:62%;height:12%;left:34%;right:10%;background:var(--color-ink)"></i>`.replace(/background:(?!var)/g, 'background:var(--color-ink);')
-    .replace('border-radius:2px"', 'border-radius:2px;background:var(--color-ink)"');
+  if (id === 'escalonado') return [[10, 26, 46], [22, 44, 26], [34, 62, 10]]
+    .map(([l, t, r]) => `<i style="${base};top:${t}%;left:${l}%;right:${r}%;height:12%;background:var(--color-ink)"></i>`).join('');
   if (id === 'extendido') return `<i style="${base};left:5%;right:5%;background:var(--color-ink)"></i><i style="${base};top:56%;height:12%;left:5%;right:34%;background:var(--color-ink);opacity:.25"></i>`;
   return `<i style="${base};background:var(--color-ink)"></i><i style="${base};top:56%;height:12%;right:38%;background:var(--color-ink);opacity:.25"></i>`;
 }
@@ -607,7 +450,10 @@ function tokens() {
     '--color-brand': S.acento,
     '--color-brand-dim': ajusta(S.acento, 0.82),
     '--color-brand-ink': sobre(S.acento),
-    '--color-brand-soft': ajusta(S.acento, 1.9),
+    // El fondo suave es el acento DILUIDO EN EL PAPEL, no el acento aclarado:
+    // multiplicar canales satura en vez de suavizar (un marrón #8C5A3C daba un
+    // naranja chillón #FFAB72). Va al tema exportado y a fx-highlight.
+    '--color-brand-soft': mezcla(S.acento, b.paper, 0.16),
     '--color-ink': b.oscuro ? '#F2F4F6' : S.tinta,
     '--color-ink-soft': b.soft,
     '--color-deep': b.deep,
@@ -841,7 +687,7 @@ function documento() {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
-<link rel="stylesheet" href="_astro/kit-completo.css?v=0128ca9b">
+<link rel="stylesheet" href="_astro/kit-completo.css?v=b141c7b7">
 <link rel="stylesheet" href="estudio/estudio.css?v=4f46cb54">
 <style>
   :root{${vars}}
@@ -1128,10 +974,19 @@ function enlaza() {
   $('#dados').addEventListener('click', azar);
 }
 
-leeDeURL();
-chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
-pintaControles();
-pintaEjes();
-enlaza();
-sincronizaCampos();
-render();
+/* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */
+cargaManifiesto().then(() => {
+  leeDeURL();
+  chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
+  pintaControles();
+  pintaEjes();
+  enlaza();
+  sincronizaCampos();
+  render();
+}).catch((e) => {
+  document.querySelector('#avisos').innerHTML =
+    `<div class="ui-aviso"><span>⚠</span><span><b>No se pudo cargar el catálogo:</b> ${e.message}.
+     El manifiesto se copia al publicar; en local hay que servir la carpeta con un servidor HTTP,
+     no abrir el fichero directamente.</span></div>`;
+  console.error(e);
+});
