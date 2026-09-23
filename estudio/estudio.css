@@ -79,23 +79,27 @@ body {
    sin tener que volver a subir. Es el único sitio donde `sticky` se gana el
    puesto: aquí la previsualización es la razón de estar en la página. */
 @media (width < 60rem) {
-  body { height: auto; min-height: 100dvh; overflow: visible; }
-  .ui-shell { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+  /* Se conserva el modelo de dos paneles con scroll propio —es el que funciona
+     y el que no depende de que la página entera crezca— pero cambiando dos
+     cosas que lo hacían inservible en un móvil:
 
-  .ui-preview {
-    order: -1;
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    height: 62dvh;
-    border-bottom: 1px solid var(--ui-line);
+     1. La MUESTRA VA PRIMERO y se lleva la mayor parte de la altura. Antes se
+        quedaba abajo con el 55% de la pantalla, debajo de un panel que ya
+        ocupaba el 45%: se tocaba una opción y el efecto quedaba fuera de vista.
+     2. El panel se queda con el resto y sigue siendo su propio contenedor de
+        scroll, así que la muestra no se mueve mientras se recorren las
+        opciones. */
+  .ui-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60dvh 1fr;
   }
-  .ui-panel {
-    overflow: visible;          /* deja de ser su propio contenedor de scroll */
-    border-right: 0;
-  }
-  /* La nota de la barra de la muestra no cabe y empuja a los tres tamaños. */
+  .ui-preview { order: -1; border-bottom: 1px solid var(--ui-line); }
+  .ui-panel { border-right: 0; }
+
+  /* La nota de la barra no cabe y empuja fuera a los tres tamaños. */
   .ui-preview-nota { display: none; }
+  /* Sin el padding, la muestra gana 30 px de alto, que en un móvil se notan. */
+  .ui-preview-stage { padding: 0.4rem; }
 }
 
 /* Pantalla muy estrecha: la barra de acciones de arriba no cabe en una línea. */
