@@ -57,7 +57,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=53a71d5d', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=13f63445', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -183,6 +183,7 @@ const inicial = () => ({
      la marca del cliente (ASSETS.md), no de aquí. */
   display: 'Epilogue', texto: 'Instrument Sans', ancho: false,
   acento: '#6B737B', tinta: '#15181B', base: 'papelFrio',
+  papel: '',   // vacío = el de la base; un hex = el papel propio del cliente
   fondo: 'ninguno', escena: 'ninguna', foto: 'limpia', forma: 'redondo',
   pieza: 'ninguna', pos: 'cd', tam: 'm', relleno: 'solido',
   header: 'barra', boton: 'pildora', titular: 'normal', footer: 'completo',
@@ -337,6 +338,14 @@ function oklch(hex) {
   const { L, A, B } = oklab(hex);
   return { L, C: Math.hypot(A, B), H: (Math.atan2(B, A) * 180 / Math.PI + 360) % 360 };
 }
+/** Distancia euclídea en Oklab (ΔE). Es la métrica para colores de croma bajo
+    —papeles, grises, acentos apagados—, donde el tono no significa nada. */
+function deltaE(a, b) {
+  const [x, y] = [oklab(a), oklab(b)];
+  return Math.hypot(x.L - y.L, x.A - y.A, x.B - y.B);
+}
+const UMBRAL_DE = 0.02;
+
 /** Distancia de tono por el lado corto del círculo. */
 const dTono = (x, y) => { const d = Math.abs(x - y) % 360; return d > 180 ? 360 - d : d; };
 
@@ -637,6 +646,15 @@ function pintaControles() {
 
   if ($('#canales')) chips('#canales', Object.entries(CANALES), S.canales, (v) => toggle('canales', v), true);
 
+  // El papel: sin papel propio, el selector enseña el de la base elegida.
+  const pp = $('#papel-propio'), pc = $('#papel');
+  if (pp && pc) {
+    pp.checked = !!S.papel;
+    pc.value = S.papel || (BASES[S.base] || {}).paper || '#F5F6F7';
+    pc.disabled = !!(BASES[S.base] || {}).oscuro;
+    pp.disabled = pc.disabled;
+  }
+
   pintaColocacion();
 }
 
@@ -727,10 +745,18 @@ function tokens() {
      La suave se busca a mitad de camino hacia el papel y, si no llega a 4.5:1
      sobre la banda alterna, se corrige hasta que llegue. */
   const [tr, tg, tb] = canales(S.tinta);
+  /* El papel propio. Con solo cuatro bases, todas las webs del Estudio
+     compartían uno de cuatro papeles: la máquina de clonar por el fondo. Si el
+     cliente tiene el suyo (la cal de Córdoba Soluciona, el papel de su
+     rótulo), manda; la franja alterna se deriva de él hacia la tinta. En las
+     bases oscuras no se ofrece: ahí el papel ES la base. */
+  const propio = !b.oscuro && esHex(S.papel);
+  const papel = propio ? S.papel : b.paper;
+  const alterno = propio ? mezcla(S.papel, S.tinta, 0.94) : b.alt;
   let suaveTinta = b.soft;
   if (!b.oscuro) {
-    const s0 = mezcla(S.tinta, b.paper, 0.64);
-    suaveTinta = ratio(s0, b.alt) >= 4.5 ? s0 : (corrige(s0, b.alt, 4.5) || b.soft);
+    const s0 = mezcla(S.tinta, papel, 0.64);
+    suaveTinta = ratio(s0, alterno) >= 4.5 ? s0 : (corrige(s0, alterno, 4.5) || b.soft);
   }
   return {
     '--color-brand': S.acento,
@@ -739,13 +765,13 @@ function tokens() {
     // El fondo suave es el acento DILUIDO EN EL PAPEL, no el acento aclarado:
     // multiplicar canales satura en vez de suavizar (un marrón #8C5A3C daba un
     // naranja chillón #FFAB72). Va al tema exportado y a fx-highlight.
-    '--color-brand-soft': mezcla(S.acento, b.paper, 0.16),
+    '--color-brand-soft': mezcla(S.acento, papel, 0.16),
     '--color-ink': b.oscuro ? '#F2F4F6' : S.tinta,
     '--color-ink-soft': suaveTinta,
     '--color-deep': b.deep,
     '--color-deep-soft': b.deepSoft,
-    '--color-paper': b.paper,
-    '--color-paper-alt': b.alt,
+    '--color-paper': papel,
+    '--color-paper-alt': alterno,
     '--color-surface': b.oscuro ? b.alt : '#FFFFFF',
     '--color-metal': '#788088',
     '--color-metal-hi': '#C9CDD2',
@@ -830,12 +856,19 @@ function problemasClon() {
     a.push([`${S.display} ya está en ${repes.length === 1 ? 'otra web' : repes.length + ' webs'}`,
       `la llevan ${lista(repes.map((m) => m.n))}. La letra es lo primero que identifica una marca: repetida, las dos se leen como la misma plantilla con otro logo.`]);
 
-  // 2) El acento, en OKLCH.
+  // 2) El acento, en OKLCH. A croma bajo el tono es ruido numérico, así que un
+  //    acento casi gris se compara por distancia en Oklab (ΔE), como el papel.
   const mio = oklch(S.acento);
   registro.forEach((m) => {
-    if (!esHex(m.acento) || mio.C < 0.04) return;
+    if (!esHex(m.acento)) return;
     const o = oklch(m.acento);
-    if (o.C < 0.04) return;                     // un gris no tiene tono que comparar
+    if (mio.C < 0.04 || o.C < 0.04) {
+      const d = deltaE(S.acento, m.acento);
+      if (d <= UMBRAL_DE)
+        a.push([`El acento choca con ${m.n}`,
+          `${S.acento.toUpperCase()} y ${m.acento.toUpperCase()} están a ΔE ${d.toFixed(3)} en Oklab: por debajo de ${UMBRAL_DE} no se distinguen a ojo.`]);
+      return;
+    }
     const dh = dTono(mio.H, o.H), dl = Math.abs(mio.L - o.L);
     if (dh <= 12 && dl <= 0.15)
       a.push([`El acento choca con ${m.n}`,
@@ -848,10 +881,27 @@ function problemasClon() {
   registro.forEach((m) => {
     if (!m.ejes) return;
     const d = CLAVES_EJE.filter((k) => Math.abs(S.ejes[k] - m.ejes[k]) >= 1).length;
+    // Los ejes estimados por IA (origenEjes: 'est') cuentan, pero se dice: un
+    // [est] no puede leerse como [sabido] (protocolo, regla de las etiquetas).
     if (d < 2)
       a.push([`Mismo temperamento que ${m.n}`,
-        `se diferencian en ${d} de los cuatro ejes y hacen falta dos. Con el mismo temperamento, cambiar el color no cambia la web.`]);
+        `se diferencian en ${d} de los cuatro ejes y hacen falta dos. Con el mismo temperamento, cambiar el color no cambia la web.` +
+        (m.origenEjes === 'est' ? ` (Los ejes de ${m.n} son una estimación [est] de la IA, pendiente de validar.)` : '')]);
   });
+
+  // 3b) El papel. El único choque REAL medido entre 14 webs fue de papeles
+  //     (Rodríguez y Córdoba Soluciona, 23-sep) y el registro solo miraba el
+  //     acento: no lo habría visto. A croma bajo el tono no sirve, así que se
+  //     mide la distancia euclídea en Oklab con 0,02 de umbral, que es el
+  //     límite de lo que se distingue a ojo.
+  const miPapel = tokens()['--color-paper'];
+  if (esHex(miPapel)) {
+    const choques = registro.filter((m) => esHex(m.papel))
+      .map((m) => [m, deltaE(miPapel, m.papel)]).filter(([, d]) => d <= UMBRAL_DE);
+    if (choques.length)
+      a.push([`El papel choca con ${lista(choques.map(([m]) => m.n))}`,
+        `${miPapel.toUpperCase()} frente a ${choques.map(([m, d]) => `${m.papel.toUpperCase()} (ΔE ${d.toFixed(3)})`).join(', ')} en Oklab. Por debajo de ${UMBRAL_DE} no se distinguen a ojo: con el mismo papel, dos webs se leen como la misma. Prueba otra base o un papel propio.`]);
+  }
 
   // 4) El gesto. Nunca se repite, y el cliché del sector no cuenta como gesto.
   const g = S.gesto.trim().toLowerCase();
@@ -1590,7 +1640,7 @@ function documento() {
    `base` NO está en la lista aunque toque tokens: también decide si `ink` se
    invierte, y eso es marcado. Lo mismo `ancho`, que escribe font-stretch en
    varios sitios. Ante la duda, reconstruir. */
-const SOLO_TOKENS = ['acento', 'tinta', 'display', 'texto'];
+const SOLO_TOKENS = ['acento', 'tinta', 'display', 'texto', 'papel'];
 /* Campos de contenido que van al encargo pero no se pintan en el lienzo:
    escribir en ellos no puede recargar la muestra en cada tecla. */
 const SOLO_ENCARGO = ['np', 'posicionamiento', 'busqueda', 'voz', 'palabrasSi', 'palabrasNo', 'objecion', 'gesto', 'datosContacto'];
@@ -2065,6 +2115,9 @@ function direccionArteMD() {
     display: S.display,
     acento: S.acento.toUpperCase(),
     acento2: null,
+    papel: String(tokens()['--color-paper']).toUpperCase(),
+    // 'est' hasta que una persona los confirme (F4b: la IA propone, valida una persona).
+    origenEjes: 'est',
     fondo: S.fondo === 'ninguno' ? 'color plano' : S.fondo,
     foto: FOTOS[S.foto].n,
     gesto: S.gesto.trim() || 'TODO',
@@ -2083,7 +2136,7 @@ Generado con el Estudio de marca. Va en \`<repo>/brand/DIRECCION-ARTE.md\`.
 \`\`\`
 Ejes:     peso ${e.peso} · temperatura ${e.temperatura} · memoria ${e.memoria} · aire ${e.aire}
 Display:  ${S.display}${S.ancho ? ' en ancho extendido (font-stretch 116%)' : ''}
-Acento:   ${S.acento.toUpperCase()} sobre base «${b.n}» (${b.hue})
+Acento:   ${S.acento.toUpperCase()} sobre base «${b.n}» (${b.hue})${S.papel ? ` con papel propio ${S.papel.toUpperCase()}` : ''}
 Fondo:    ${f.n}${f.dice ? ` — ${f.dice}` : ''}
 Foto:     ${FOTOS[S.foto].n}, recorte ${FORMAS[S.forma].n.toLowerCase()}
 Gesto:    ${S.gesto.trim() || '⚠ SIN DEFINIR'}
@@ -2119,6 +2172,7 @@ ${problemas.length
 
 Al cerrar la web, pegá esto en \`opspilot-kit/marcas.json\`. Si no se pega, el
 registro envejece y la comprobación anti-clon deja de servir para la siguiente.
+\`origenEjes\` sale como \`est\`: pásalo a \`validado\` cuando una persona confirme los ejes.
 
 \`\`\`json
 ${JSON.stringify(entrada, null, 2)}
@@ -2352,7 +2406,7 @@ Sobre foto, degradado o fondo animado no se puede medir aquí: mídelo en la zon
 Ejes:     peso ${e.peso} · temperatura ${e.temperatura} · memoria ${e.memoria} · aire ${e.aire}
 Display:  ${S.display}${S.ancho ? ' en ancho extendido (font-stretch 116%)' : ''}
 Texto:    ${S.texto}
-Acento:   ${S.acento.toUpperCase()} sobre base «${b.n}» (${b.hue}). Tinta ${S.tinta.toUpperCase()}.
+Acento:   ${S.acento.toUpperCase()} sobre base «${b.n}» (${b.hue})${S.papel ? ` con papel propio ${S.papel.toUpperCase()}` : ''}. Tinta ${S.tinta.toUpperCase()}.
 Fondo:    ${f.n}${f.dice ? ` — ${f.dice}` : ''}
 Foto:     ${fo.n}${fo.nota ? ` — ${fo.nota}` : ''}, recorte ${FORMAS[S.forma].n.toLowerCase()}
 Gesto:    ${S.gesto.trim() || '⚠ SIN DEFINIR. Búscalo en las reseñas del cliente antes de maquetar: es lo único que no se puede copiar.'}
@@ -2363,7 +2417,9 @@ ${marca}
 ═══ EL CONTENIDO · protocolo OpsPilot ═══
 ${bloqueContenido()}
 
-═══ LA PÁGINA, EN ESTE ORDEN ═══
+═══ LA PÁGINA DE INICIO, SECCIÓN A SECCIÓN (se maquetan las ${S.secciones.length}) ═══
+«Portada» es solo el nombre de la PRIMERA sección (la primera pantalla): la página de inicio
+son todas las secciones de abajo, en este orden.
 ${S.secciones.map((s, i) => {
   const def = SECCIONES[s.t] || {};
   const v = (def.variantes || []).find((x) => x.id === s.v) || {};
@@ -2843,6 +2899,7 @@ function normaliza(d) {
   // El contenido: texto, y canales que existan. Un estado de antes de que hubiera
   // bloque de contenido llega sin estas claves y se queda con las vacías.
   CAMPOS_CONTENIDO.forEach((k) => { if (typeof n[k] !== 'string') n[k] = ''; });
+  if (!esHex(n.papel)) n.papel = '';
   n.canales = (Array.isArray(n.canales) ? n.canales : []).filter((c) => CANALES[c]);
 
   return n;
@@ -2928,6 +2985,11 @@ function enlaza() {
   }));
   $('#acento').addEventListener('input', (e) => { S.acento = e.target.value; render(); });
   $('#tinta').addEventListener('input', (e) => { S.tinta = e.target.value; render(); });
+  $('#papel')?.addEventListener('input', (e) => {
+    if (!$('#papel-propio').checked) $('#papel-propio').checked = true;   // tocar el color ES pedir papel propio
+    S.papel = e.target.value; render();
+  });
+  $('#papel-propio')?.addEventListener('change', (e) => { S.papel = e.target.checked ? $('#papel').value : ''; pintaControles(); render(); });
   $('#ancho').addEventListener('change', (e) => { S.ancho = e.target.checked; render(); });
 
   document.querySelectorAll('#anchos button').forEach((b) => b.addEventListener('click', () => {

@@ -935,7 +935,7 @@
           "dice": "todo al eje, para cuando hay una sola idea"
         }
       ],
-      "protocolo": "P12 · titular: qué es, dónde y qué hacer, legible en 5 segundos, con la búsqueda principal (P11). Subtítulo: la prueba principal (P8). Botón: el canal real de contacto."
+      "protocolo": "P12 · titular: qué es, dónde y qué hacer, legible en 5 segundos, con la búsqueda principal (P11). Subtítulo: la prueba principal (P8). Botón: el canal real (enlace de WhatsApp, o salto a la sección de contacto #contacto si el canal es el formulario)."
     },
     {
       "id": "banda",
