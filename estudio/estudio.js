@@ -423,9 +423,9 @@ function miniMovimiento(id) {
    informa de nada: lo que cambia entre un juego y otro es dónde y cómo cae TU
    forma, no qué forma es. */
 function miniMarca(id) {
-  const m = (S.logo && S.logo.src) ? S.logo.src : marcaSVG();
+  const m = fuenteMarca();
   const mask = (tam, rep = 'no-repeat', pos = 'center') =>
-    `-webkit-mask:url("${m}") ${pos}/${tam} ${rep};mask:url("${m}") ${pos}/${tam} ${rep};`;
+    `-webkit-mask:url('${m}') ${pos}/${tam} ${rep};mask:url('${m}') ${pos}/${tam} ${rep};`;
   const capa = (estilo) => `<span style="position:absolute;${estilo}"></span>`;
   const base = 'inset:0;background:var(--color-paper);';
 
@@ -955,8 +955,16 @@ function marcaSVG() {
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
-/** La fuente de la marca: el logo subido si lo hay, si no la forma elegida. */
-const fuenteMarca = () => (S.logo && S.logo.src) ? S.logo.src : marcaSVG();
+/**
+ * La fuente de la marca: el logo subido si lo hay, si no la forma elegida.
+ *
+ * Las comillas van escapadas por una razón concreta: esto acaba dentro de un
+ * `url(...)` dentro de un atributo `style="..."` de HTML. Con comillas dobles
+ * —`url("data:…")`— la primera comilla CIERRA EL ATRIBUTO, la máscara llega
+ * como `url("")` y el juego de marca desaparece sin ningún error en consola.
+ * Pasó. Por eso ahora es `url('…')` y aquí se neutraliza la comilla simple.
+ */
+const fuenteMarca = () => String((S.logo && S.logo.src) ? S.logo.src : marcaSVG()).replace(/'/g, '%27');
 const proporcionMarca = () => (S.logo && S.logo.w && S.logo.h) ? S.logo.w / S.logo.h : 1;
 
 /**
@@ -968,8 +976,8 @@ function marcaMascara(alto, color, extra = '') {
   const ancho = `calc(${alto} * ${proporcionMarca().toFixed(3)})`;
   const pintura = color === 'fondo' ? '' : `background:${color};`;
   return `width:${ancho};height:${alto};${pintura}
-    -webkit-mask:url("${fuenteMarca()}") center/contain no-repeat;
-    mask:url("${fuenteMarca()}") center/contain no-repeat;${extra}`;
+    -webkit-mask:url('${fuenteMarca()}') center/contain no-repeat;
+    mask:url('${fuenteMarca()}') center/contain no-repeat;${extra}`;
 }
 
 /** El logo para la cabecera y el pie. En oscuro se recolorea con la máscara. */
@@ -1007,8 +1015,8 @@ function capaMarca(oscuro) {
   if (j === 'trama') {
     return `<span aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:.06;
       background:${tinta};
-      -webkit-mask:url("${fuenteMarca()}") 0 0/4.5rem 4.5rem repeat;
-      mask:url("${fuenteMarca()}") 0 0/4.5rem 4.5rem repeat;"></span>`;
+      -webkit-mask:url('${fuenteMarca()}') 0 0/4.5rem 4.5rem repeat;
+      mask:url('${fuenteMarca()}') 0 0/4.5rem 4.5rem repeat;"></span>`;
   }
   if (j === 'calado') {
     return `<span aria-hidden="true" style="position:absolute;left:-4rem;bottom:-4rem;z-index:0;
