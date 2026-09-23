@@ -60,6 +60,7 @@ function enlaza() {
   enlazaLogo();
   enlazaFotos();
   $('#marca-chrome')?.addEventListener('change', (e) => { S.marcaEnChrome = e.target.checked; render(); });
+  $('#ventana-marco')?.addEventListener('change', (e) => { S.ventanaMarco = e.target.checked; render(); });
 
   /* Pantalla completa de la muestra. En un móvil no caben el panel y la
      previsualización a la vez: por mucho que se reparta, ninguno queda usable.

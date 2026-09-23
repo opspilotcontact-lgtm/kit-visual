@@ -11,6 +11,11 @@ const inicial = () => ({
      Vive en localStorage pero NO en el enlace compartible: un data URL de
      200 KB dentro del hash hace una URL que ningún sitio acepta pegar. */
   logo: null, marcaForma: 'arco', marcaEnChrome: true, marcaJuego: 'ninguno',
+  /* La ventana lleva un aro del color de marca (la foto sola en una silueta
+     se leía como «una foto ovalada»). Con una forma HUECA —letras caladas,
+     como el disco AJ de Ana Jurado— el aro y la foto van a escalas distintas
+     y los huecos no coinciden: filos de color en cada letra. Ahí, sin aro. */
+  ventanaMarco: true,
   ejes: { peso: 3, temperatura: 3, memoria: 3, aire: 3 },
   /* Punto de partida NEUTRO. Antes arrancaba con Archivo y #FEFE00 —la marca de
      Dígito—: cuatro avisos de clon antes de tocar nada, y quien no los leyera

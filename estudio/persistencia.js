@@ -110,7 +110,11 @@ function normaliza(d) {
       h: Number.isFinite(lg.h) && lg.h > 0 ? Math.round(lg.h) : 96,
       bytes: Number.isFinite(lg.bytes) && lg.bytes >= 0 ? Math.round(lg.bytes) : 0,
       aColor: lg.aColor === true,
-      ...(typeof lg.formaSrc === 'string' && /^data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+$/.test(lg.formaSrc) ? { formaSrc: lg.formaSrc } : {}) }
+      // La forma admite los mismos tipos que el logo: solo SVG tiraba en silencio
+      // la de un logo sin vector (Ana Jurado, 23-sep) y la ventana usaba las letras.
+      ...(typeof lg.formaSrc === 'string' && /^data:image\/(png|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(lg.formaSrc) ? { formaSrc: lg.formaSrc } : {}),
+      // El contorno (silueta sin huecos) para el aro de una forma calada.
+      ...(typeof lg.contornoSrc === 'string' && /^data:image\/(png|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(lg.contornoSrc) ? { contornoSrc: lg.contornoSrc } : {}) }
     : null;
 
   /* Todo lo que acaba dentro de HTML o de CSS se valida contra el catálogo o
@@ -135,6 +139,7 @@ function normaliza(d) {
   ['marca', 'oficio', 'gesto'].forEach((k) => { if (typeof n[k] !== 'string') n[k] = base[k]; });
   n.ancho = !!n.ancho;
   n.marcaEnChrome = n.marcaEnChrome !== false;
+  n.ventanaMarco = n.ventanaMarco !== false;
 
   // El contenido: texto, y canales que existan. Un estado de antes de que hubiera
   // bloque de contenido llega sin estas claves y se queda con las vacías.

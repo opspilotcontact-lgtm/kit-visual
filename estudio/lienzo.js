@@ -227,6 +227,28 @@ let MARCA_FIJA = null;
 const fuenteMarca = () => MARCA_FIJA
   || String((S.logo && S.logo.src) ? S.logo.src : marcaSVG()).replace(/'/g, '%27');
 const proporcionMarca = () => (S.logo && S.logo.w && S.logo.h) ? S.logo.w / S.logo.h : 1;
+/* El fichero del logo en el proyecto lleva la extensión de SU tipo. Iba fijo a
+   .svg, y con un logo sin vector (Ana Jurado, 23-sep: PNG de Canva) el encargo
+   mandaba a buscar un /img/logo-forma.svg que no existe. */
+const extTipo = (t) => t === 'image/svg+xml' ? 'svg' : t === 'image/webp' ? 'webp' : t === 'image/jpeg' ? 'jpg' : 'png';
+const tipoDataUrl = (u) => (String(u || '').match(/^data:([^;,]+)/) || [])[1] || 'image/svg+xml';
+const ficheroLogo = () => `/img/logo.${extTipo(S.logo ? S.logo.tipo : 'image/svg+xml')}`;
+const ficheroForma = () => `/img/logo-forma.${extTipo(tipoDataUrl(S.logo && S.logo.formaSrc))}`;
+const ficheroContorno = () => `/img/logo-contorno.${extTipo(tipoDataUrl(S.logo && S.logo.contornoSrc))}`;
+
+/* Con la ventana en la portada, la ventana YA es la foto. La portada «a una
+   columna» añadía además su fila de tres fotos, y la fila se montaba encima de
+   la ventana (Ana Jurado, 23-sep: el disco AJ cortado por la tercera tarjeta).
+   Ahí la fila se quita y la ventana lleva la PRIMERA foto, que es la que el
+   cliente pone delante (su cara, su obra), no la cuarta. */
+const ventanaEnPortada = () => S.marcaJuego === 'ventana'
+  && S.secciones.some((s) => s.t === 'hero' && (s.capas || []).includes('marca'));
+const fotoVentana = () => {
+  const fl = FL();
+  // «Partida» ya enseña la primera en grande y «centrada» la segunda.
+  const i = ((S.secciones.find((s) => s.t === 'hero') || {}).v === 'partida') ? 1 : 0;
+  return String(fl[Math.min(i, fl.length - 1)] || '');
+};
 
 /**
  * Un bloque enmascarado con la marca. `color` puede ser un color (el logo sale
@@ -280,7 +302,11 @@ function marcaHTML(alto, oscuro) {
    ventana: un titular largo («Entrenamiento en grupo pequeño para mujeres…»)
    la cruzaba a 1280 px en la IA directora de Brío (F6). */
 const VENTANA_CSS = '@media (max-width:75rem){.marca-ventana{position:relative!important;display:block;right:auto!important;top:auto!important;margin:0 0 1.5rem auto}}'
-  + '@media (min-width:75.0625rem){.sec:has(>.marca-ventana) h1,.sec:has(>.marca-ventana) .lead{max-width:calc(100% - min(26rem,38vw) - 2.5rem)}}';
+  + '@media (min-width:75.0625rem){.sec:has(>.marca-ventana) h1,.sec:has(>.marca-ventana) .lead{max-width:calc(100% - min(26rem,38vw) - 2.5rem)}'
+  // La sección tiene que CONTENER la ventana (va en absoluto y la sección corta lo
+  // que sobra): sin la fila de fotos, el disco AJ salía cortado por abajo (23-sep).
+  // 10rem = su top máximo (6rem) y aire debajo.
+  + '.sec:has(>.marca-ventana){min-height:calc(min(26rem,38vw) + 10rem)}}';
 
 /**
  * La marca como capa de sección: sello, agua, ventana, trama o calado.
@@ -299,9 +325,17 @@ function capaMarca(oscuro, enPortada = true) {
      la silueta sin detalles sueltos. Con el logo entero, el «®» de Dígito salía
      flotando fuera de la ventana («parece un resto sin terminar», juez Sonnet, F6). */
   const src = S.logo && S.logo.formaSrc
-    ? (MARCA_FIJA ? MARCA_FIJA.replace(/logo\.svg$/, 'logo-forma.svg') : S.logo.formaSrc.replace(/'/g, '%27'))
+    ? (MARCA_FIJA ? MARCA_FIJA.replace(/logo\.[a-z]+$/, ficheroForma().split('/').pop()) : S.logo.formaSrc.replace(/'/g, '%27'))
     : fuenteMarca();
   const mascara = `-webkit-mask:url('${src}') center/contain no-repeat;mask:url('${src}') center/contain no-repeat;`;
+  /* El aro de la ventana, con el CONTORNO si la forma es hueca (letras
+     caladas): con la misma forma, aro y foto van a escalas distintas y los
+     huecos no coinciden. Con el contorno (el disco liso), el aro es limpio y
+     las letras quedan del color de marca sobre la foto (Ana Jurado, 23-sep). */
+  const srcAro = S.logo && S.logo.contornoSrc
+    ? (MARCA_FIJA ? MARCA_FIJA.replace(/logo\.[a-z]+$/, ficheroContorno().split('/').pop()) : S.logo.contornoSrc.replace(/'/g, '%27'))
+    : src;
+  const mascaraAro = `-webkit-mask:url('${srcAro}') center/contain no-repeat;mask:url('${srcAro}') center/contain no-repeat;`;
 
   if (j === 'sello') {
     // class="marca-sello": los titulares de su sección le dejan sitio (cssBase).
@@ -329,14 +363,15 @@ function capaMarca(oscuro, enPortada = true) {
        lados: se calcula sobre el lado corto. */
     const [w, h] = cajaMarca('min(26rem, 38vw)');
     const corto = proporcionMarca() >= 1 ? h : w;
-    // La cuarta foto: las tres primeras ya las enseña la portada en su fila.
-    const fl = FL();
-    const foto = String(fl[Math.min(3, fl.length - 1)] || '').replace(/'/g, '%27');
+    const foto = fotoVentana().replace(/'/g, '%27');
     // class="marca-ventana": por debajo de 75rem deja de flotar (VENTANA_CSS).
+    // Sin aro (forma hueca): la foto a tamaño completo, y las letras caladas
+    // quedan del color del papel, como en el logo.
+    const aro = S.ventanaMarco !== false;
     return `<span class="marca-ventana" aria-hidden="true" style="position:absolute;right:clamp(0rem,3vw,3rem);top:clamp(2.5rem,9%,6rem);z-index:0;
-      width:${w};height:${h};">
-      <span style="position:absolute;inset:0;background:var(--color-brand);${mascara}"></span>
-      <span style="position:absolute;inset:calc(${corto} * .07);background:var(--color-metal) url('${foto}') center/cover no-repeat;${mascara}"></span></span>`;
+      width:${w};height:${h};">${aro ? `
+      <span style="position:absolute;inset:0;background:var(--color-brand);${mascaraAro}"></span>` : ''}
+      <span style="position:absolute;inset:${aro ? `calc(${corto} * .07)` : '0'};background:var(--color-metal) url('${foto}') center/cover no-repeat;${mascara}"></span></span>`;
   }
   if (j === 'trama') {
     return `<span aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:.06;
@@ -484,6 +519,10 @@ const CUERPO = {
       return `<div style="text-align:center;max-width:46rem;margin:0 auto">${texto}
         <div style="margin-top:3rem">${figura(FL()[1])}</div></div>`;
     }
+    // Con la ventana, sin fila de fotos: la foto va dentro. El ancho del texto
+    // ya lo pone VENTANA_CSS (100 % menos la ventana); envolverlo en 36rem lo
+    // dejaba en 120 px, una palabra por línea (medido el 23-sep).
+    if (ventanaEnPortada()) return texto;
     return `${texto}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;margin-top:3rem">
         ${FL().slice(0, 3).map((s, i) => figura(s, i)).join('')}</div>`;

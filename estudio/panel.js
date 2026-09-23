@@ -324,6 +324,8 @@ function pintaControles() {
   }
   const chrome = $('#marca-chrome');
   if (chrome) chrome.checked = !!S.marcaEnChrome;
+  const aro = $('#ventana-marco');
+  if (aro) aro.checked = S.ventanaMarco !== false;
   opciones('#marca-juego', Object.entries(MARCAJUEGOS).map(([k, v]) => [k, v.n, v.dice]), S.marcaJuego, (v) => set('marcaJuego', v), { tipo: 'marca', cols: 2 });
 
   if ($('#canales')) chips('#canales', Object.entries(CANALES), S.canales, (v) => toggle('canales', v), true);

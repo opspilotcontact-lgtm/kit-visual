@@ -557,7 +557,7 @@ const vacio = (v, p, que) => (String(v || '').trim() ? String(v).trim() : `TODO 
    se pasa a clases en marca-<slug>.css. */
 function estructura() {
   const compacta = (h) => h.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
-  MARCA_FIJA = '/img/logo.svg';
+  MARCA_FIJA = ficheroLogo();
   let boton, cabecera;
   try { boton = compacta(botonHTML('Texto del botón')); cabecera = compacta(headerHTML()); }
   finally { MARCA_FIJA = null; }
@@ -704,20 +704,22 @@ function prompt() {
     (s.capas || []).includes('marca') && ((SECCIONES[s.t] || {}).admite || []).includes('marca'));
   const juego = MARCAJUEGOS[S.marcaJuego] || {};
   const logo = S.logo
-    ? `el del cliente (${S.logo.tipo.replace('image/', '')}, ${S.logo.w}×${S.logo.h} px). Se usa el fichero original en vector: /img/logo.svg` +
-      (S.logo.formaSrc ? '. Para los juegos de forma (ventana, sello…) va aparte /img/logo-forma.svg: su silueta sin detalles sueltos (sin ®), del mismo tamaño de lienzo' : '')
+    ? `el del cliente (${S.logo.tipo.replace('image/', '')}, ${S.logo.w}×${S.logo.h} px). Se usa ${S.logo.tipo === 'image/svg+xml'
+      ? 'el fichero original en vector' : 'este fichero mientras no haya vector (pídelo: ampliado pierde nitidez)'}: ${ficheroLogo()}` +
+      (S.logo.formaSrc ? `. Para los juegos de forma (ventana, sello…) va aparte ${ficheroForma()}: su silueta sin detalles sueltos (sin ®), del mismo tamaño de lienzo` : '') +
+      (S.logo.contornoSrc ? `. Y ${ficheroContorno()}: el contorno de esa forma SIN huecos, del mismo tamaño; es la máscara del aro de la ventana (la foto usa la forma calada)` : '')
     : `TODO: el logo del cliente en SVG. En el Estudio se compuso con la forma de repuesto «${(FORMAS_MARCA[S.marcaForma] || FORMAS_MARCA.arco)[0]}»; se sustituye por el logo real`;
   const marca = [
     `Logo: ${logo}.`,
     `Cabecera y pie: ${!S.marcaEnChrome ? 'el nombre en la tipografía display, sin logo'
-      : logoAColor() ? 'el logo como IMAGEN, a color (<img src="/img/logo.svg">): tiene varios colores y recolorearlo con máscara borraría lo de dentro. En el pie oscuro, su versión para fondo oscuro si la tiene; si no, la misma'
+      : logoAColor() ? `el logo como IMAGEN, a color (<img src="${ficheroLogo()}">): tiene varios colores y recolorearlo con máscara borraría lo de dentro. En el pie oscuro, su versión para fondo oscuro si la tiene; si no, la misma`
         : 'el logo como forma; en el pie oscuro se recolorea con mask-image (un solo fichero, sin versión en negativo)'}.`,
     S.marcaJuego && S.marcaJuego !== 'ninguno'
       ? `Juego: ${juego.n}${juego.dice ? ` — ${juego.dice}` : ''}. Va en ${conMarca.length ? conMarca.map(([s, i]) => `${String(i + 1).padStart(2, '0')} ${(SECCIONES[s.t] || {}).n}`).join(', ') : 'ninguna sección todavía (marca la capa «marca» donde toque)'}.\n` +
         `  CSS exacto (el mismo que pinta el Estudio; la sección lleva position:relative;isolation:isolate;overflow:hidden y el contenido z-index:1):\n` +
         (S.marcaJuego === 'ventana'
-          ? `  En la PORTADA, la ventana (grande, una sola vez):\n  ${recetaMarca('/img/logo.svg', true)}\n  Y en el CSS de la web, sin falta (por debajo de 75rem deja de flotar y va encima del titular; si no, se le monta encima):\n  ${VENTANA_CSS}\n  En las DEMÁS secciones con marca, como sello (pequeño y siempre igual; así se repite sin hacer ruido):\n  ${recetaMarca('/img/logo.svg', false)}`
-          : `  ${recetaMarca('/img/logo.svg')}`) +
+          ? `  En la PORTADA, la ventana (grande, una sola vez):\n  ${recetaMarca(ficheroLogo(), true)}\n  Y en el CSS de la web, sin falta (por debajo de 75rem deja de flotar y va encima del titular; si no, se le monta encima):\n  ${VENTANA_CSS}\n  En las DEMÁS secciones con marca, como sello (pequeño y siempre igual; así se repite sin hacer ruido):\n  ${recetaMarca(ficheroLogo(), false)}`
+          : `  ${recetaMarca(ficheroLogo())}`) +
         // El sello sobre fondo profundo: el borde en claro (el constructor ciego de Dígito v2 vio
         // que con --color-line-strong desaparecía sobre la banda oscura).
         (['sello', 'ventana'].includes(S.marcaJuego) ? `\n  Sobre una sección de fondo profundo (tono «deep»), el borde del sello va en rgb(255 255 255/.35) en vez de var(--color-line-strong). Y sus titulares le dejan sitio: .sec:has(>.marca-sello) :is(h1,h2){padding-right:5.5rem}` : '')
@@ -825,6 +827,8 @@ ${S.secciones.map((s, i) => {
     `\n    ${v.dice || def.dice || ''}` +
     `\n    Fondo de sección: ${({ paper: 'papel (--color-paper)', alt: 'papel alterno (--color-paper-alt)', deep: 'profundo (--color-deep, texto en blanco)' })[s.tono]}` +
     (capas.length ? `\n    Capas aquí: ${capas.map((c) => NOMBRE_CAPA[c] || c).join(', ')}` : '') +
+    (s.t === 'hero' && s.v === 'columna' && ventanaEnPortada()
+      ? '\n    Con la ventana aquí NO va la fila de fotos: la foto va DENTRO de la ventana (la primera de la lista).' : '') +
     ((v.protocolo || def.protocolo) ? `\n    Contenido: ${v.protocolo || def.protocolo}` : '');
 }).join('\n')}
 
