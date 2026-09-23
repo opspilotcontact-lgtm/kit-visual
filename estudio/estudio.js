@@ -517,8 +517,8 @@ function documento() {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
-<link rel="stylesheet" href="_astro/kit-completo.css">
-<link rel="stylesheet" href="estudio/estudio.css">
+<link rel="stylesheet" href="_astro/kit-completo.css?v=0128ca9b">
+<link rel="stylesheet" href="estudio/estudio.css?v=104a9032">
 <style>
   :root{${vars}}
   html{scroll-behavior:auto}
