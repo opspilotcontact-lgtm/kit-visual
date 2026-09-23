@@ -1,8 +1,7 @@
 {
   "version": 1,
-  "nota": "Registro de las webs ya hechas. Existe porque la regla anti-clon de la skill dice 'comprueba contra las webs ya hechas' y no había lista contra la que comprobar: el resultado es que Archivo se repite en 4 proyectos y hay dos amarillos casi idénticos sobre negro. El estudio lo carga y avisa NOMBRANDO con qué web choca. Formato = las seis líneas de brand/DIRECCION-ARTE.md.",
+  "nota": "Registro de las webs ya hechas. Existe porque la regla anti-clon de la skill dice 'comprueba contra las webs ya hechas' y no había lista contra la que comprobar: el resultado es que Archivo se repite en 4 proyectos y hay dos amarillos casi idénticos sobre negro. El estudio lo carga y avisa NOMBRANDO con qué web choca. Formato = las seis líneas de brand/DIRECCION-ARTE.md. Desde el 23-sep: papel (se compara por ΔE en Oklab, umbral 0,02) y origenEjes (est = estimados por IA, validado = confirmados por una persona).",
   "comoRellenar": "Al cerrar una web nueva, añade su entrada aquí copiando las seis líneas de su DIRECCION-ARTE.md. El estudio puede generarla con el botón de exportar.",
-
   "marcas": [
     {
       "id": "digito",
@@ -11,10 +10,17 @@
       "sector": "rotulación",
       "fecha": "2026-09-22",
       "estado": "en obras",
-      "ejes": { "peso": 5, "temperatura": 2, "memoria": 4, "aire": 2 },
+      "ejes": {
+        "peso": 5,
+        "temperatura": 2,
+        "memoria": 4,
+        "aire": 2
+      },
+      "origenEjes": "validado",
       "display": "Archivo",
       "acento": "#FEFE00",
       "acento2": "#788088",
+      "papel": "#F5F6F7",
       "fondo": "halftone",
       "foto": "fx-tint + fx-lozenge",
       "gesto": "apagado / encendido: cada pieza es un rótulo con canto de aluminio que se enciende",
@@ -28,10 +34,17 @@
       "sector": "reformas (captación)",
       "fecha": "2026-09-18",
       "estado": "publicada",
-      "ejes": { "peso": 3, "temperatura": 4, "memoria": 3, "aire": 4 },
+      "ejes": {
+        "peso": 3,
+        "temperatura": 4,
+        "memoria": 3,
+        "aire": 4
+      },
+      "origenEjes": "validado",
       "display": "Young Serif",
       "acento": "#B4482F",
       "acento2": "#3F7A4C",
+      "papel": "#FBFAF5",
       "fondo": "color plano",
       "foto": "recta, sin tinte, base verde y pie debajo",
       "gesto": "el arco como ventana (3 sitios) + «la partida»: todo dato se escribe como línea de presupuesto",
@@ -45,10 +58,17 @@
       "sector": "reformas",
       "fecha": "2026-09-22",
       "estado": "en obras",
-      "ejes": { "peso": 4, "temperatura": 4, "memoria": 4, "aire": 2 },
+      "ejes": {
+        "peso": 4,
+        "temperatura": 4,
+        "memoria": 4,
+        "aire": 2
+      },
+      "origenEjes": "validado",
       "display": "Fraunces",
       "acento": "#7D8C5A",
       "acento2": "#6A961F",
+      "papel": "#F2F4EF",
       "fondo": "color plano + grano decreciente",
       "foto": "fx-tint oliva + grano",
       "gesto": "el polvo que se va + la plomada",
@@ -62,15 +82,23 @@
       "sector": "tienda de materiales",
       "fecha": "2026-08-21",
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 4,
+        "temperatura": 2,
+        "memoria": 1,
+        "aire": 2
+      },
+      "origenEjes": "est",
       "display": "Archivo Black",
       "acento": "#F5D800",
       "acento2": "#0D0D0D",
+      "papel": "#FAFAF8",
       "fondo": "color plano",
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": null
+      "doc": null,
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "worldfitness",
@@ -79,15 +107,23 @@
       "sector": "gimnasio",
       "fecha": null,
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 4,
+        "temperatura": 3,
+        "memoria": 3,
+        "aire": 3
+      },
+      "origenEjes": "est",
       "display": "Anton",
       "acento": "#FF5722",
       "acento2": "#1A3A26",
+      "papel": "#F8F5EF",
       "fondo": null,
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": null
+      "doc": null,
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "web-formaciones",
@@ -96,15 +132,23 @@
       "sector": "formación",
       "fecha": null,
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 5,
+        "temperatura": 5,
+        "memoria": 3,
+        "aire": 4
+      },
+      "origenEjes": "est",
       "display": "Archivo Black",
       "acento": "#C56B4F",
       "acento2": "#14253F",
+      "papel": "#F2EDE4",
       "fondo": "color plano (#F2EDE4)",
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": null
+      "doc": null,
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "mcf",
@@ -113,15 +157,23 @@
       "sector": "estética / bienestar",
       "fecha": null,
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 2,
+        "temperatura": 5,
+        "memoria": 2,
+        "aire": 4
+      },
+      "origenEjes": "est",
       "display": "Cormorant",
       "acento": "#C1694A",
       "acento2": "#8A9E7A",
+      "papel": "#FAF6EF",
       "fondo": null,
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": "MCF/AUDITORIA.md"
+      "doc": "MCF/AUDITORIA.md",
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "inelsoft",
@@ -130,15 +182,23 @@
       "sector": "software industrial",
       "fecha": null,
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 4,
+        "temperatura": 2,
+        "memoria": 2,
+        "aire": 4
+      },
+      "origenEjes": "est",
       "display": "Archivo",
       "acento": "#336699",
       "acento2": "#666666",
+      "papel": "#FFFFFF",
       "fondo": null,
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": "inelsoft/02-marca/design-system.md"
+      "doc": "inelsoft/02-marca/design-system.md",
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "presupuesya-landing",
@@ -147,15 +207,23 @@
       "sector": "software de presupuestos",
       "fecha": null,
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 4,
+        "temperatura": 2,
+        "memoria": 1,
+        "aire": 2
+      },
+      "origenEjes": "est",
       "display": "Bebas Neue",
       "acento": "#E8A020",
       "acento2": "#080808",
+      "papel": "#080808",
       "fondo": "oscuro plano",
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": null
+      "doc": null,
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "dayjo",
@@ -164,15 +232,23 @@
       "sector": "demo",
       "fecha": null,
       "estado": "demo",
-      "ejes": null,
+      "ejes": {
+        "peso": 4,
+        "temperatura": 3,
+        "memoria": 5,
+        "aire": 3
+      },
+      "origenEjes": "est",
       "display": "Bricolage Grotesque",
       "acento": "#E0121B",
       "acento2": "#0C0C0D",
+      "papel": "#F6F3EE",
       "fondo": "oscuro plano",
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": null
+      "doc": null,
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad alta); pendientes de validar (tarea a43844fe)."
     },
     {
       "id": "fluitecnik",
@@ -181,15 +257,23 @@
       "sector": "industrial",
       "fecha": null,
       "estado": "publicada",
-      "ejes": null,
+      "ejes": {
+        "peso": 2,
+        "temperatura": 1,
+        "memoria": 1,
+        "aire": 1
+      },
+      "origenEjes": "est",
       "display": "Mulish",
       "acento": "#ED7505",
       "acento2": "#143852",
+      "papel": "#F4F5F7",
       "fondo": null,
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": null
+      "doc": null,
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad baja); pendientes de validar (tarea a43844fe). No es una web de marca: es una app interna."
     },
     {
       "id": "briss",
@@ -198,15 +282,23 @@
       "sector": "ambientación",
       "fecha": null,
       "estado": "sin marca definida",
-      "ejes": null,
+      "ejes": {
+        "peso": 1,
+        "temperatura": 1,
+        "memoria": 1,
+        "aire": 2
+      },
+      "origenEjes": "est",
       "display": "Geist",
       "acento": null,
       "acento2": null,
+      "papel": "#FFFFFF",
       "fondo": null,
       "foto": null,
       "gesto": null,
       "kit": false,
-      "doc": "Briss ambientacion/BRISS_HANDOFF.md"
+      "doc": "Briss ambientacion/BRISS_HANDOFF.md",
+      "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad baja); pendientes de validar (tarea a43844fe). No es una web de marca: es una app interna."
     }
   ]
 }

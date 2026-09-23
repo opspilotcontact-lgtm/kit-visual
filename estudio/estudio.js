@@ -99,7 +99,7 @@ async function cargaManifiesto() {
  */
 async function cargaMarcas() {
   try {
-    const r = await fetch('../_astro/marcas.json?v=2a2f860a', { cache: 'no-cache' });
+    const r = await fetch('../_astro/marcas.json?v=2bf0b74d', { cache: 'no-cache' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     MARCAS = (await r.json()).marcas || [];
   } catch (e) {
@@ -203,6 +203,8 @@ const inicial = () => ({
   palabrasSi: '',       // P9
   palabrasNo: '',       // P9
   objecion: '',         // P12 · la objeción principal que responde la portada
+  respuestaObjecion: '',// P12 · cómo se responde, con un hecho (la prueba ciega la echó en falta)
+  pasos: '',            // P12 · cómo funciona, uno por línea: paso · qué pasa · plazo
   listaServicios: '',   // P12 · uno por línea: nombre · qué incluye · desde X €
   listaResenas: '',     // P8 · una por línea: texto literal · dónde y cuándo
   cifras: '',           // P8 · una por línea: cifra · qué mide · de dónde sale la prueba
@@ -241,6 +243,10 @@ const sitiosCliente = () => String(S.zona || '').split(/[,;·\n]/).map((x) => x.
 const cifrasCliente = () => lineas(S.cifras).map((l) => {
   const [v, q = '', p = ''] = trozos(l);
   return [v, q, p];
+});
+const pasosCliente = () => lineas(S.pasos).map((l) => {
+  const [t, d = '', p = ''] = trozos(l);
+  return [t, d, p];
 });
 const canal = (c) => (S.canales || []).includes(c);
 /** Sin canales marcados todavía no se ha decidido: el lienzo enseña el ejemplo. */
@@ -894,13 +900,28 @@ function problemasClon() {
   //     acento: no lo habría visto. A croma bajo el tono no sirve, así que se
   //     mide la distancia euclídea en Oklab con 0,02 de umbral, que es el
   //     límite de lo que se distingue a ojo.
+  //     Calibrado con el registro real (23-sep): los blancos rotos son todos
+  //     parecidos, y a 0,02 SOLO por papel chocaban 32 de 66 pares — un aviso
+  //     que salta siempre se ignora. El caso real no era el papel solo: eran
+  //     papel + verdes cercanos + mismo sector. Así que el papel avisa cuando
+  //     además coincide algo más con esa misma web: acento a ≤30° de tono,
+  //     la misma letra o el temperamento. En el registro eso deja 14 pares.
   const miPapel = tokens()['--color-paper'];
   if (esHex(miPapel)) {
-    const choques = registro.filter((m) => esHex(m.papel))
-      .map((m) => [m, deltaE(miPapel, m.papel)]).filter(([, d]) => d <= UMBRAL_DE);
-    if (choques.length)
-      a.push([`El papel choca con ${lista(choques.map(([m]) => m.n))}`,
-        `${miPapel.toUpperCase()} frente a ${choques.map(([m, d]) => `${m.papel.toUpperCase()} (ΔE ${d.toFixed(3)})`).join(', ')} en Oklab. Por debajo de ${UMBRAL_DE} no se distinguen a ojo: con el mismo papel, dos webs se leen como la misma. Prueba otra base o un papel propio.`]);
+    registro.filter((m) => esHex(m.papel)).forEach((m) => {
+      const d = deltaE(miPapel, m.papel);
+      if (d > UMBRAL_DE) return;
+      const mas = [];
+      if (esHex(m.acento)) {
+        const o = oklch(m.acento);
+        if (mio.C >= 0.04 && o.C >= 0.04 && dTono(mio.H, o.H) <= 30) mas.push(`un acento a ${dTono(mio.H, o.H).toFixed(0)}° de tono`);
+      }
+      if (familia(m.display) === familia(S.display)) mas.push('la misma letra');
+      if (m.ejes && CLAVES_EJE.filter((k) => Math.abs(S.ejes[k] - m.ejes[k]) >= 1).length < 2) mas.push('el temperamento');
+      if (mas.length)
+        a.push([`El papel y ${lista(mas)} coinciden con ${m.n}`,
+          `${miPapel.toUpperCase()} y ${m.papel.toUpperCase()} están a ΔE ${d.toFixed(3)} en Oklab (por debajo de ${UMBRAL_DE} no se distinguen a ojo) y además comparten ${lista(mas)}. Juntas, las dos webs se leen como la misma: cambia el papel (papel propio) o lo otro.`]);
+    });
   }
 
   // 4) El gesto. Nunca se repite, y el cliché del sector no cuenta como gesto.
@@ -1276,6 +1297,8 @@ const svc = () => (serviciosCliente().length ? serviciosCliente().map(escFila) :
 const res = () => (resenasCliente().length ? resenasCliente().map(escFila) : EJ['resenas']);
 const sit = () => (sitiosCliente().length ? escFila(sitiosCliente()) : EJ['sitios']);
 const cif = () => (cifrasCliente().length ? cifrasCliente().map(([v, q]) => [esc(v), esc(q)]) : EJ['cifras']);
+const pas = () => (pasosCliente().length
+  ? pasosCliente().map(([t, d, p]) => [esc(t), esc([d, p].filter(Boolean).join(' · '))]) : EJ['pasos']);
 
 function filaServicio([t, d, p], i, osc) {
   return `<div style="display:grid;grid-template-columns:2.5rem 1fr auto;gap:1.2rem;align-items:baseline;
@@ -1327,7 +1350,7 @@ const CUERPO = {
     }
     return `<p style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.5rem,3.6vw,2.4rem);
       line-height:1.1;letter-spacing:-.02em;margin:0;max-width:26ch">
-      Si no sabemos hacerlo, te decimos quién lo hace.</p>`;
+      ${S.respuestaObjecion.trim() ? esc(S.respuestaObjecion.trim()) : 'Si no sabemos hacerlo, te decimos quién lo hace.'}</p>`;
   },
 
   servicios(v, osc) {
@@ -1381,7 +1404,7 @@ const CUERPO = {
     const cab = `${ojo('Cómo trabajamos')}${h2('De la primera visita al rótulo encendido')}`;
     if (v === 'pasos') {
       return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:2rem;margin-top:2.5rem">
-        ${EJ.pasos.map(([t, d], i) => `<div>
+        ${pas().map(([t, d], i) => `<div>
           <span class="tabular" style="font-family:var(--font-display);font-weight:800;font-size:2.2rem;
             line-height:1;color:var(--color-brand)">${i + 1}</span>
           <p style="font-family:var(--font-display);font-weight:700;margin:.6rem 0 0">${t}</p>
@@ -1389,15 +1412,15 @@ const CUERPO = {
     }
     if (v === 'pestanas') {
       return `${cab}<div class="fx-tabs" style="margin-top:2rem">
-        ${EJ.pasos.slice(0, 3).map(([t], i) => `<input type="radio" name="proc" id="pr${i}"${i ? '' : ' checked'}><label for="pr${i}">${t}</label>`).join('')}
+        ${pas().slice(0, 3).map(([t], i) => `<input type="radio" name="proc" id="pr${i}"${i ? '' : ' checked'}><label for="pr${i}">${t}</label>`).join('')}
         <div class="fx-tabs-panels">
-          ${EJ.pasos.slice(0, 3).map(([, d]) => `<div><p style="margin:0;color:${suave(osc)}">${d}</p></div>`).join('')}
+          ${pas().slice(0, 3).map(([, d]) => `<div><p style="margin:0;color:${suave(osc)}">${d}</p></div>`).join('')}
         </div></div>`;
     }
     return `${cab}<div style="position:relative;margin-top:2.5rem;padding-left:2.4rem">
       <div class="fx-plumb fx-plumb-bare" style="--plumb-x:.5rem"></div>
       <ol class="fx-time" style="list-style:none;margin:0;padding:0">
-        ${EJ.pasos.map(([t, d]) => `<li><span>${t}</span><p>${d}</p></li>`).join('')}</ol></div>`;
+        ${pas().map(([t, d]) => `<li><span>${t}</span><p>${d}</p></li>`).join('')}</ol></div>`;
   },
 
   testimonio(v, osc) {
@@ -1872,7 +1895,7 @@ function astroSeccion(s, i) {
     <StatRow items={cifras} cols={3}${tone} />
   </Section>`
         : `  <Section tone="${TONO_SECCION[s.tono]}" space="sm">
-    <p class="font-display text-d2 max-w-[26ch]">TODO: una afirmación sola, sin nada más.</p>
+    <p class="font-display text-d2 max-w-[26ch]">${S.respuestaObjecion.trim() ? `{${js(S.respuestaObjecion.trim())}}` : 'TODO (P12): la objeción principal, respondida en una frase.'}</p>
   </Section>`,
     galeria: () => bloque === 'Bento'
       ? `  <Section tone="${TONO_SECCION[s.tono]}">
@@ -2020,10 +2043,14 @@ ${cf.length
     : `  { value: 'TODO', label: 'TODO (P8): qué mide, con prueba enseñable' },`}
 ];`);
   }
-  if (usaBloque('Steps') || usa('proceso'))
+  if (usaBloque('Steps') || usa('proceso')) {
+    const ps = pasosCliente();
     d.push(`const pasos = [
-  { title: 'TODO: el paso', text: 'TODO: qué pasa en ese paso.' },
+${ps.length
+    ? ps.map(([t, dd, p]) => `  { title: ${q(t)}, text: ${q([dd, p].filter(Boolean).join(' · ') || 'TODO (P12): qué pasa en ese paso y cuánto tarda')} },`).join('\n')
+    : `  { title: 'TODO (P12): el paso', text: 'TODO: qué pasa en ese paso y cuánto tarda.' },`}
 ];`);
+  }
   if (usa('precios'))
     d.push(`const partidas = [
   { title: 'TODO: la partida', hint: 'TODO: el gancho', meta: 'desde TODO €', body: 'TODO: qué entra en ese precio.' },
@@ -2248,6 +2275,12 @@ function bloqueContenido() {
     `    Decimos:            ${vacio(S.palabrasSi, 'P9', 'palabras que usa el cliente')}`,
     `    Nunca decimos:      ${S.palabrasNo.trim() ? S.palabrasNo.trim() + ' · ' : ''}${prohibidas}`,
     `P12 Objeción principal: ${vacio(S.objecion, 'P12', 'la duda que frena al cliente antes de escribir')}`,
+    `    Se responde con:    ${vacio(S.respuestaObjecion, 'P12', 'un hecho que la desmonte (una garantía, un plazo, un nombre); sin él, la banda de la objeción se quita')}`,
+    '',
+    'Cómo funciona (P12 · los pasos, con su plazo real):',
+    pasosCliente().length
+      ? pasosCliente().map(([t, d, p], i) => `  ${i + 1}. ${[t, d, p].filter(Boolean).join(' — ')}`).join('\n')
+      : '  TODO (P12): los pasos, del primer mensaje a la obra terminada. Sin ellos, la sección de proceso se quita.',
     '',
     'Servicios (P12 · nombre — qué incluye — precio; si falta «para quién» o «plazo», va como TODO (P12) en su ficha):',
     sv.length ? sv.map(([t, d, p], i) => `  ${i + 1}. ${[t, d, p].filter(Boolean).join(' — ')}`).join('\n')
@@ -2826,7 +2859,7 @@ function aplicaComposicion(id) {
 /* Los campos de contenido. Los que se ven en el lienzo lo repintan; los que
    solo van al encargo actualizan avisos y guardan, sin recargar la muestra. */
 const CAMPOS_CONTENIDO = ['np', 'posicionamiento', 'prueba', 'busqueda', 'zona', 'voz',
-  'palabrasSi', 'palabrasNo', 'objecion', 'listaServicios', 'listaResenas', 'cifras', 'datosContacto'];
+  'palabrasSi', 'palabrasNo', 'objecion', 'respuestaObjecion', 'pasos', 'listaServicios', 'listaResenas', 'cifras', 'datosContacto'];
 
 /** Los campos que no son fichas hay que ponerlos a mano. */
 function sincronizaCampos() {
