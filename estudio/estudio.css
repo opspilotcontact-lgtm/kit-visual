@@ -155,6 +155,19 @@ body {
   color: #c6f6d5;
 }
 .ui-aviso.ok b { color: #4ade80; }
+/* Grave = el suelo incumplido (contraste medido). No es una opinión de estilo:
+   se distingue en color para que no se confunda con los avisos de criterio. */
+.ui-aviso.grave {
+  background: color-mix(in srgb, #f87171 12%, transparent);
+  border-color: color-mix(in srgb, #f87171 34%, transparent);
+  color: #fecaca;
+}
+.ui-aviso.grave b { color: #f87171; }
+/* Qué NO mide la comprobación. Va siempre, cumpla o no. */
+.ui-nota {
+  font-size: 11px; line-height: 1.5; margin: 0.15rem 0 0;
+  color: var(--ui-soft);
+}
 
 
 /* ── Selectores VISUALES ─────────────────────────────────────────────────────

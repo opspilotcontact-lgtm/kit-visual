@@ -28,8 +28,12 @@ echo "› verificando el manifiesto"
 node "$KIT/build/verificar.mjs"
 
 # 4) El manifiesto vive en el kit, pero Pages solo sirve este repo
+# Los dos son obligatorios: sin manifiesto no hay catálogo y sin registro la
+# comprobación anti-clon calla. La copia va sin guardas a propósito — un
+# `[ -f x ] && cp` devuelve 1 cuando el fichero falta y con `set -e` mata el
+# script justo donde querría avisar.
 cp "$KIT/kit.manifest.json" _astro/kit.manifest.json
-[ -f "$KIT/marcas.json" ] && cp "$KIT/marcas.json" _astro/marcas.json
+cp "$KIT/marcas.json" _astro/marcas.json
 
 # 5) Versionar por hash de contenido
 python - <<'PY'
@@ -37,6 +41,7 @@ import io, hashlib, re
 h = lambda f: hashlib.sha1(io.open(f,'rb').read()).hexdigest()[:8]
 vcss, vjs = h('estudio/estudio.css'), h('estudio/estudio.js')
 vkit, vman = h('_astro/kit-completo.css'), h('_astro/kit.manifest.json')
+vmar = h('_astro/marcas.json')
 
 p='estudio/index.html'; s=io.open(p,encoding='utf-8').read()
 s=re.sub(r'href="estudio\.css(\?v=[a-f0-9]+)?"', f'href="estudio.css?v={vcss}"', s)
@@ -50,8 +55,11 @@ s=re.sub(r'href="estudio/estudio\.css(\?v=[a-f0-9]+)?"', f'href="estudio/estudio
 # El manifiesto también: si cambia una pieza y el navegador sirve el JSON viejo,
 # el estudio ofrece el catálogo de ayer sin decir nada.
 s=re.sub(r"'\.\./_astro/kit\.manifest\.json(\?v=[a-f0-9]+)?'", f"'../_astro/kit.manifest.json?v={vman}'", s)
+# Y el registro de marcas: si el navegador sirve el JSON de ayer, la regla
+# anti-clon compara contra un registro viejo y calla el choque que sí existe.
+s=re.sub(r"'\.\./_astro/marcas\.json(\?v=[a-f0-9]+)?'", f"'../_astro/marcas.json?v={vmar}'", s)
 io.open(p,'w',encoding='utf-8').write(s)
-print(f'  versionado css:{vcss} js:{vjs} kit:{vkit} manifiesto:{vman}')
+print(f'  versionado css:{vcss} js:{vjs} kit:{vkit} manifiesto:{vman} marcas:{vmar}')
 PY
 
 # 6) Publicar

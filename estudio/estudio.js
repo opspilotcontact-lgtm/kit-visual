@@ -18,7 +18,12 @@
 let DISPLAY = [], TEXTO = [], BASES = {}, FONDOS = {}, ESCENAS = {}, FOTOS = {},
     FORMAS = {}, HEADERS = {}, BOTONES = {}, TITULARES = {}, FOOTERS = {},
     MODULOS = {}, MOVIMIENTO = {}, PIEZAS = {}, POSICIONES = {}, TAMANOS = {},
-    RELLENOS = {}, RECETAS = {}, EJES = [];
+    RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [];
+
+/* El registro de las webs ya hechas (opspilot-kit/marcas.json). Es lo que
+   convierte la regla anti-clon de la skill en una comprobación: sin lista
+   contra la que mirar, «no repitas la display» es una buena intención. */
+let MARCAS = [];
 
 /** Índice de piezas por grupo, tal y como las declara el manifiesto. */
 function porGrupo(M, grupo) {
@@ -41,7 +46,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=868b91df', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=3292f51c', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -67,8 +72,24 @@ async function cargaManifiesto() {
   RELLENOS = M.rellenos;
   RECETAS = M.recetas;
   EJES = M.ejes.map((e) => [e.id, e.n, e.min, e.max]);
+  REGLAS = M.reglas || [];
 
   return M;
+}
+
+/**
+ * Carga el registro de marcas. A diferencia del manifiesto, si falla NO se
+ * para: sin registro el estudio sigue componiendo, solo pierde los avisos de
+ * clon. Que falte la comprobación no puede impedir trabajar.
+ */
+async function cargaMarcas() {
+  try {
+    const r = await fetch('../_astro/marcas.json?v=2a2f860a', { cache: 'no-cache' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    MARCAS = (await r.json()).marcas || [];
+  } catch (e) {
+    console.warn('registro de marcas no disponible, sin avisos de clon:', e.message);
+  }
 }
 
 const FOTOS_DEMO = [
@@ -111,15 +132,85 @@ function ajusta(hex, f) {
     .map((v) => Math.max(0, Math.min(255, Math.round(v * f))));
   return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
 }
-/** Texto legible sobre un color: la regla 1 del suelo, automatizada. */
-function sobre(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+const canales = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const esHex = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+
+/** Luminancia relativa (WCAG 2.1). */
+function lum(hex) {
+  const [r, g, b] = canales(hex).map((v) => {
     const s = v / 255;
     return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.42 ? '#101114' : '#ffffff';
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
+
+/** Texto legible sobre un color: la regla 1 del suelo, automatizada. */
+function sobre(hex) { return lum(hex) > 0.42 ? '#101114' : '#ffffff'; }
+
+/** Contraste WCAG 2.1. 1 = son el mismo color, 21 = negro sobre blanco. */
+function ratio(a, b) {
+  const [x, y] = [lum(a), lum(b)];
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
+/**
+ * El color MÁS PARECIDO a `c` que sí pasa `meta` contra `fondo`.
+ * Lo empuja hacia negro o hacia blanco y busca por bisección el punto justo:
+ * así el aviso no dice «no llega», dice «con este sí».
+ *
+ * Se prueban LOS DOS extremos a propósito. Elegir la dirección por si el fondo
+ * es claro u oscuro falla justo en los tonos medios: contra un gris #7A7A7A no
+ * se llega a 4.5 por arriba y sí por abajo, y la versión que decidía sola daba
+ * «imposible» teniendo salida. Gana el que quede más cerca del color original.
+ *
+ * Devuelve null cuando ningún extremo alcanza: ahí el que hay que mover es el
+ * fondo, y el aviso lo dice.
+ */
+function corrige(c, fondo, meta) {
+  let mejor = null, mejorT = -1;
+  for (const extremo of ['#000000', '#ffffff']) {
+    if (ratio(extremo, fondo) < meta) continue;
+    let lo = 0, hi = 1;                     // t = cuánto del color original queda
+    for (let i = 0; i < 24; i++) {
+      const m = (lo + hi) / 2;
+      if (ratio(mezcla(c, extremo, m), fondo) >= meta) lo = m; else hi = m;
+    }
+    if (lo > mejorT) { mejorT = lo; mejor = mezcla(c, extremo, lo); }
+  }
+  return mejor;
+}
+
+/**
+ * sRGB → Oklab (Björn Ottosson). Hace falta para la regla anti-clon: en RGB
+ * los dos amarillos que ya tenemos (#FEFE00 de Dígito y #F5D800 de ObraFácil)
+ * distan lo suficiente como para no saltar ninguna alarma; en OKLCH están a
+ * un puñado de grados de tono. Comparar en RGB es justo lo que dejó pasar el
+ * choque que motivó todo esto.
+ */
+function oklab(hex) {
+  const [r, g, b] = canales(hex).map((v) => {
+    const s = v / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return {
+    L: 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+    A: 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+    B: 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s,
+  };
+}
+function oklch(hex) {
+  const { L, A, B } = oklab(hex);
+  return { L, C: Math.hypot(A, B), H: (Math.atan2(B, A) * 180 / Math.PI + 360) % 360 };
+}
+/** Distancia de tono por el lado corto del círculo. */
+const dTono = (x, y) => { const d = Math.abs(x - y) % 360; return d > 180 ? 360 - d : d; };
+
+/** «A, B y C» — para que el aviso nombre las webs en vez de contarlas. */
+const lista = (xs) => xs.length < 2 ? (xs[0] || '')
+  : xs.slice(0, -1).join(', ') + ' y ' + xs[xs.length - 1];
 
 /* ── Construcción de los controles ────────────────────────────────────────── */
 function chips(host, entradas, activo, onPick, multi = false) {
@@ -471,53 +562,171 @@ function tokens() {
   };
 }
 
-/* ── Avisos de coherencia · las reglas de la skill, comprobadas ───────────── */
-function conflictos() {
-  const a = [];
-  const e = S.ejes;
+/* ── El suelo, medido ─────────────────────────────────────────────────────
+   La regla 1 de la skill («cuerpo ≥ 4.5:1, titulares grandes ≥ 3:1») era
+   hasta ahora una frase. Aquí se calcula sobre los tokens que de verdad se
+   van a exportar, y el aviso trae EL NÚMERO y un color que sí cumple.
 
-  if (S.display === 'Bricolage Grotesque')
-    a.push(['Bricolage', 'sale en demasiadas webs generadas y se reconoce al instante. El kit la declara por compatibilidad, no para usarla.']);
-  if (S.display === 'Young Serif')
-    a.push(['Young Serif ya está en uso', 'la lleva Córdoba Soluciona. Dos webs del mismo encargante no comparten display.']);
-  if (S.titular === 'knockout' && S.foto === 'limpia')
-    a.push(['Foto dentro de las letras', 'necesita una foto con contraste y, si el fondo es claro, oscurecerla antes.']);
-  if (S.foto === 'ink' && !BASES[S.base].oscuro)
-    a.push(['Tinta sobre base clara', 'sobre fondo claro entinta las sombras. Si la sección va en oscuro, usa invert:true.']);
-  if (S.modulos.includes('highlight') && S.modulos.filter((m) => m === 'highlight').length > 1)
-    a.push(['Destacado', 'uno por página. Si hay tres, no hay ninguno.']);
-  if (e.aire <= 2 && S.escena === 'half')
-    a.push(['Sección partida con aire bajo', 'el corte repetido pide aire alto; en una web densa hay que romperlo donde aparece una tabla y la excepción se nota más que la regla.']);
-  if (e.aire >= 4 && ['stripes', 'dots', 'hatch', 'grid'].includes(S.fondo))
-    a.push(['Aire alto con fondo de trama', 'con aire 4-5 el espacio ES el efecto: una trama densa se lo come.']);
-  if (S.display === 'Bodoni Moda' && e.aire <= 2)
-    a.push(['Bodoni con aire bajo', 'el alto contraste pide mucho aire alrededor; apretada se vuelve ilegible.']);
-  if (S.display === 'Cormorant' && e.peso >= 4)
-    a.push(['Cormorant con peso alto', 'es de trazo delicado: no aguanta el papel de display contundente.']);
-  if (e.temperatura >= 4 && ['contour', 'gridwarp', 'grid'].includes(S.fondo))
-    a.push(['Fondo técnico con temperatura cálida', 'las líneas de plano enfrían justo lo que este cliente vende. Pasó en Rodríguez Reformas.']);
-  if (S.foto === 'ink' && S.modulos.includes('sign'))
-    a.push(['Dos texturas con significado', 'la tinta y el material compiten: el lector no sabe cuál está leyendo.']);
-  if (!S.gesto.trim())
-    a.push(['Falta el gesto', 'sin él la web estará bien hecha y será olvidable. Búscalo en las reseñas del cliente, no en su catálogo.']);
+   Límite honesto, y por eso está escrito en pantalla: esto mide colores
+   planos. El contraste sobre una foto, un degradado o un shader depende del
+   píxel y hay que mirarlo con los ojos, en la zona peor. */
+const PARES = [
+  ['--color-ink', '--color-paper', 4.5, 'el texto sobre el papel', 'a'],
+  ['--color-ink-soft', '--color-paper', 4.5, 'el texto secundario sobre el papel', 'a'],
+  ['--color-ink-soft', '--color-paper-alt', 4.5, 'el texto secundario sobre la banda alterna', 'a'],
+  ['--color-ink', '--color-surface', 4.5, 'el texto sobre las tarjetas', 'a'],
+  ['--color-brand-ink', '--color-brand', 4.5, 'el texto del botón sobre el acento', 'b'],
+  ['#ffffff', '--color-deep', 4.5, 'el texto blanco sobre el fondo profundo', 'b'],
+  ['--color-brand', '--color-deep', 3.0, 'el acento sobre el fondo profundo (solo titulares grandes)', 'a'],
+  ['--color-ink', '--color-brand-soft', 4.5, 'el texto dentro del destacado', 'b'],
+];
+const NOMBRE_TOKEN = {
+  '--color-ink': 'la tinta', '--color-ink-soft': 'la tinta suave',
+  '--color-paper': 'el papel', '--color-paper-alt': 'la banda alterna',
+  '--color-surface': 'la superficie', '--color-deep': 'el fondo profundo',
+  '--color-brand': 'el acento', '--color-brand-soft': 'el destacado',
+  '--color-brand-ink': 'el texto sobre el acento',
+};
+
+function problemasContraste() {
+  const t = tokens();
+  const val = (k) => (k.startsWith('#') ? k : t[k]);
+  const a = [];
+
+  PARES.forEach(([ka, kb, meta, dice, cual]) => {
+    const [ca, cb] = [val(ka), val(kb)];
+    if (!esHex(ca) || !esHex(cb)) return;      // los tokens con alfa no se miden así
+    const r = ratio(ca, cb);
+    if (r >= meta) return;
+
+    // Se corrige el lado que el autor puede mover. `--color-brand-ink` sale de
+    // `sobre()`, así que cuando falla el botón el que sobra no es el texto: es
+    // el acento, y por eso ese par se arregla por el lado del fondo.
+    const mover = cual === 'a' ? [ca, cb, ka] : [cb, ca, kb];
+    const sug = corrige(mover[0], mover[1], meta);
+    const arreglo = sug
+      ? `Con ${NOMBRE_TOKEN[mover[2]] || mover[2]} en ${sug.toUpperCase()} se cumple.`
+      : `Ni llevándolo al extremo se llega: el que hay que cambiar es el otro color del par.`;
+    a.push([`Contraste: ${dice}`, `${r.toFixed(2)}:1, hace falta ${meta.toFixed(1)}:1. ${arreglo}`, 'grave']);
+  });
 
   return a;
+}
+
+/* ── La regla anti-clon, con datos ───────────────────────────────────────── */
+const CLAVES_EJE = ['peso', 'temperatura', 'memoria', 'aire'];
+const familia = (f) => String(f || '').split(' ')[0];   // «Archivo Black» → «Archivo»
+
+function problemasClon() {
+  const a = [];
+  if (!MARCAS.length) return a;
+
+  // 1) La display. Se compara por FAMILIA: «Archivo» y «Archivo Black» son la
+  //    misma letra con otro peso, y contarlas como distintas es justo cómo se
+  //    coló cuatro veces sin que saltara nada.
+  const repes = MARCAS.filter((m) => familia(m.display) === familia(S.display));
+  if (repes.length)
+    a.push([`${S.display} ya está en ${repes.length === 1 ? 'otra web' : repes.length + ' webs'}`,
+      `la llevan ${lista(repes.map((m) => m.n))}. La letra es lo primero que identifica una marca: repetida, las dos se leen como la misma plantilla con otro logo.`]);
+
+  // 2) El acento, en OKLCH.
+  const mio = oklch(S.acento);
+  MARCAS.forEach((m) => {
+    if (!esHex(m.acento) || mio.C < 0.04) return;
+    const o = oklch(m.acento);
+    if (o.C < 0.04) return;                     // un gris no tiene tono que comparar
+    const dh = dTono(mio.H, o.H), dl = Math.abs(mio.L - o.L);
+    if (dh <= 12 && dl <= 0.15)
+      a.push([`El acento choca con ${m.n}`,
+        `${S.acento.toUpperCase()} y ${m.acento.toUpperCase()} están a ${dh.toFixed(0)}° de tono y ${(dl * 100).toFixed(0)}% de claridad en OKLCH. En RGB parecen distintos —por eso se cuela—, pero en pantalla es el mismo color.`]);
+  });
+
+  // 3) El temperamento. La skill pide al menos DOS ejes de diferencia; se
+  //    comprueba contra todas las webs que tengan ejes escritos, no solo las
+  //    del mismo sector: el clon no distingue de oficios.
+  MARCAS.forEach((m) => {
+    if (!m.ejes) return;
+    const d = CLAVES_EJE.filter((k) => Math.abs(S.ejes[k] - m.ejes[k]) >= 1).length;
+    if (d < 2)
+      a.push([`Mismo temperamento que ${m.n}`,
+        `se diferencian en ${d} de los cuatro ejes y hacen falta dos. Con el mismo temperamento, cambiar el color no cambia la web.`]);
+  });
+
+  // 4) El gesto. Nunca se repite, y el cliché del sector no cuenta como gesto.
+  const g = S.gesto.trim().toLowerCase();
+  if (g) {
+    const igual = MARCAS.find((m) => m.gesto && m.gesto.toLowerCase().includes(g.slice(0, 24)));
+    if (igual) a.push([`El gesto ya es el de ${igual.n}`, `«${igual.gesto}». El gesto es lo único que no se puede compartir: si se repite, deja de ser de nadie.`]);
+    if (/antes\s*(y|\/)\s*despu/.test(g))
+      a.push(['El antes/después es del gremio', 'lo hacen los cuarenta competidores de la provincia. Es correcto y no diferencia nada: busca el gesto en las reseñas del cliente, no en su catálogo.']);
+  }
+
+  return a;
+}
+
+/* ── Reglas de coherencia · datos, no código ──────────────────────────────
+   Estas reglas vivían escritas a mano aquí, una detrás de otra. Ahora vienen
+   del manifiesto y esto es solo el evaluador: añadir una regla no obliga a
+   tocar el estudio.
+
+   Los operadores son cinco y no va a haber un sexto. Si una comprobación no
+   cabe en ellos es porque CALCULA algo —el contraste, la distancia de tono—,
+   y esas viven en JavaScript arriba, no aquí. Un lenguaje de reglas que crece
+   hasta poder expresarlo todo deja de ser datos y vuelve a ser código, solo
+   que peor escrito. */
+
+/** Resuelve la ruta de una regla contra el estado actual. */
+function valorDe(ruta) {
+  if (ruta.startsWith('eje.')) return S.ejes[ruta.slice(4)];
+  if (ruta === 'base.oscuro') return !!(BASES[S.base] || {}).oscuro;
+  return S[ruta];
+}
+
+function cumple(v, cond) {
+  if (typeof cond === 'string') {
+    if (cond.startsWith('<=')) return Number(v) <= Number(cond.slice(2));
+    if (cond.startsWith('>=')) return Number(v) >= Number(cond.slice(2));
+    if (cond.startsWith('en:')) return cond.slice(3).split(',').includes(v);
+    if (cond.startsWith('tiene:')) return Array.isArray(v) && v.includes(cond.slice(6));
+    if (cond === 'vacio') return !String(v == null ? '' : v).trim();
+  }
+  return v === cond;
+}
+
+const evaluaReglas = () => REGLAS
+  .filter((r) => Object.entries(r.si).every(([k, c]) => cumple(valorDe(k), c)))
+  .map((r) => r.aviso.slice());
+
+/* ── Avisos de coherencia · las reglas de la skill, comprobadas ───────────── */
+function conflictos() {
+  // El suelo primero: un contraste que no pasa no es una opinión de estilo.
+  return [...problemasContraste(), ...evaluaReglas(), ...problemasClon()];
 }
 
 function avisos() {
   const a = conflictos();
   const host = $('#avisos');
   host.innerHTML = '';
+
   if (!a.length) {
     host.innerHTML = '<div class="ui-aviso ok"><b>✓</b><span>Sin conflictos. Las decisiones se sostienen entre sí.</span></div>';
-    return;
+  } else {
+    a.forEach(([t, d, nivel]) => {
+      const el = document.createElement('div');
+      el.className = 'ui-aviso' + (nivel === 'grave' ? ' grave' : '');
+      el.innerHTML = `<span>${nivel === 'grave' ? '✕' : '⚠'}</span><span><b>${esc(t)}:</b> ${esc(d)}</span>`;
+      host.appendChild(el);
+    });
   }
-  a.forEach(([t, d]) => {
-    const el = document.createElement('div');
-    el.className = 'ui-aviso';
-    el.innerHTML = `<span>⚠</span><span><b>${esc(t)}:</b> ${esc(d)}</span>`;
-    host.appendChild(el);
-  });
+
+  // El alcance de la comprobación, siempre a la vista. Un medidor que no dice
+  // lo que NO mide se acaba leyendo como un visto bueno que no ha dado.
+  const nota = document.createElement('p');
+  nota.className = 'ui-nota';
+  nota.textContent = MARCAS.length
+    ? `El contraste se mide sobre colores planos; sobre foto, degradado o shader hay que mirarlo en la zona peor. Clon comprobado contra ${MARCAS.length} webs del registro.`
+    : 'El contraste se mide sobre colores planos. El registro de marcas no ha cargado: sin él no hay comprobación anti-clon.';
+  host.appendChild(nota);
 }
 
 /* ── Previsualización ─────────────────────────────────────────────────────── */
@@ -688,7 +897,7 @@ function documento() {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
 <link rel="stylesheet" href="_astro/kit-completo.css?v=b141c7b7">
-<link rel="stylesheet" href="estudio/estudio.css?v=4f46cb54">
+<link rel="stylesheet" href="estudio/estudio.css?v=e61e201f">
 <style>
   :root{${vars}}
   html{scroll-behavior:auto}
@@ -975,7 +1184,7 @@ function enlaza() {
 }
 
 /* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */
-cargaManifiesto().then(() => {
+Promise.all([cargaManifiesto(), cargaMarcas()]).then(() => {
   leeDeURL();
   chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
   pintaControles();

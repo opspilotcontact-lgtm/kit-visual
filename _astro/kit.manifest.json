@@ -1203,5 +1203,106 @@
         ]
       }
     }
-  }
+  },
+  "reglasNota": "Las reglas de coherencia, como DATOS. Antes vivían escritas a mano dentro de estudio.js, y cada pieza nueva obligaba a volver a esa función. Operadores: igualdad (valor suelto), \"<=n\", \">=n\", \"en:a,b,c\", \"tiene:x\" (para las listas) y \"vacio\". Rutas: una clave del estado, \"eje.<nombre>\" o \"base.oscuro\". Si una regla no cabe en esto, es que calcula algo (contraste, anti-clon) y va en JS.",
+  "reglas": [
+    {
+      "si": {
+        "display": "Bricolage Grotesque"
+      },
+      "aviso": [
+        "Bricolage",
+        "sale en demasiadas webs generadas y se reconoce al instante. El kit la declara por compatibilidad, no para usarla."
+      ]
+    },
+    {
+      "si": {
+        "titular": "knockout",
+        "foto": "limpia"
+      },
+      "aviso": [
+        "Foto dentro de las letras",
+        "necesita una foto con contraste y, si el fondo es claro, oscurecerla antes."
+      ]
+    },
+    {
+      "si": {
+        "foto": "ink",
+        "base.oscuro": false
+      },
+      "aviso": [
+        "Tinta sobre base clara",
+        "sobre fondo claro entinta las sombras. Si la sección va en oscuro, usa invert:true."
+      ]
+    },
+    {
+      "si": {
+        "eje.aire": "<=2",
+        "escena": "half"
+      },
+      "aviso": [
+        "Sección partida con aire bajo",
+        "el corte repetido pide aire alto; en una web densa hay que romperlo donde aparece una tabla y la excepción se nota más que la regla."
+      ]
+    },
+    {
+      "si": {
+        "eje.aire": ">=4",
+        "fondo": "en:stripes,dots,hatch,grid"
+      },
+      "aviso": [
+        "Aire alto con fondo de trama",
+        "con aire 4-5 el espacio ES el efecto: una trama densa se lo come."
+      ]
+    },
+    {
+      "si": {
+        "display": "Bodoni Moda",
+        "eje.aire": "<=2"
+      },
+      "aviso": [
+        "Bodoni con aire bajo",
+        "el alto contraste pide mucho aire alrededor; apretada se vuelve ilegible."
+      ]
+    },
+    {
+      "si": {
+        "display": "Cormorant",
+        "eje.peso": ">=4"
+      },
+      "aviso": [
+        "Cormorant con peso alto",
+        "es de trazo delicado: no aguanta el papel de display contundente."
+      ]
+    },
+    {
+      "si": {
+        "eje.temperatura": ">=4",
+        "fondo": "en:contour,gridwarp,grid"
+      },
+      "aviso": [
+        "Fondo técnico con temperatura cálida",
+        "las líneas de plano enfrían justo lo que este cliente vende. Pasó en Rodríguez Reformas."
+      ]
+    },
+    {
+      "si": {
+        "foto": "ink",
+        "modulos": "tiene:sign"
+      },
+      "aviso": [
+        "Dos texturas con significado",
+        "la tinta y el material compiten: el lector no sabe cuál está leyendo."
+      ]
+    },
+    {
+      "si": {
+        "gesto": "vacio"
+      },
+      "aviso": [
+        "Falta el gesto",
+        "sin él la web estará bien hecha y será olvidable. Búscalo en las reseñas del cliente, no en su catálogo."
+      ]
+    }
+  ]
 }
