@@ -554,7 +554,7 @@ function estructura() {
     `  ${cabecera}`,
     `· Botones: ${BOTONES[S.boton].n} — vía A: componente Button · vía B, referencia exacta:`,
     `  ${boton}`,
-    `· Pie: ${FOOTERS[S.footer].n} — vía A: componente SiteFooter · vía B: fondo --color-deep, texto blanco, el logo recoloreado con mask-image y los enlaces legales.`,
+    `· Pie: ${FOOTERS[S.footer].n} — vía A: componente SiteFooter · vía B: fondo --color-deep, texto blanco, ${logoAColor() ? 'el logo a color como imagen (ver «La marca»)' : 'el logo recoloreado con mask-image'} y los enlaces legales.`,
     ...(S.secciones.some((s) => s.t === 'proceso') ? ['· Pasos del proceso — vía A: componente Steps · vía B: número grande en --color-brand con font-display, título y texto debajo; sin tarjetas.'] : []),
   ].join('\n');
 }
@@ -604,7 +604,10 @@ function bloqueContenido() {
       : `  TODO: ${canal('whatsapp') || !canalesDecididos() ? 'el número de WhatsApp, ' : ''}el horario REAL${canal('formulario') || !canalesDecididos() ? ', a dónde llega el formulario (correo, WhatsApp o CRM) y quién lo atiende y en cuánto tiempo (P16)' : ''}.`,
     '',
     canalesDecididos()
-      ? `Canal real (P12): ${(S.canales || []).map((c) => CANALES[c]).join(' y ')}.${noCanales.length ? ` NO poner ${noCanales.join(' ni ')}: lo que no está aquí no existe en la web (ni tel: ni mailto: sueltos).` : ''}`
+      ? `Canal real (P12): ${(S.canales || []).map((c) => CANALES[c]).join(' y ')}.${noCanales.length ? ` NO poner ${noCanales.join(' ni ')}: lo que no está aquí no existe en la web (ni tel: ni mailto: sueltos).` : ''}` +
+        // Los datos de contacto pueden traer un correo o un teléfono de un canal no marcado: manda el canal
+        // (el constructor ciego de Dígito, F6, lo vio como contradicción).
+        (/@/.test(S.datosContacto) && !canal('correo') ? ' El correo que aparezca en «Datos de contacto» NO se publica: el canal correo no está marcado.' : '')
       : 'Canal real (P12): TODO: qué canal atiende el cliente DE VERDAD. Sin esto no se maqueta el contacto.',
   ].join('\n');
 }
@@ -737,6 +740,13 @@ ${ficherosFuente()}
      text-d1 / text-d2 / text-d3 (tamaños de titular) · bg-paper / bg-paper-alt / bg-deep ·
      text-ink / text-ink-soft · font-display. «.reveal» sin el runtime se queda visible: NO pongas
      la clase kit-js a mano, o lo marcado con .reveal no aparecerá nunca.
+  7. El MARCO de la muestra, tal cual (cada sección es <section class="sec"> con su contenido en
+     <div class="wrap">). Sin esto el titular sale fino y el texto pegado al borde:
+     ${cssBase().replace(/\n\s*/g, '\n     ')}
+  8. El titular de la portada es CORTO: la búsqueda principal (P11), qué y dónde. El resto (años,
+     proceso, promesa) va al subtítulo o más abajo; un h1 de cinco líneas no se lee.
+  9. Las máscaras (mask-image) no se ven abriendo el HTML con doble clic (file://): el navegador las
+     bloquea. Pruébalo SERVIDO (npx serve, python -m http.server…).
 
 ═══ TOKENS · la paleta completa (no se añade ni un color) ═══
 ${lineasTokens()}

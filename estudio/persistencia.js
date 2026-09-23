@@ -141,6 +141,13 @@ function normaliza(d) {
   CAMPOS_CONTENIDO.forEach((k) => { if (typeof n[k] !== 'string') n[k] = ''; });
   if (!esHex(n.papel)) n.papel = '';
   n.canales = (Array.isArray(n.canales) ? n.canales : []).filter((c) => CANALES[c]);
+  /* Sin formulario entre los canales, el contacto va DIRECTO. Solo se aplicaba
+     al tocar los canales en el panel o al elegir composición: un estado que
+     llegaba hecho (un brief, un enlace) conservaba el formulario, y el encargo
+     decía a la vez «no pongas formulario» y «sección: formulario» (constructor
+     ciego de Brío, F6). */
+  if (n.canales.length && !n.canales.includes('formulario'))
+    n.secciones.forEach((s) => { if (s.t === 'contacto' && s.v === 'formulario') s.v = 'directo'; });
 
   // Lo del asistente, contra valores válidos.
   if (!['', 'propia', 'nueva'].includes(n.identidad)) n.identidad = '';

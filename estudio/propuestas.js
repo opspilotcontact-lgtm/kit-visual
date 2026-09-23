@@ -212,7 +212,8 @@ function candidato(rnd) {
   // Las cifras, una vez: si la página ya tiene su banda de datos, el módulo las repetía (F6, Dígito).
   const conBandaDatos = (S.secciones || []).some((s) => s.t === 'datos' || (s.t === 'banda' && s.v === 'datos'));
   if (cifrasCliente().length && !conBandaDatos) m.push('stat');
-  if (!m.length) m.push('note');
+  // La nota dice la objeción respondida: sin ella quedaba una caja vacía o con el ejemplo (F6, Brío).
+  if (!m.length && S.respuestaObjecion.trim()) m.push('note');
   c.modulos = m.slice(0, 3);
   c.movimiento = ['reveal'];
   if (e.peso >= 4 && rnd() < 0.5) c.movimiento.push('split');

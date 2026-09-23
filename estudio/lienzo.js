@@ -285,7 +285,8 @@ function capaMarca(oscuro, enPortada = true) {
   const mascara = `-webkit-mask:url('${src}') center/contain no-repeat;mask:url('${src}') center/contain no-repeat;`;
 
   if (j === 'sello') {
-    return `<span aria-hidden="true" style="position:absolute;top:1.5rem;right:1.5rem;z-index:0;
+    // class="marca-sello": los titulares de su sección le dejan sitio (cssBase).
+    return `<span class="marca-sello" aria-hidden="true" style="position:absolute;top:1.5rem;right:1.5rem;z-index:0;
       display:grid;place-items:center;width:5.5rem;height:5.5rem;border-radius:999px;
       border:1px solid ${oscuro ? 'rgb(255 255 255/.35)' : 'var(--color-line-strong)'};">
       <span style="width:${cajaMarca('3rem')[0]};height:${cajaMarca('3rem')[1]};background:var(--color-brand);${mascara}"></span></span>`;
@@ -437,9 +438,11 @@ const CUERPO = {
       : (base ? esc(base.charAt(0).toUpperCase() + base.slice(1)) : 'Lo que hacemos, en claro.');
     const entrada = lead(S.prueba.trim() ? esc(S.prueba.trim())
       : ej('Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.', 'P8', 'la prueba principal'));
-    const primario = canalesDecididos() && canal('whatsapp') && !canal('formulario') ? 'Escribir por WhatsApp' : 'Pedir presupuesto';
+    // El segundo botón lleva a algo que existe: los trabajos si hay galería; si no, los servicios.
+    const segundo = !esCliente() || S.secciones.some((s) => s.t === 'galeria') ? 'Ver trabajos'
+      : S.secciones.some((s) => s.t === 'servicios') ? 'Qué hacemos' : '';
     const botones = `<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">
-      ${botonHTML(primario)}${botonHTML('Ver trabajos', false)}</div>`;
+      ${botonHTML(llamada())}${segundo ? botonHTML(segundo, false) : ''}</div>`;
     const texto = `${ojo(S.marca)}${tituloHTML(titulo)}<div style="margin-top:1.4rem">${entrada}</div>${botones}`;
 
     if (v === 'partida') {
@@ -687,8 +690,25 @@ function seccionHTML(s) {
   </section>`;
 }
 
+/* La navegación, de las secciones QUE HAY; y la llamada, del canal y del oficio.
+   Los dos constructores ciegos de la F6 lo marcaron: la cabecera enlazaba a
+   «Trabajos» en páginas sin galería y el botón decía «Presupuesto» en un centro
+   de entrenamiento. Sin cliente, se queda la de ejemplo. */
+const NAV_DE = { servicios: 'Servicios', galeria: 'Trabajos', precios: 'Precios', proceso: 'Cómo funciona',
+  testimonio: 'Opiniones', zona: 'Dónde', faq: 'Preguntas', contacto: 'Contacto' };
+function enlacesNav() {
+  if (!esCliente()) return ['Servicios', 'Trabajos', 'Contacto'];
+  return [...new Set(S.secciones.map((s) => NAV_DE[s.t]).filter(Boolean))].slice(0, 4);
+}
+/** La llamada principal: por el canal real. «Presupuesto» solo si el oficio lo usa (ejemplo). */
+function llamada(corta = false) {
+  if (canalesDecididos() && canal('whatsapp') && !canal('formulario')) return corta ? 'WhatsApp' : 'Escribir por WhatsApp';
+  if (!esCliente()) return corta ? 'Presupuesto' : 'Pedir presupuesto';
+  return corta ? 'Contacto' : 'Escríbenos';
+}
+
 function headerHTML() {
-  const nav = ['Servicios', 'Trabajos', 'Contacto']
+  const nav = enlacesNav()
     .map((t) => `<a href="#" style="text-decoration:none;color:var(--color-ink);font-size:.9rem;font-weight:500">${t}</a>`).join('');
   const marca = marcaHTML('1.6rem', false);
   if (S.header === 'isla') {
@@ -696,16 +716,16 @@ function headerHTML() {
       <header style="display:flex;align-items:center;justify-content:space-between;gap:1.5rem;max-width:64rem;margin:0 auto;
         padding:.7rem 1.1rem;border-radius:999px;background:color-mix(in srgb,var(--color-surface) 82%,transparent);
         backdrop-filter:blur(10px);border:1px solid var(--color-line)">
-        ${marca}<nav style="display:flex;gap:1.2rem">${nav}</nav>${botonHTML('Presupuesto')}
+        ${marca}<nav style="display:flex;gap:1.2rem">${nav}</nav>${botonHTML(llamada(true))}
       </header></div>`;
   }
   if (S.header === 'minimo') {
     return `<header style="display:flex;align-items:center;justify-content:space-between;padding:1.5rem clamp(1rem,4vw,3rem)">
-      ${marca}${botonHTML('Presupuesto')}</header>`;
+      ${marca}${botonHTML(llamada(true))}</header>`;
   }
   return `<header style="display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
     padding:1rem clamp(1rem,4vw,3rem);border-bottom:1px solid var(--color-line);background:var(--color-surface)">
-    ${marca}<nav style="display:flex;gap:1.3rem">${nav}</nav>${botonHTML('Presupuesto')}</header>`;
+    ${marca}<nav style="display:flex;gap:1.3rem">${nav}</nav>${botonHTML(llamada(true))}</header>`;
 }
 
 function footerHTML() {
@@ -729,11 +749,28 @@ function footerHTML() {
     </div></footer>`;
 }
 
+/* El marco de la muestra: aire de sección, ancho, titulares y entradilla. Lo
+   usan el lienzo Y el encargo (vía B). Antes solo vivía aquí, y el constructor
+   ciego de la F6 (Dígito) sacó el titular en peso fino, el texto pegado al
+   borde y la portada larguísima: el encargo no decía nada del marco. */
+function cssBase() {
+  const aire = { 1: '2.5rem', 2: '3.5rem', 3: '5rem', 4: '7rem', 5: '9rem' }[S.ejes.aire] || '5rem';
+  const ancho = S.ancho ? 'font-stretch:116%;' : '';
+  return `body{margin:0;background:var(--color-paper);color:var(--color-ink);font-family:var(--font-sans)}
+  .sec{padding-block:${aire};padding-inline:clamp(1rem,4vw,3rem)}
+  .wrap{max-width:70rem;margin:0 auto}
+  h1{font-family:var(--font-display);font-weight:800;line-height:.98;letter-spacing:-.03em;${ancho}font-size:clamp(2.4rem,6vw,4.2rem);margin:0}
+  h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;${ancho}font-size:clamp(1.7rem,3.4vw,2.6rem);margin:0 0 1rem;line-height:1.02}
+  p{line-height:1.65}
+  .lead{color:var(--color-ink-soft);max-width:60ch;font-size:1.05rem}
+  .sec:has(>.marca-sello) :is(h1,h2){padding-right:5.5rem}
+  ${VENTANA_CSS}`;
+}
+
 function documento() {
   const t = tokens();
   const vars = Object.entries(t).map(([k, v]) => `${k}:${v}`).join(';');
   const mov = S.movimiento;
-  const aire = { 1: '2.5rem', 2: '3.5rem', 3: '5rem', 4: '7rem', 5: '9rem' }[S.ejes.aire];
   const cuerpo = S.secciones.map(seccionHTML).join('\n');
 
   /* El runtime de efectos solo se carga si algo lo necesita. Se mira el HTML ya
@@ -765,13 +802,7 @@ function documento() {
      se queda fuera. */
   :root{${vars}}
   html{scroll-behavior:auto}
-  body{margin:0;background:var(--color-paper);color:var(--color-ink);font-family:var(--font-sans)}
-  .sec{padding-block:${aire};padding-inline:clamp(1rem,4vw,3rem)}
-  .wrap{max-width:70rem;margin:0 auto}
-  h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;${S.ancho ? 'font-stretch:116%;' : ''}font-size:clamp(1.7rem,3.4vw,2.6rem);margin:0 0 1rem;line-height:1.02}
-  p{line-height:1.65}
-  .lead{color:var(--color-ink-soft);max-width:60ch;font-size:1.05rem}
-  ${VENTANA_CSS}
+  ${cssBase()}
   /* (Aquí había un display:none para .ui-aviso y .ui-panel: tapaba el mobiliario
      de la herramienta que se colaba con estudio.css. Al dejar de cargarlo, el
      parche sobra — y era el síntoma, no la causa.) */
