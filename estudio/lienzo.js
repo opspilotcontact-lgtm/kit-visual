@@ -242,7 +242,11 @@ function marcaHTML(alto, oscuro) {
    le montaba encima (medido en el panel del Estudio a 770 px: el titular
    cruzaba la foto). Ahí deja de flotar y va ENCIMA del titular, a la derecha.
    Viaja igual en el encargo: sin esta regla la ventana rompe el suelo. */
-const VENTANA_CSS = '@media (max-width:75rem){.marca-ventana{position:relative!important;display:block;right:auto!important;top:auto!important;margin:0 0 1.5rem auto}}';
+/* Y por encima, el titular y la entradilla no pasan de donde empieza la
+   ventana: un titular largo («Entrenamiento en grupo pequeño para mujeres…»)
+   la cruzaba a 1280 px en la IA directora de Brío (F6). */
+const VENTANA_CSS = '@media (max-width:75rem){.marca-ventana{position:relative!important;display:block;right:auto!important;top:auto!important;margin:0 0 1.5rem auto}}'
+  + '@media (min-width:75.0625rem){.sec:has(>.marca-ventana) h1,.sec:has(>.marca-ventana) .lead{max-width:calc(100% - min(26rem,38vw) - 2.5rem)}}';
 
 /**
  * La marca como capa de sección: sello, agua, ventana, trama o calado.
@@ -381,7 +385,12 @@ function filaServicio([t, d, p], i, osc) {
 
 const CUERPO = {
   hero(v) {
-    const titulo = S.titular === 'knockout' ? 'TU NOMBRE' : (S.oficio ? esc(S.oficio) : 'Lo que hacemos, en claro.');
+    /* P12: el titular dice qué es y dónde CON la búsqueda principal (P11). Antes
+       ponía el oficio y la búsqueda solo viajaba al encargo: la muestra
+       enseñaba un titular que el encargo luego mandaba cambiar. */
+    const base = String(S.busqueda || '').trim() || String(S.oficio || '').trim();
+    const titulo = S.titular === 'knockout' ? 'TU NOMBRE'
+      : (base ? esc(base.charAt(0).toUpperCase() + base.slice(1)) : 'Lo que hacemos, en claro.');
     const entrada = lead(S.prueba.trim() ? esc(S.prueba.trim())
       : 'Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.');
     const primario = canalesDecididos() && canal('whatsapp') && !canal('formulario') ? 'Escribir por WhatsApp' : 'Pedir presupuesto';
