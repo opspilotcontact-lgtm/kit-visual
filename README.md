@@ -4,7 +4,15 @@ Catálogo vivo de lo que se puede hacer con el kit de front: **fondos, escenogra
 tratamientos de foto, letras, módulos de información y tipografías**, cada uno
 funcionando de verdad y con el código al lado.
 
-👉 **https://opspilotcontact-lgtm.github.io/kit-visual/**
+👉 **Catálogo:** https://opspilotcontact-lgtm.github.io/kit-visual/
+🎛️ **Estudio de marca:** https://opspilotcontact-lgtm.github.io/kit-visual/estudio/
+
+El **estudio** es la herramienta interna: se compone la dirección de arte de una web
+eligiendo tipografía, color, fondo, escenografía, tratamiento de foto, cabecera,
+botones, titulares, módulos y movimiento; se ve aplicada de verdad (el lienzo carga
+el CSS y los efectos reales del kit); avisa cuando dos decisiones se pisan entre sí;
+y al final escupe **un encargo que otro Claude puede ejecutar**, con el tema CSS y las
+piezas exactas.
 
 Sirve para no empezar cada web nueva delante de un catálogo sin saber qué casa con
 qué: se elige el fondo, el tratamiento de foto y la tipografía, y esa web ya no se

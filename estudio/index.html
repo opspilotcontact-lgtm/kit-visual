@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Estudio de marca · kit OpsPilot</title>
+<meta name="description" content="Herramienta interna: se compone la dirección de arte de una web y sale un encargo ejecutable.">
+<link rel="stylesheet" href="../_astro/index.13ee7bc9.css">
+<link rel="stylesheet" href="estudio.css">
+</head>
+<body>
+
+<header class="ui-top">
+  <div class="ui-brand">
+    <span class="ui-dot"></span>
+    <div>
+      <strong>Estudio de marca</strong>
+      <span>kit OpsPilot · herramienta interna</span>
+    </div>
+  </div>
+  <div class="ui-top-actions">
+    <button id="dados" class="ui-btn ui-btn-ghost" title="Combina al azar respetando las reglas">Sorpréndeme</button>
+    <button id="reset" class="ui-btn ui-btn-ghost">Empezar de cero</button>
+    <button id="ver-brief" class="ui-btn ui-btn-primary">Generar el encargo</button>
+  </div>
+</header>
+
+<main class="ui-shell">
+
+  <!-- ══ PANEL DE DECISIONES ══════════════════════════════════════════ -->
+  <aside class="ui-panel" id="panel">
+
+    <section class="ui-group">
+      <h2>El cliente</h2>
+      <label class="ui-field">
+        <span>Nombre</span>
+        <input type="text" id="marca" value="Nombre del cliente" autocomplete="off">
+      </label>
+      <label class="ui-field">
+        <span>Qué hace, en sus palabras</span>
+        <input type="text" id="oficio" placeholder="taller de rotulación desde 1993" autocomplete="off">
+      </label>
+      <p class="ui-hint">
+        Sin materiales no hay dirección de arte. Antes de esto: <code>ASSETS.md</code>.
+      </p>
+    </section>
+
+    <section class="ui-group">
+      <h2>Los ejes <em>— se leen del cliente, no del sector</em></h2>
+      <div id="ejes"></div>
+      <p class="ui-hint" id="eje-lectura"></p>
+    </section>
+
+    <section class="ui-group">
+      <h2>Tipografía</h2>
+      <div class="ui-field">
+        <span>Display <em>— lo que más separa dos webs</em></span>
+        <div class="ui-chips" id="display"></div>
+      </div>
+      <div class="ui-field">
+        <span>Texto</span>
+        <div class="ui-chips ui-chips-sm" id="texto"></div>
+      </div>
+      <label class="ui-field ui-inline">
+        <span>Titulares extendidos <em>(eje de anchura)</em></span>
+        <input type="checkbox" id="ancho">
+      </label>
+    </section>
+
+    <section class="ui-group">
+      <h2>Color</h2>
+      <div class="ui-field ui-row">
+        <label class="ui-color">
+          <span>Acento</span>
+          <input type="color" id="acento" value="#FEFE00">
+        </label>
+        <label class="ui-color">
+          <span>Tinta</span>
+          <input type="color" id="tinta" value="#101316">
+        </label>
+      </div>
+      <div class="ui-field">
+        <span>Base <em>— una sola familia de grises</em></span>
+        <div class="ui-chips ui-chips-sm" id="base"></div>
+      </div>
+    </section>
+
+    <section class="ui-group">
+      <h2>Fondo <em>— uno por web</em></h2>
+      <div class="ui-chips" id="fondo"></div>
+    </section>
+
+    <section class="ui-group">
+      <h2>Escenografía <em>— color plano con forma</em></h2>
+      <div class="ui-chips" id="escena"></div>
+    </section>
+
+    <section class="ui-group">
+      <h2>Fotografía</h2>
+      <div class="ui-field">
+        <span>Tratamiento <em>— el mismo en toda la web</em></span>
+        <div class="ui-chips" id="foto"></div>
+      </div>
+      <div class="ui-field">
+        <span>Forma <em>— máximo dos</em></span>
+        <div class="ui-chips" id="forma"></div>
+      </div>
+    </section>
+
+    <section class="ui-group">
+      <h2>Estructura</h2>
+      <div class="ui-field"><span>Cabecera</span><div class="ui-chips ui-chips-sm" id="header"></div></div>
+      <div class="ui-field"><span>Botones</span><div class="ui-chips ui-chips-sm" id="boton"></div></div>
+      <div class="ui-field"><span>Titulares</span><div class="ui-chips ui-chips-sm" id="titular"></div></div>
+      <div class="ui-field"><span>Pie</span><div class="ui-chips ui-chips-sm" id="footer"></div></div>
+    </section>
+
+    <section class="ui-group">
+      <h2>Módulos <em>— cómo se despliega el contenido</em></h2>
+      <div class="ui-chips" id="modulos"></div>
+    </section>
+
+    <section class="ui-group">
+      <h2>Movimiento</h2>
+      <div class="ui-chips" id="movimiento"></div>
+    </section>
+
+    <section class="ui-group">
+      <h2>El gesto <em>— lo único que no se puede copiar</em></h2>
+      <label class="ui-field">
+        <span>Una idea que solo valga para ESTE cliente</span>
+        <textarea id="gesto" rows="3" placeholder="Su logo es un rótulo: cada pieza tiene canto de aluminio y SE ENCIENDE."></textarea>
+      </label>
+      <p class="ui-hint">
+        Si le vale igual a otros cuarenta del gremio, no es un gesto: es el cliché del sector.
+        Búscalo en sus reseñas, no en su catálogo.
+      </p>
+    </section>
+
+    <div class="ui-avisos" id="avisos"></div>
+  </aside>
+
+  <!-- ══ PREVISUALIZACIÓN ═════════════════════════════════════════════ -->
+  <section class="ui-preview">
+    <div class="ui-preview-bar">
+      <div class="ui-tabs" id="anchos">
+        <button data-w="100%" class="on">Escritorio</button>
+        <button data-w="820px">Tableta</button>
+        <button data-w="390px">Móvil</button>
+      </div>
+      <span class="ui-preview-nota">Previsualización real: usa el CSS y los efectos del kit</span>
+    </div>
+    <div class="ui-preview-stage">
+      <iframe id="lienzo" title="Previsualización"></iframe>
+    </div>
+  </section>
+</main>
+
+<!-- ══ EL ENCARGO ═══════════════════════════════════════════════════ -->
+<dialog id="brief" class="ui-dialog">
+  <form method="dialog" class="ui-dialog-dismiss"><button tabindex="-1" aria-label="Cerrar"></button></form>
+  <article class="ui-dialog-panel">
+    <header>
+      <div>
+        <p class="ui-eyebrow">Listo para pegar</p>
+        <h2>Encargo de maquetación</h2>
+      </div>
+      <div class="ui-dialog-tabs">
+        <button data-vista="prompt" class="on">Prompt</button>
+        <button data-vista="tema">Tema CSS</button>
+        <button data-vista="json">JSON</button>
+      </div>
+    </header>
+    <textarea id="salida" readonly spellcheck="false"></textarea>
+    <footer>
+      <p id="copiado" class="ui-copiado" role="status"></p>
+      <button type="button" id="copiar" class="ui-btn ui-btn-primary">Copiar</button>
+      <form method="dialog"><button class="ui-btn ui-btn-ghost">Cerrar</button></form>
+    </footer>
+  </article>
+</dialog>
+
+<script src="estudio.js"></script>
+</body>
+</html>

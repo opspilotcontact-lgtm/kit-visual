@@ -1,0 +1,241 @@
+/* ============================================================================
+   Estudio de marca · interfaz de la herramienta
+
+   A propósito NO usa el sistema visual del kit: la herramienta tiene que
+   distinguirse de lo que se está diseñando dentro. Si el panel se pareciese a
+   la previsualización, no se sabría qué se está mirando.
+   ============================================================================ */
+
+:root {
+  --ui-bg: #0e1013;
+  --ui-panel: #16191d;
+  --ui-panel-2: #1c2026;
+  --ui-line: #282d34;
+  --ui-text: #e7eaee;
+  --ui-soft: #8b939e;
+  --ui-accent: #7dd3fc;
+  --ui-warn: #fbbf24;
+  --ui-r: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font: 400 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Barra superior ──────────────────────────────────────────────────────── */
+.ui-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--ui-line);
+  background: var(--ui-panel);
+  flex: none;
+}
+.ui-brand { display: flex; align-items: center; gap: 0.7rem; }
+.ui-brand div { display: flex; flex-direction: column; line-height: 1.25; }
+.ui-brand strong { font-size: 14px; }
+.ui-brand span { font-size: 11.5px; color: var(--ui-soft); }
+.ui-dot {
+  width: 22px; height: 22px; border-radius: 6px; flex: none;
+  background: linear-gradient(140deg, var(--ui-accent), #a78bfa);
+}
+.ui-top-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.ui-btn {
+  font: inherit; font-weight: 600; font-size: 13px;
+  padding: 0.5rem 0.9rem; border-radius: 8px; cursor: pointer;
+  border: 1px solid transparent; transition: background .15s, border-color .15s;
+}
+.ui-btn-ghost { background: transparent; border-color: var(--ui-line); color: var(--ui-text); }
+.ui-btn-ghost:hover { background: var(--ui-panel-2); }
+.ui-btn-primary { background: var(--ui-accent); color: #06202e; }
+.ui-btn-primary:hover { filter: brightness(1.08); }
+
+/* ── Disposición ─────────────────────────────────────────────────────────── */
+.ui-shell {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+@media (width < 60rem) {
+  .ui-shell { grid-template-columns: 1fr; grid-template-rows: 45% 55%; }
+}
+
+/* ── Panel ───────────────────────────────────────────────────────────────── */
+.ui-panel {
+  border-right: 1px solid var(--ui-line);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--ui-panel);
+}
+.ui-group { padding: 1rem; border-bottom: 1px solid var(--ui-line); }
+.ui-group h2 {
+  margin: 0 0 0.75rem;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ui-text);
+}
+.ui-group h2 em, .ui-field span em {
+  font-style: normal; font-weight: 500; letter-spacing: 0;
+  text-transform: none; color: var(--ui-soft);
+}
+
+.ui-field { display: block; margin-bottom: 0.8rem; }
+.ui-field:last-child { margin-bottom: 0; }
+.ui-field > span {
+  display: block; margin-bottom: 0.4rem;
+  font-size: 12px; font-weight: 600; color: var(--ui-soft);
+}
+.ui-field input[type=text], .ui-field textarea {
+  width: 100%; font: inherit; font-size: 13px;
+  padding: 0.5rem 0.65rem; border-radius: 8px;
+  border: 1px solid var(--ui-line); background: var(--ui-bg); color: var(--ui-text);
+  resize: vertical;
+}
+.ui-field input:focus-visible, .ui-field textarea:focus-visible,
+.ui-chips button:focus-visible, .ui-btn:focus-visible {
+  outline: 2px solid var(--ui-accent); outline-offset: 1px;
+}
+.ui-inline { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.ui-inline > span { margin: 0; }
+.ui-row { display: flex; gap: 0.75rem; }
+.ui-color { flex: 1; }
+.ui-color span { display: block; margin-bottom: 0.4rem; font-size: 12px; font-weight: 600; color: var(--ui-soft); }
+.ui-color input[type=color] {
+  width: 100%; height: 34px; padding: 0; border: 1px solid var(--ui-line);
+  border-radius: 8px; background: none; cursor: pointer;
+}
+
+/* Fichas de selección */
+.ui-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.ui-chips button {
+  font: inherit; font-size: 12px; font-weight: 600;
+  padding: 0.38rem 0.6rem; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--ui-line); background: var(--ui-panel-2); color: var(--ui-soft);
+  transition: border-color .15s, color .15s, background .15s;
+}
+.ui-chips button:hover { color: var(--ui-text); border-color: #3a424c; }
+.ui-chips button.on { background: var(--ui-accent); border-color: var(--ui-accent); color: #06202e; }
+.ui-chips-sm button { font-size: 11.5px; padding: 0.3rem 0.5rem; }
+
+/* Ejes */
+.ui-eje { display: grid; grid-template-columns: 5.5rem 1fr 1.4rem; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.ui-eje label { font-size: 12px; font-weight: 600; color: var(--ui-soft); }
+.ui-eje input { width: 100%; accent-color: var(--ui-accent); }
+.ui-eje output { font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; color: var(--ui-text); }
+
+.ui-hint { margin: 0.6rem 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ui-soft); }
+.ui-hint code { background: var(--ui-panel-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 11px; }
+
+/* Avisos de coherencia */
+.ui-avisos { padding: 1rem; display: grid; gap: 0.5rem; }
+.ui-aviso {
+  display: flex; gap: 0.5rem; align-items: flex-start;
+  font-size: 12px; line-height: 1.45;
+  padding: 0.6rem 0.7rem; border-radius: 8px;
+  background: color-mix(in srgb, var(--ui-warn) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ui-warn) 30%, transparent);
+  color: #fde9b8;
+}
+.ui-aviso b { color: var(--ui-warn); }
+.ui-aviso.ok {
+  background: color-mix(in srgb, #4ade80 10%, transparent);
+  border-color: color-mix(in srgb, #4ade80 28%, transparent);
+  color: #c6f6d5;
+}
+.ui-aviso.ok b { color: #4ade80; }
+
+/* ── Previsualización ────────────────────────────────────────────────────── */
+.ui-preview { display: flex; flex-direction: column; min-width: 0; background: #0a0c0e; }
+.ui-preview-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--ui-line); flex: none;
+}
+.ui-tabs { display: flex; gap: 0.25rem; }
+.ui-tabs button {
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  padding: 0.35rem 0.7rem; border-radius: 7px;
+  border: 1px solid transparent; background: transparent; color: var(--ui-soft);
+}
+.ui-tabs button.on { background: var(--ui-panel-2); border-color: var(--ui-line); color: var(--ui-text); }
+.ui-preview-nota { font-size: 11.5px; color: var(--ui-soft); }
+
+.ui-preview-stage { flex: 1; min-height: 0; display: grid; place-items: start center; overflow: auto; padding: 0.9rem; }
+#lienzo {
+  width: 100%; height: 100%; border: 0; border-radius: var(--ui-r);
+  background: #fff; box-shadow: 0 18px 50px -20px rgb(0 0 0 / 70%);
+  transition: width .25s ease;
+}
+
+/* ── Diálogo del encargo ─────────────────────────────────────────────────── */
+.ui-dialog { padding: 0; border: 0; background: none; max-width: none; max-height: none; width: 100%; height: 100%; }
+.ui-dialog::backdrop { background: rgb(4 6 8 / 72%); backdrop-filter: blur(3px); }
+.ui-dialog-dismiss { position: fixed; inset: 0; }
+.ui-dialog-dismiss button { width: 100%; height: 100%; background: none; border: 0; cursor: default; }
+.ui-dialog-panel {
+  position: relative; margin: auto; display: flex; flex-direction: column;
+  width: min(100% - 2rem, 62rem); height: min(88dvh, 52rem);
+  background: var(--ui-panel); border: 1px solid var(--ui-line);
+  border-radius: 14px; overflow: hidden;
+}
+.ui-dialog-panel header {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  padding: 1rem 1.1rem; border-bottom: 1px solid var(--ui-line);
+}
+.ui-dialog-panel h2 { margin: 0.1rem 0 0; font-size: 17px; }
+.ui-eyebrow { margin: 0; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ui-soft); }
+.ui-dialog-tabs { display: flex; gap: 0.25rem; }
+.ui-dialog-tabs button {
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  padding: 0.35rem 0.7rem; border-radius: 7px;
+  border: 1px solid var(--ui-line); background: transparent; color: var(--ui-soft);
+}
+.ui-dialog-tabs button.on { background: var(--ui-accent); border-color: var(--ui-accent); color: #06202e; }
+#salida {
+  flex: 1; width: 100%; border: 0; resize: none;
+  padding: 1.1rem; background: var(--ui-bg); color: #cdd4dc;
+  font: 400 12.5px/1.65 ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+}
+.ui-dialog-panel footer {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1.1rem; border-top: 1px solid var(--ui-line);
+}
+.ui-copiado { margin: 0 auto 0 0; font-size: 12px; color: #4ade80; }
+
+/* ── Utilidades del kit que no entraron en el CSS publicado ──────────────────
+   El CSS del kit solo incluye lo que se usa en alguna página, así que estas
+   diez no están. Se definen aquí para que el estudio pueda ofrecerlas todas. */
+.fx-lit > *, .fx-sign.is-lit > * {
+  background: linear-gradient(180deg, var(--color-brand) 0%, var(--color-brand-dim, var(--color-brand)) 100%) !important;
+  color: var(--color-brand-ink) !important;
+}
+.fx-lozenge { border-radius: 50% / 50%; overflow: hidden; }
+.fx-capsule { border-radius: 999px; overflow: hidden; }
+.fx-arc-b { border-bottom-left-radius: 50% var(--arc, 5rem); border-bottom-right-radius: 50% var(--arc, 5rem); overflow: hidden; }
+.fx-arc-t { border-top-left-radius: 50% var(--arc, 5rem); border-top-right-radius: 50% var(--arc, 5rem); overflow: hidden; }
+.fx-wedge { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--wedge, 5rem)), 0 100%); }
+.fx-outline { color: transparent; -webkit-text-stroke: var(--outline-w, 1.5px) var(--outline-c, currentColor); }
+.fx-vertical { writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 0.22em; text-transform: uppercase; }
+.fx-photo-grain { position: relative; }
+.fx-photo-grain::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  opacity: var(--pgrain-a, 0.12); mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.fx-grain-at { position: relative; isolation: isolate; }
+.fx-grain-at::after {
+  content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  opacity: var(--grain-a, 0.04); mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
