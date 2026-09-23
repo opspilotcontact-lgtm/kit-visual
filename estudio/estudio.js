@@ -18,7 +18,7 @@
 let DISPLAY = [], TEXTO = [], BASES = {}, FONDOS = {}, ESCENAS = {}, FOTOS = {},
     FORMAS = {}, HEADERS = {}, BOTONES = {}, TITULARES = {}, FOOTERS = {},
     MODULOS = {}, MOVIMIENTO = {}, PIEZAS = {}, POSICIONES = {}, TAMANOS = {},
-    RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [];
+    RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [], SECCIONES = {}, COMPOSICION = [];
 
 /* El registro de las webs ya hechas (opspilot-kit/marcas.json). Es lo que
    convierte la regla anti-clon de la skill en una comprobación: sin lista
@@ -38,6 +38,9 @@ function porGrupo(M, grupo) {
     if (p.borde) v.borde = p.borde;
     if (p.css) v.css = p.css;
     if (p.miniVars) v.mini = p.miniVars;
+    if (p.variantes) v.variantes = p.variantes;
+    if (p.tono) v.tono = p.tono;
+    if (p.admite) v.admite = p.admite;
     if (p.paleta) Object.assign(v, p.paleta, { hue: p.hue, oscuro: p.oscuro });
     o[p.id] = v;
   });
@@ -46,7 +49,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=3292f51c', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=378ead06', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -66,6 +69,8 @@ async function cargaManifiesto() {
   MODULOS = porGrupo(M, 'modulo');
   MOVIMIENTO = porGrupo(M, 'movimiento');
   PIEZAS = porGrupo(M, 'pieza');
+  SECCIONES = porGrupo(M, 'seccion');
+  COMPOSICION = M.composicionPorDefecto || [];
 
   POSICIONES = M.posiciones;
   TAMANOS = M.tamanos;
@@ -111,6 +116,10 @@ const inicial = () => ({
   header: 'barra', boton: 'pildora', titular: 'normal', footer: 'completo',
   modulos: ['disclosure', 'pull'], movimiento: ['reveal'],
   gesto: '',
+  /* La ARQUITECTURA de la página, no solo su estilo. Antes el lienzo tenía tres
+     secciones escritas a mano y se elegía cómo se veían pero no cuáles eran.
+     Se rellena desde el manifiesto al arrancar. */
+  secciones: [],
 });
 let S = inicial();
 
@@ -730,11 +739,13 @@ function avisos() {
 }
 
 /* ── Previsualización ─────────────────────────────────────────────────────── */
-function capaFondo() {
+function capaFondo(atenua = false) {
   const f = FONDOS[S.fondo];
   if (!f || S.fondo === 'ninguno') return '';
-  if (f.js) return `<div class="absolute inset-0" data-fx="${S.fondo}"></div>`;
-  return `<div class="${f.clase}" style="${f.vars || ''}"></div>`;
+  // Sobre fondo profundo la trama se baja: ahí compite con el texto blanco, que
+  // es justo la regla 10 del suelo («si ves antes el fondo que el titular…»).
+  if (f.js) return `<div class="absolute inset-0"${atenua ? ' style="opacity:.5"' : ''} data-fx="${S.fondo}"></div>`;
+  return `<div class="${f.clase}" style="${f.vars || ''}${atenua ? ';opacity:.5' : ''}"></div>`;
 }
 function capaEscena() {
   const e = ESCENAS[S.escena];
@@ -788,7 +799,7 @@ function tituloHTML(txt) {
 function moduloHTML(id) {
   switch (id) {
     case 'disclosure':
-      return `<div class="fx-disc-list" style="margin-top:2rem">
+      return `<div style="margin-top:2rem">
         ${[['Lo que va dentro del precio', 'Con nombre y apellidos, no «material de primera calidad»', 'desde 480 €'],
            ['Plazos', 'Lo que tarda de verdad, no lo que queda bien', '2 semanas']]
           .map(([t, h, m], i) => `<details class="fx-disc-item" ${i === 0 ? 'open' : ''}>
@@ -846,6 +857,297 @@ function moduloHTML(id) {
   }
 }
 
+/* ── El compositor de secciones ───────────────────────────────────────────
+   Antes el lienzo tenía tres secciones escritas a mano: se elegía cómo se veía
+   la página, no cuál era. Ahora la página ES `S.secciones`, un array ordenado,
+   y esto lo traduce a HTML.
+
+   El contenido de ejemplo está escrito, no rellenado con lorem ni con los
+   tópicos de siempre: un ejemplo que dice «Soluciones a medida» enseña a
+   escribir mal, y lo que se ve en la previsualización es lo que acaba copiado. */
+
+const TONOS = {
+  paper: 'background:var(--color-paper);color:var(--color-ink)',
+  alt: 'background:var(--color-paper-alt);color:var(--color-ink)',
+  deep: 'background:var(--color-deep);color:#fff',
+};
+
+const ojo = (t) => `<p style="font-family:var(--font-display);font-size:.72rem;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;opacity:.65;margin:0 0 1rem">${esc(t)}</p>`;
+const h2 = (t) => `<h2>${esc(t)}</h2>`;
+const lead = (t, osc) => `<p class="lead"${osc ? ' style="color:rgb(255 255 255/.72)"' : ''}>${t}</p>`;
+const suave = (osc) => osc ? 'rgb(255 255 255/.7)' : 'var(--color-ink-soft)';
+
+/* Contenido de ejemplo. Nombres y cifras deliberadamente concretos: un «99,9 %»
+   o un «Juan Pérez» son el tell de plantilla que la skill prohíbe. */
+const EJ = {
+  servicios: [
+    ['Rótulos de fachada', 'Letra corporal, cajón de luz o vinilo sobre panel. Medimos in situ.', 'desde 480 €'],
+    ['Rotulación de vehículos', 'Vinilo fundido, plotter propio. Furgón entero en dos días.', 'desde 350 €'],
+    ['Placas y señalética', 'Metacrilato, dibond o acero. Con la normativa del local.', 'desde 60 €'],
+    ['Montaje y mantenimiento', 'Camión cesta propio. Retiramos lo viejo y lo reciclamos.', 'presupuesto'],
+  ],
+  pasos: [
+    ['Medimos', 'Vamos al local con el metro. Las medidas de un plano nunca son las de la pared.'],
+    ['Dibujamos', 'Un montaje sobre la foto de tu fachada, para que lo veas antes de que exista.'],
+    ['Fabricamos', 'En el taller, no subcontratado. Por eso podemos cambiar algo a mitad.'],
+    ['Montamos', 'Con medios propios y el permiso de ocupación pedido, si hace falta.'],
+  ],
+  cifras: [['1993', 'Desde entonces'], ['100 %', 'Fabricación propia'], ['48 h', 'Presupuesto cerrado'], ['2', 'Camiones cesta']],
+  resenas: [
+    ['Lo pusieron en dos días y lo que dijeron que costaba fue lo que costó.', 'Reseña en Google · marzo de 2026'],
+    ['Vinieron a medir un sábado porque el local abría el lunes. Eso no lo hace nadie.', 'Reseña en Google · enero de 2026'],
+  ],
+  faq: [
+    ['¿Hace falta permiso del ayuntamiento?', 'Para fachada, casi siempre. Lo tramitamos nosotros y va incluido en el presupuesto.'],
+    ['¿Cuánto tarda un rótulo de fachada?', 'Dos semanas desde que se aprueba el diseño. Si hay que pedir permiso, sumá tres más.'],
+    ['¿Reparáis rótulos de otros?', 'Sí, si el cajón está sano. Si no, sale más caro arreglarlo que hacerlo nuevo y te lo decimos.'],
+  ],
+  sitios: ['La Carlota', 'Écija', 'Palma del Río', 'Fuente Palmera', 'Posadas', 'Almodóvar del Río', 'La Rambla', 'Santaella'],
+};
+
+function filaServicio([t, d, p], i, osc) {
+  return `<div style="display:grid;grid-template-columns:2.5rem 1fr auto;gap:1.2rem;align-items:baseline;
+    padding:1.4rem 0;border-top:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'}">
+    <span class="tabular" style="font-family:var(--font-display);font-weight:700;opacity:.45">0${i + 1}</span>
+    <div><p style="font-family:var(--font-display);font-weight:700;font-size:1.15rem;margin:0">${t}</p>
+      <p style="margin:.35rem 0 0;font-size:.92rem;color:${suave(osc)}">${d}</p></div>
+    <span class="tabular" style="font-size:.85rem;color:${suave(osc)};white-space:nowrap">${p}</span>
+  </div>`;
+}
+
+const CUERPO = {
+  hero(v) {
+    const titulo = S.titular === 'knockout' ? 'TU NOMBRE' : (S.oficio ? esc(S.oficio) : 'Lo que hacemos, en claro.');
+    const entrada = lead('Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.');
+    const botones = `<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">
+      ${botonHTML('Pedir presupuesto')}${botonHTML('Ver trabajos', false)}</div>`;
+    const texto = `${ojo(S.marca)}${tituloHTML(titulo)}<div style="margin-top:1.4rem">${entrada}</div>${botones}`;
+
+    if (v === 'partida') {
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));gap:clamp(2rem,5vw,4rem);align-items:center">
+        <div>${texto}</div><div>${figura(FOTOS_DEMO[0])}</div></div>`;
+    }
+    if (v === 'centrada') {
+      return `<div style="text-align:center;max-width:46rem;margin:0 auto">${texto}
+        <div style="margin-top:3rem">${figura(FOTOS_DEMO[1])}</div></div>`;
+    }
+    return `${texto}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;margin-top:3rem">
+        ${FOTOS_DEMO.slice(0, 3).map((s, i) => figura(s, i)).join('')}</div>`;
+  },
+
+  banda(v, osc) {
+    if (v === 'marquesina') {
+      // El contrato de `marquee` es del kit, no inventado aquí: contenedor con
+      // data-fx, pista con data-fx-track y el contenido DUPLICADO (el efecto
+      // mide media pista para que el bucle no tenga costura).
+      const tira = `<span style="font-family:var(--font-display);font-weight:800;white-space:nowrap;
+        font-size:clamp(1.6rem,4vw,2.8rem);letter-spacing:-.02em;padding-inline:1.5rem">
+        ${EJ.sitios.slice(0, 5).join(' · ')} · </span>`;
+      return `<div data-fx="marquee" style="overflow:hidden">
+        <div data-fx-track style="display:flex;width:max-content">${tira}${tira}</div></div>`;
+    }
+    if (v === 'datos') {
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1.5rem;text-align:center">
+        ${EJ.cifras.slice(0, 3).map(([n, l]) => `<div class="fx-stat"><span>${n}</span><span>${l}</span></div>`).join('')}</div>`;
+    }
+    return `<p style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.5rem,3.6vw,2.4rem);
+      line-height:1.1;letter-spacing:-.02em;margin:0;max-width:26ch">
+      Si no sabemos hacerlo, te decimos quién lo hace.</p>`;
+  },
+
+  servicios(v, osc) {
+    const cab = `${ojo('Qué hacemos')}${h2('Cuatro cosas, y las cuatro las hacemos nosotros')}
+      ${lead('Nada de subcontratas: el taller es propio y por eso podemos cambiar algo a mitad.', osc)}`;
+    if (v === 'alterno') {
+      return `${cab}<div style="margin-top:3rem;display:grid;gap:clamp(2rem,4vw,3.5rem)">
+        ${EJ.servicios.slice(0, 3).map(([t, d], i) => `
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:2rem;align-items:center">
+            <div style="${i % 2 ? 'order:2' : ''}">
+              <p style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;margin:0">${t}</p>
+              <p style="margin:.6rem 0 0;color:${suave(osc)}">${d}</p></div>
+            ${figura(FOTOS_DEMO[i])}</div>`).join('')}</div>`;
+    }
+    if (v === 'bento') {
+      return `${cab}<div style="margin-top:2.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+        ${EJ.servicios.map(([t, d], i) => {
+          const ancho = i === 0 ? 'grid-column:span 2;grid-row:span 2' : 'grid-column:span 2';
+          return `<div class="frame" style="${ancho};padding:1.5rem;border:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'};border-radius:14px">
+            <p style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;margin:0">${t}</p>
+            <p style="margin:.5rem 0 0;font-size:.9rem;color:${suave(osc)}">${d}</p></div>`;
+        }).join('')}</div>`;
+    }
+    return `${cab}<div style="margin-top:2.5rem">${EJ.servicios.map((s, i) => filaServicio(s, i, osc)).join('')}</div>`;
+  },
+
+  galeria(v, osc) {
+    const cab = `${ojo('Trabajos')}${h2('Lo que ya está puesto')}
+      ${lead('Fotos de obra propia, enteras y sin retocar. Si no hay foto de algo, es que no lo hemos hecho.', osc)}`;
+    if (v === 'carril') {
+      return `${cab}<div class="fx-rail" style="margin-top:2rem;--rail-w:72%;--rail-w-lg:34%">
+        ${FOTOS_DEMO.map((s) => figura(s)).join('')}</div>`;
+    }
+    if (v === 'destacado') {
+      return `${cab}<div style="margin-top:2rem">${figura(FOTOS_DEMO[0])}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1rem;margin-top:1rem">
+          ${FOTOS_DEMO.slice(1, 4).map((s, i) => figura(s, i)).join('')}</div>`;
+    }
+    return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;margin-top:2rem">
+      ${FOTOS_DEMO.map((s, i) => figura(s, i)).join('')}</div>`;
+  },
+
+  datos(v, osc) {
+    const n = v === 'rejilla' ? 4 : 3;
+    return `${ojo('En números')}${h2('Lo que se puede medir')}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1.5rem;margin-top:2rem">
+        ${EJ.cifras.slice(0, n).map(([x, l]) => `<div class="fx-stat"><span>${x}</span><span>${l}</span></div>`).join('')}</div>`;
+  },
+
+  proceso(v, osc) {
+    const cab = `${ojo('Cómo trabajamos')}${h2('De la primera visita al rótulo encendido')}`;
+    if (v === 'pasos') {
+      return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:2rem;margin-top:2.5rem">
+        ${EJ.pasos.map(([t, d], i) => `<div>
+          <span class="tabular" style="font-family:var(--font-display);font-weight:800;font-size:2.2rem;
+            line-height:1;color:var(--color-brand)">${i + 1}</span>
+          <p style="font-family:var(--font-display);font-weight:700;margin:.6rem 0 0">${t}</p>
+          <p style="margin:.4rem 0 0;font-size:.9rem;color:${suave(osc)}">${d}</p></div>`).join('')}</div>`;
+    }
+    if (v === 'pestanas') {
+      return `${cab}<div class="fx-tabs" style="margin-top:2rem">
+        ${EJ.pasos.slice(0, 3).map(([t], i) => `<input type="radio" name="proc" id="pr${i}"${i ? '' : ' checked'}><label for="pr${i}">${t}</label>`).join('')}
+        <div class="fx-tabs-panels">
+          ${EJ.pasos.slice(0, 3).map(([, d]) => `<div><p style="margin:0;color:${suave(osc)}">${d}</p></div>`).join('')}
+        </div></div>`;
+    }
+    return `${cab}<div style="position:relative;margin-top:2.5rem;padding-left:2.4rem">
+      <div class="fx-plumb fx-plumb-bare" style="--plumb-x:.5rem"></div>
+      <ol class="fx-time" style="list-style:none;margin:0;padding:0">
+        ${EJ.pasos.map(([t, d]) => `<li><span>${t}</span><p>${d}</p></li>`).join('')}</ol></div>`;
+  },
+
+  testimonio(v, osc) {
+    if (v === 'dos') {
+      return `${ojo('Lo que dicen')}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:2.5rem;margin-top:1rem">
+        ${EJ.resenas.map(([t, f]) => `<div>
+          <blockquote class="fx-pull" style="margin:0">${t}</blockquote>
+          <p style="margin:.75rem 0 0;font-size:.85rem;color:${suave(osc)}">${f}</p></div>`).join('')}</div>`;
+    }
+    const [t, f] = EJ.resenas[0];
+    return `${ojo('Lo que dicen')}
+      <blockquote class="fx-pull" style="margin:0;max-width:34ch">${t}</blockquote>
+      <p style="margin:.75rem 0 0;font-size:.85rem;color:${suave(osc)}">${f}</p>`;
+  },
+
+  precios(v, osc) {
+    const cab = `${ojo('Precios')}${h2('Lo que cuesta, sin tener que pedirlo')}
+      ${lead('Son precios de partida reales. El presupuesto cerrado sale tras medir.', osc)}`;
+    if (v === 'tabla') {
+      return `${cab}<table class="tabular" style="width:100%;border-collapse:collapse;margin-top:2rem;font-size:.95rem">
+        ${EJ.servicios.map(([t, d, p]) => `<tr style="border-top:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'}">
+          <td style="padding:.9rem 0">${t}<br><span style="font-size:.85rem;color:${suave(osc)}">${d}</span></td>
+          <td style="padding:.9rem 0;text-align:right;white-space:nowrap">${p}</td></tr>`).join('')}</table>`;
+    }
+    return `${cab}<div style="margin-top:2rem">
+      ${EJ.servicios.slice(0, 3).map(([t, d, p], i) => `<details class="fx-disc-item"${i === 0 ? ' open' : ''}>
+        <summary class="fx-disc-head">
+          <span class="fx-disc-n tabular">0${i + 1}</span>
+          <span class="fx-disc-titles"><span class="fx-disc-title">${t}</span><span class="fx-disc-hint">${d}</span></span>
+          <span class="fx-disc-meta tabular">${p}</span>
+          <span class="fx-disc-sign" aria-hidden="true"><i></i><i></i></span>
+        </summary>
+        <div class="fx-disc-body"><div class="fx-disc-text"><p>Qué entra en ese precio, con nombre y apellidos: material, medidas y montaje. Cerrado ya dice algo; por eso se abre.</p></div>
+        <figure class="fx-disc-fig"><img src="${FOTOS_DEMO[i]}" alt=""></figure></div></details>`).join('')}</div>`;
+  },
+
+  faq(v, osc) {
+    const item = ([q, r], i) => `<details class="fx-disc-item"${i === 0 ? ' open' : ''}>
+      <summary class="fx-disc-head">
+        <span class="fx-disc-titles"><span class="fx-disc-title">${q}</span></span>
+        <span class="fx-disc-sign" aria-hidden="true"><i></i><i></i></span>
+      </summary>
+      <div class="fx-disc-body"><div class="fx-disc-text"><p>${r}</p></div></div></details>`;
+    const cab = `${ojo('Preguntas')}${h2('Lo que preguntan antes de llamar')}`;
+    if (v === 'dos') {
+      return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1rem 2rem;margin-top:2rem">
+        ${EJ.faq.map((f, i) => `<div>${item(f, i)}</div>`).join('')}</div>`;
+    }
+    return `${cab}<div style="margin-top:2rem">${EJ.faq.map(item).join('')}</div>`;
+  },
+
+  zona(v, osc) {
+    const sitios = `<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2rem">
+      ${EJ.sitios.map((s) => `<span style="font-size:.9rem;padding:.4rem .8rem;border-radius:999px;
+        border:1px solid ${osc ? 'rgb(255 255 255/.2)' : 'var(--color-line-strong)'}">${s}</span>`).join('')}</div>`;
+    const cab = `${ojo('Dónde trabajamos')}${h2('La provincia, y lo que cae al lado')}
+      ${lead('Los nombres propios de los pueblos, que es lo que la gente escribe en el buscador.', osc)}`;
+    if (v === 'mapa') {
+      return `<div style="position:relative"><div class="fx-blueprint" style="--bp-a:14%;--bp-fade:75%"></div>
+        <div style="position:relative;z-index:1">${cab}${sitios}</div></div>`;
+    }
+    return cab + sitios;
+  },
+
+  contacto(v, osc) {
+    const cab = `${ojo('Contacto')}${h2('Se contesta el teléfono')}`;
+    if (v === 'formulario') {
+      const campo = (l, t) => `<label style="display:block"><span style="display:block;font-size:.85rem;
+        font-weight:600;margin-bottom:.35rem;color:${suave(osc)}">${l}</span>
+        <input type="${t}" style="width:100%;padding:.65rem .8rem;border-radius:8px;font:inherit;
+          border:1px solid ${osc ? 'rgb(255 255 255/.25)' : 'var(--color-line-strong)'};background:transparent;color:inherit"></label>`;
+      return `${cab}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem;margin-top:2rem;max-width:40rem">
+        ${campo('Nombre', 'text')}${campo('Teléfono', 'tel')}${campo('Qué necesitás', 'text')}${campo('Dónde', 'text')}</div>
+        <div style="margin-top:1.5rem">${botonHTML('Enviar')}</div>
+        <p style="margin:.8rem 0 0;font-size:.85rem;color:${suave(osc)}">Cuatro campos. Cada campo de más es gente que no lo rellena.</p>`;
+    }
+    return `${cab}<p style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,4.5vw,3rem);
+      margin:1rem 0 0;letter-spacing:-.02em"><a href="#" style="color:inherit;text-decoration:none">957 00 00 00</a></p>
+      <p style="margin:.6rem 0 0;color:${suave(osc)}">De lunes a viernes, de 8 a 14 y de 16 a 19. Contesta alguien del taller, no un contestador.</p>
+      <div style="margin-top:2rem">${botonHTML('Escribir por WhatsApp')}</div>`;
+  },
+
+  cierre(v, osc) {
+    if (v === 'partido') {
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:2.5rem;align-items:center">
+        <div><h2${osc ? ' style="color:#fff"' : ''}>¿Lo vemos?</h2>
+          ${lead('Vamos, medimos y te mandamos el montaje sobre la foto de tu fachada. Sin compromiso y sin insistir después.', osc)}</div>
+        <div style="text-align:right">${botonHTML('Pedir presupuesto')}</div></div>`;
+    }
+    return `<div style="text-align:center">
+      <h2${osc ? ' style="color:#fff"' : ''}>¿Hablamos?</h2>
+      <p style="color:${suave(osc)};max-width:42ch;margin:1rem auto 2rem">Vamos, medimos y te mandamos el montaje sobre la foto de tu fachada.</p>
+      ${botonHTML('Pedir presupuesto')}</div>`;
+  },
+};
+
+function seccionHTML(s) {
+  const def = SECCIONES[s.t];
+  if (!def || !CUERPO[s.t]) return '';
+
+  // `admite` manda sobre lo guardado: si una sección deja de admitir una capa,
+  // las composiciones viejas no arrastran algo que ya no tiene sentido ahí.
+  const admite = def.admite || [];
+  const capas = (s.capas || []).filter((c) => admite.includes(c));
+  const osc = s.tono === 'deep';
+
+  const pintadas = (capas.includes('fondo') ? capaFondo(osc) : '')
+    + (capas.includes('escena') ? capaEscena() : '')
+    + (capas.includes('pieza') ? piezaHTML() : '');
+  const arco = capas.includes('escena') && ESCENAS[S.escena].borde
+    ? 'border-bottom-left-radius:50% 4rem;border-bottom-right-radius:50% 4rem;' : '';
+  const aisla = pintadas || arco ? 'position:relative;isolation:isolate;overflow:hidden;' : '';
+
+  const extras = capas.includes('modulos') ? S.modulos.map(moduloHTML).join('') : '';
+
+  return `<section class="sec" style="${TONOS[s.tono] || TONOS.paper};${aisla}${arco}">
+    ${pintadas}
+    <div class="wrap"${aisla ? ' style="position:relative;z-index:1"' : ''}>
+      ${CUERPO[s.t](s.v, osc)}${extras}
+    </div>
+  </section>`;
+}
+
 function headerHTML() {
   const nav = ['Servicios', 'Trabajos', 'Contacto']
     .map((t) => `<a href="#" style="text-decoration:none;color:var(--color-ink);font-size:.9rem;font-weight:500">${t}</a>`).join('');
@@ -886,18 +1188,20 @@ function footerHTML() {
 function documento() {
   const t = tokens();
   const vars = Object.entries(t).map(([k, v]) => `${k}:${v}`).join(';');
-  const b = BASES[S.base];
   const mov = S.movimiento;
-  const arco = ESCENAS[S.escena].borde ? 'border-bottom-left-radius:50% 4rem;border-bottom-right-radius:50% 4rem;overflow:hidden;' : '';
   const aire = { 1: '2.5rem', 2: '3.5rem', 3: '5rem', 4: '7rem', 5: '9rem' }[S.ejes.aire];
+  const cuerpo = S.secciones.map(seccionHTML).join('\n');
 
-  const titulo = S.titular === 'knockout' ? 'TU NOMBRE' : (S.oficio ? esc(S.oficio) : 'Lo que hacemos, en claro.');
+  /* El runtime de efectos solo se carga si algo lo necesita. Se mira el HTML ya
+     montado en vez de enumerar condiciones: así una sección nueva que traiga un
+     data-fx funciona sin que nadie se acuerde de tocar esta línea. */
+  const necesitaFx = /data-fx=/.test(cuerpo) || mov.some((m) => MOVIMIENTO[m]?.js);
 
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
 <link rel="stylesheet" href="_astro/kit-completo.css?v=b141c7b7">
-<link rel="stylesheet" href="estudio/estudio.css?v=e61e201f">
+<link rel="stylesheet" href="estudio/estudio.css?v=a8f1002b">
 <style>
   :root{${vars}}
   html{scroll-behavior:auto}
@@ -913,45 +1217,50 @@ function documento() {
 
   ${headerHTML()}
 
-  <section class="sec" style="position:relative;isolation:isolate;overflow:hidden;${arco}">
-    ${capaFondo()}${capaEscena()}${piezaHTML()}
-    <div class="wrap" style="position:relative;z-index:1">
-      <p style="font-family:var(--font-display);font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-ink-soft);margin:0 0 1rem">
-        ${esc(S.marca)}</p>
-      ${tituloHTML(titulo)}
-      <p class="lead" style="margin-top:1.4rem">Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.</p>
-      <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">
-        ${botonHTML('Pedir presupuesto')}${botonHTML('Ver trabajos', false)}
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;margin-top:3rem">
-        ${FOTOS_DEMO.slice(0, 3).map((s, i) => figura(s, i)).join('')}
-      </div>
-    </div>
-  </section>
-
-  <section class="sec" style="background:var(--color-paper-alt)">
-    <div class="wrap">
-      <h2>Lo que hacemos</h2>
-      <p class="lead">Aquí va el contenido de verdad. Los módulos elegidos aparecen debajo.</p>
-      ${S.modulos.map(moduloHTML).join('')}
-    </div>
-  </section>
-
-  <section class="sec" style="background:var(--color-deep);color:#fff;position:relative;isolation:isolate;overflow:hidden">
-    ${S.fondo !== 'ninguno' && !FONDOS[S.fondo].js ? `<div class="${FONDOS[S.fondo].clase}" style="${FONDOS[S.fondo].vars || ''};opacity:.5"></div>` : ''}
-    <div class="wrap" style="position:relative;z-index:1;text-align:center">
-      <h2 style="color:#fff">¿Hablamos?</h2>
-      <p style="color:rgb(255 255 255/.7);max-width:40ch;margin:1rem auto 2rem">El cierre es la última pantalla: tiene que ser el producto.</p>
-      ${botonHTML('Pedir presupuesto')}
-    </div>
-  </section>
+  ${cuerpo || `<section class="sec"><div class="wrap">
+    <p class="lead">La página no tiene secciones. Añadí alguna en el panel: una web sin
+    arquitectura no se arregla con efectos.</p></div></section>`}
 
   ${footerHTML()}
 
-  ${mov.some((m) => MOVIMIENTO[m]?.js) || S.fondo !== 'ninguno' && FONDOS[S.fondo].js || S.foto === 'ink' || S.modulos.includes('sign')
-    ? `<script type="module" src="_astro/Fx.astro_astro_type_script_index_0_lang.CGbv7hfv.js"><\/script>` : ''}
+  ${necesitaFx ? `<script type="module" src="_astro/Fx.astro_astro_type_script_index_0_lang.CGbv7hfv.js"><\/script>` : ''}
   <script>document.querySelectorAll('.reveal').forEach(e=>e.classList.add('is-in'));<\/script>
 </body></html>`;
+}
+
+/* ── El lienzo ────────────────────────────────────────────────────────────
+   Reconstruir el `srcdoc` cuesta una recarga entera: se pierde el scroll y los
+   efectos vuelven a arrancar. Con tres secciones fijas se toleraba; con una
+   página de verdad, mover un color y que el lienzo salte al principio hace la
+   herramienta inservible.
+
+   Dos caminos, y el barato es el habitual:
+   · Si SOLO han cambiado cosas que viven en tokens (acento, tinta y las dos
+     tipografías), se escriben como variables en el documento de dentro y ya
+     está. El iframe es del mismo origen —`srcdoc` hereda el del contenedor—,
+     así que no hace falta postMessage para nada.
+   · Si ha cambiado la estructura, se reconstruye y se devuelve el scroll donde
+     estaba.
+
+   `base` NO está en la lista aunque toque tokens: también decide si `ink` se
+   invierte, y eso es marcado. Lo mismo `ancho`, que escribe font-stretch en
+   varios sitios. Ante la duda, reconstruir. */
+const SOLO_TOKENS = ['acento', 'tinta', 'display', 'texto'];
+let firmaPrevia = null;
+
+function firmaEstructural() {
+  const c = { ...S };
+  SOLO_TOKENS.forEach((k) => delete c[k]);
+  return JSON.stringify(c);
+}
+
+function parcheaTokens(t) {
+  try {
+    const d = $('#lienzo').contentDocument;
+    if (!d || !d.documentElement) return false;
+    Object.entries(t).forEach(([k, v]) => d.documentElement.style.setProperty(k, v));
+    return true;
+  } catch { return false; }
 }
 
 let t0;
@@ -962,9 +1271,23 @@ function render() {
   const t = tokens();
   Object.entries(t).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
   avisos();
-  guardaEnURL();
+  guarda();
   lectura();
-  t0 = setTimeout(() => { $('#lienzo').srcdoc = documento(); }, 220);
+
+  const f = firmaEstructural();
+  const soloColor = f === firmaPrevia;
+  firmaPrevia = f;
+  if (soloColor && parcheaTokens(t)) return;
+
+  t0 = setTimeout(() => {
+    const el = $('#lienzo');
+    let y = 0;
+    try { y = el.contentWindow.scrollY || 0; } catch { /* aún no hay documento */ }
+    el.addEventListener('load', () => {
+      try { el.contentWindow.scrollTo(0, y); } catch { /* da igual: era una comodidad */ }
+    }, { once: true });
+    el.srcdoc = documento();
+  }, 220);
 }
 
 function lectura() {
@@ -1029,6 +1352,20 @@ Fondo:    ${f.n}${f.dice ? ` — ${f.dice}` : ''}
 Foto:     ${FOTOS[S.foto].n}${FOTOS[S.foto].nota ? ` — ${FOTOS[S.foto].nota}` : ''}, recorte ${FORMAS[S.forma].n.toLowerCase()}
 Gesto:    ${S.gesto.trim() || '⚠ SIN DEFINIR. Búscalo en las reseñas del cliente antes de maquetar: es lo único que no se puede copiar.'}
 
+═══ LA PÁGINA, EN ESTE ORDEN ═══
+${S.secciones.map((s, i) => {
+  const def = SECCIONES[s.t] || {};
+  const v = (def.variantes || []).find((x) => x.id === s.v) || {};
+  const capas = (s.capas || []).filter((c) => (def.admite || []).includes(c));
+  return `${String(i + 1).padStart(2, '0')}. ${def.n} · ${v.n || s.v}` +
+    `\n    ${v.dice || def.dice || ''}` +
+    `\n    Fondo de sección: ${({ paper: 'papel', alt: 'papel alterno', deep: 'profundo (texto en blanco)' })[s.tono]}` +
+    (capas.length ? `\n    Capas aquí: ${capas.map((c) => NOMBRE_CAPA[c]).join(', ')}` : '');
+}).join('\n')}
+
+El orden es una decisión, no una lista: no lo reordenes «para que fluya mejor».
+Si una sección no tiene contenido real que poner, se quita — no se rellena.
+
 ═══ PIEZAS DEL KIT, EXACTAS ═══
 ${piezas.map((p) => '· ' + p).join('\n')}
 · Cabecera: ${HEADERS[S.header].n}
@@ -1065,14 +1402,129 @@ function pintaSalida() {
 }
 
 
+/* ── El panel del compositor ──────────────────────────────────────────────
+   Una lista vertical, una fila por sección. NADA de arrastrar: con ↑↓ se
+   reordena igual de rápido, funciona con teclado y no necesita librería. El
+   arrastre en una lista de doce elementos dentro de un panel que ya hace
+   scroll es peor de usar, no mejor. */
+
+const NOMBRE_CAPA = { fondo: 'fondo', escena: 'escena', pieza: 'pieza', modulos: 'módulos' };
+const NOMBRE_TONO = { paper: 'Papel', alt: 'Alterno', deep: 'Profundo' };
+
+function pintaSecciones() {
+  const host = $('#secciones');
+  if (!host) return;
+  host.innerHTML = '';
+
+  S.secciones.forEach((s, i) => {
+    const def = SECCIONES[s.t];
+    if (!def) return;
+    const fila = document.createElement('div');
+    fila.className = 'ui-sec';
+
+    const variante = (def.variantes || []).find((v) => v.id === s.v) || {};
+    const admite = def.admite || [];
+
+    fila.innerHTML = `
+      <div class="ui-sec-top">
+        <span class="ui-sec-n tabular">${String(i + 1).padStart(2, '0')}</span>
+        <span class="ui-sec-n2"><b>${esc(def.n)}</b><em>${esc(variante.dice || def.dice || '')}</em></span>
+        <span class="ui-sec-acc">
+          <button type="button" data-a="sube"  title="Subir"    aria-label="Subir ${esc(def.n)}"${i === 0 ? ' disabled' : ''}>↑</button>
+          <button type="button" data-a="baja"  title="Bajar"    aria-label="Bajar ${esc(def.n)}"${i === S.secciones.length - 1 ? ' disabled' : ''}>↓</button>
+          <button type="button" data-a="clona" title="Duplicar" aria-label="Duplicar ${esc(def.n)}">⧉</button>
+          <button type="button" data-a="quita" title="Quitar"   aria-label="Quitar ${esc(def.n)}">✕</button>
+        </span>
+      </div>
+      <div class="ui-sec-vars">
+        ${(def.variantes || []).map((v) => `<button type="button" class="${v.id === s.v ? 'on' : ''}"
+           data-v="${v.id}" title="${esc(v.dice || '')}">${esc(v.n)}</button>`).join('')}
+      </div>
+      <div class="ui-sec-pie">
+        <span class="ui-sec-tono">
+          ${Object.keys(TONOS).map((k) => `<button type="button" class="${k === s.tono ? 'on' : ''}"
+             data-tono="${k}" title="Fondo de la sección">${NOMBRE_TONO[k]}</button>`).join('')}
+        </span>
+        ${admite.length ? `<span class="ui-sec-capas">${admite.map((c) => `
+          <label title="Aplicar ${NOMBRE_CAPA[c]} en esta sección">
+            <input type="checkbox" data-capa="${c}"${(s.capas || []).includes(c) ? ' checked' : ''}>${NOMBRE_CAPA[c]}
+          </label>`).join('')}</span>` : ''}
+      </div>`;
+
+    fila.querySelectorAll('[data-a]').forEach((b) =>
+      b.addEventListener('click', () => accionSeccion(b.dataset.a, i)));
+    fila.querySelectorAll('[data-v]').forEach((b) =>
+      b.addEventListener('click', () => { s.v = b.dataset.v; pintaSecciones(); render(); }));
+    fila.querySelectorAll('[data-tono]').forEach((b) =>
+      b.addEventListener('click', () => { s.tono = b.dataset.tono; pintaSecciones(); render(); }));
+    fila.querySelectorAll('[data-capa]').forEach((c) =>
+      c.addEventListener('change', () => {
+        const set = new Set(s.capas || []);
+        c.checked ? set.add(c.dataset.capa) : set.delete(c.dataset.capa);
+        s.capas = [...set];
+        render();
+      }));
+
+    host.appendChild(fila);
+  });
+
+  // Añadir: todos los tipos, siempre. Que un tipo ya esté puesto no lo
+  // inhabilita — una web puede tener dos galerías o dos bandas.
+  const add = document.createElement('div');
+  add.className = 'ui-sec-add';
+  add.innerHTML = Object.entries(SECCIONES).map(([id, d]) =>
+    `<button type="button" data-add="${id}" title="${esc(d.dice || '')}">+ ${esc(d.n)}</button>`).join('');
+  add.querySelectorAll('[data-add]').forEach((b) =>
+    b.addEventListener('click', () => anadeSeccion(b.dataset.add)));
+  host.appendChild(add);
+
+  const n = S.secciones.length;
+  $('#secciones-cuenta').textContent = n === 1 ? '1 sección' : `${n} secciones`;
+}
+
+function nuevaSeccion(t) {
+  const def = SECCIONES[t];
+  return {
+    t,
+    v: ((def.variantes || [])[0] || {}).id || '',
+    tono: def.tono || 'paper',
+    // Las capas arrancan vacías a propósito: que una sección admita fondo no
+    // quiere decir que lo quiera. La regla es «un fondo principal», no «fondo
+    // en todas», y el valor por defecto es la que más gente acaba aceptando.
+    capas: [],
+  };
+}
+
+function anadeSeccion(t) {
+  if (!SECCIONES[t]) return;
+  // Se inserta ANTES del cierre si lo hay: el cierre es la última pantalla por
+  // definición, y tener que bajarlo a mano cada vez es un impuesto tonto.
+  const fin = S.secciones.findIndex((x) => x.t === 'cierre');
+  const s = nuevaSeccion(t);
+  if (t !== 'cierre' && fin > -1) S.secciones.splice(fin, 0, s);
+  else S.secciones.push(s);
+  pintaSecciones(); render();
+}
+
+function accionSeccion(a, i) {
+  const xs = S.secciones;
+  if (a === 'sube' && i > 0) xs.splice(i - 1, 0, xs.splice(i, 1)[0]);
+  if (a === 'baja' && i < xs.length - 1) xs.splice(i + 1, 0, xs.splice(i, 1)[0]);
+  if (a === 'clona') xs.splice(i + 1, 0, JSON.parse(JSON.stringify(xs[i])));
+  if (a === 'quita') xs.splice(i, 1);
+  pintaSecciones(); render();
+}
+
 /* ── Recetas, enlace compartible y azar con criterio ─────────────────────── */
 
 function aplicaReceta(id) {
   const r = RECETAS[id];
   if (!r) return;
+  // La receta decide el ESTILO, no la arquitectura: si trajese secciones,
+  // aplicarla borraría la página que ya llevás compuesta.
   S = { ...S, ...JSON.parse(JSON.stringify(r.S)) };
   sincronizaCampos();
-  pintaControles(); pintaEjes(); render();
+  pintaControles(); pintaEjes(); pintaSecciones(); render();
 }
 
 /** Los campos que no son fichas hay que ponerlos a mano. */
@@ -1085,23 +1537,66 @@ function sincronizaCampos() {
   $('#ancho').checked = S.ancho;
 }
 
-/* El estado cabe en el hash: así una composición se comparte por enlace y
-   sobrevive a recargar. Se codifica en base64 para no llenar la barra de
-   comillas y llaves. */
-function guardaEnURL() {
-  try {
-    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
-    history.replaceState(null, '', '#' + b64);
-  } catch { /* si falla, la herramienta sigue funcionando sin enlace */ }
+/* ── Persistencia ─────────────────────────────────────────────────────────
+   El hash hacía dos trabajos: compartir una composición y no perder el
+   trabajo al recargar. Con la página entera dentro del estado deja de servir
+   para el segundo — reescribir la URL en cada tecla llena el historial y el
+   enlace se vuelve enorme.
+
+   Reparto: `localStorage` guarda el trabajo, callado, en cada render. El hash
+   se escribe SOLO al pulsar «Copiar enlace», que es cuando de verdad se quiere
+   compartir. Al arrancar manda el hash si lo hay; si no, lo guardado. */
+const CLAVE = 'opspilot.estudio.v1';
+const codifica = (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const descodifica = (s) => JSON.parse(decodeURIComponent(escape(atob(s))));
+
+function guarda() {
+  try { localStorage.setItem(CLAVE, JSON.stringify(S)); } catch { /* modo privado: se sigue trabajando */ }
 }
-function leeDeURL() {
-  if (!location.hash || location.hash.length < 4) return false;
+function enlaceDeEstado() {
+  const u = location.origin + location.pathname + '#' + codifica(S);
+  try { history.replaceState(null, '', '#' + codifica(S)); } catch { /* da igual */ }
+  return u;
+}
+
+const clonaComposicion = () => JSON.parse(JSON.stringify(COMPOSICION));
+
+/* Un estado guardado puede venir de una versión anterior del catálogo. Se
+   normaliza contra el manifiesto de HOY: una sección que ya no existe se cae,
+   una variante renombrada vuelve a la primera y una capa que la sección ya no
+   admite se descarta. Vale más perder una decisión que pintar algo roto. */
+function normaliza(d) {
+  const base = inicial();
+  const n = { ...base, ...d, ejes: { ...base.ejes, ...(d.ejes || {}) } };
+
+  const secs = Array.isArray(n.secciones) ? n.secciones : [];
+  n.secciones = secs.filter((s) => s && SECCIONES[s.t]).map((s) => {
+    const def = SECCIONES[s.t];
+    const v = (def.variantes || []).find((x) => x.id === s.v) || (def.variantes || [])[0];
+    return {
+      t: s.t,
+      v: v ? v.id : '',
+      tono: TONOS[s.tono] ? s.tono : (def.tono || 'paper'),
+      capas: (Array.isArray(s.capas) ? s.capas : []).filter((c) => (def.admite || []).includes(c)),
+    };
+  });
+  if (!n.secciones.length) n.secciones = clonaComposicion();
+  return n;
+}
+
+function recupera() {
+  if (location.hash && location.hash.length > 4) {
+    try {
+      const d = descodifica(location.hash.slice(1));
+      if (d && d.display) { S = normaliza(d); return 'enlace'; }
+    } catch { /* hash roto: se sigue por lo guardado */ }
+  }
   try {
-    const d = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
-    if (!d || typeof d !== 'object' || !d.display) return false;
-    S = { ...inicial(), ...d, ejes: { ...inicial().ejes, ...(d.ejes || {}) } };
-    return true;
-  } catch { return false; }
+    const d = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+    if (d && d.display) { S = normaliza(d); return 'guardado'; }
+  } catch { /* nada guardado */ }
+  S = normaliza({});
+  return 'nuevo';
 }
 
 /* Azar CON criterio: tira combinaciones hasta dar con una que no se
@@ -1136,8 +1631,25 @@ function azar() {
   }
   if (mejor) S = mejor;
   Object.assign(S, guardado);
+
+  /* También la ARQUITECTURA, que es la mitad de la sorpresa. Portada y cierre
+     se quedan —toda web tiene principio y final—; en medio entran de tres a
+     cinco del resto, sin repetir. La escenografía solo cae en las bisagras,
+     que es lo que manda RECETAS.md, y el fondo en una sola sección para no
+     romper la regla del fondo único. */
+  const medias = Object.keys(SECCIONES).filter((k) => k !== 'hero' && k !== 'cierre');
+  const elegidas = medias.sort(() => Math.random() - 0.5).slice(0, 3 + Math.floor(Math.random() * 3));
+  S.secciones = ['hero', ...elegidas, 'cierre'].map(nuevaSeccion);
+  S.secciones[0].capas = ['fondo', 'escena', 'pieza']
+    .filter((c) => (SECCIONES.hero.admite || []).includes(c));
+  const cierre = S.secciones[S.secciones.length - 1];
+  cierre.capas = ['escena'].filter((c) => (SECCIONES.cierre.admite || []).includes(c));
+  // Los módulos elegidos tienen que verse en alguna parte.
+  const conModulos = S.secciones.find((s) => (SECCIONES[s.t].admite || []).includes('modulos'));
+  if (conModulos) conModulos.capas = [...conModulos.capas, 'modulos'];
+
   sincronizaCampos();
-  pintaControles(); pintaEjes(); render();
+  pintaControles(); pintaEjes(); pintaSecciones(); render();
 }
 
 /* ── Arranque ─────────────────────────────────────────────────────────────── */
@@ -1167,17 +1679,18 @@ function enlaza() {
   });
 
   $('#enlace').addEventListener('click', async () => {
-    guardaEnURL();
-    try { await navigator.clipboard.writeText(location.href); $('#enlace').textContent = 'Enlace copiado'; }
+    const u = enlaceDeEstado();
+    try { await navigator.clipboard.writeText(u); $('#enlace').textContent = 'Enlace copiado'; }
     catch { $('#enlace').textContent = 'Copia la barra de direcciones'; }
     setTimeout(() => { $('#enlace').textContent = 'Copiar enlace'; }, 2200);
   });
 
   $('#reset').addEventListener('click', () => {
-    S = inicial();
+    S = normaliza({});
+    try { localStorage.removeItem(CLAVE); } catch { /* nada que borrar */ }
     history.replaceState(null, '', location.pathname);
     sincronizaCampos();
-    pintaControles(); pintaEjes(); render();
+    pintaControles(); pintaEjes(); pintaSecciones(); render();
   });
 
   $('#dados').addEventListener('click', azar);
@@ -1185,10 +1698,11 @@ function enlaza() {
 
 /* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */
 Promise.all([cargaManifiesto(), cargaMarcas()]).then(() => {
-  leeDeURL();
+  recupera();
   chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
   pintaControles();
   pintaEjes();
+  pintaSecciones();
   enlaza();
   sincronizaCampos();
   render();

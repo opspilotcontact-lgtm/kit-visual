@@ -75,6 +75,12 @@
       "n": "Movimiento",
       "multi": true,
       "mini": "croquis"
+    },
+    "seccion": {
+      "n": "Secciones",
+      "multi": false,
+      "mini": "boceto",
+      "nota": "No se elige UNA: se apilan. El estudio compone la página con ellas."
     }
   },
   "piezas": [
@@ -887,6 +893,306 @@
       "id": "quieto",
       "grupo": "movimiento",
       "n": "Quieto"
+    },
+    {
+      "id": "hero",
+      "grupo": "seccion",
+      "n": "Portada",
+      "dice": "la primera pantalla: quién sos y qué vendés",
+      "tono": "paper",
+      "admite": [
+        "fondo",
+        "escena",
+        "pieza"
+      ],
+      "variantes": [
+        {
+          "id": "columna",
+          "n": "A una columna",
+          "dice": "titular, entrada y botones; las fotos debajo"
+        },
+        {
+          "id": "partida",
+          "n": "Partida",
+          "dice": "texto a la izquierda, una foto grande a la derecha"
+        },
+        {
+          "id": "centrada",
+          "n": "Centrada",
+          "dice": "todo al eje, para cuando hay una sola idea"
+        }
+      ]
+    },
+    {
+      "id": "banda",
+      "grupo": "seccion",
+      "n": "Banda",
+      "dice": "una línea que corta y respira entre dos bloques densos",
+      "tono": "deep",
+      "admite": [
+        "fondo"
+      ],
+      "variantes": [
+        {
+          "id": "frase",
+          "n": "Frase",
+          "dice": "una afirmación sola, grande, sin nada más"
+        },
+        {
+          "id": "marquesina",
+          "n": "Marquesina",
+          "dice": "texto que corre; sirve de respiro visual"
+        },
+        {
+          "id": "datos",
+          "n": "Cifras",
+          "dice": "tres números en fila, para cortar sin frenar"
+        }
+      ]
+    },
+    {
+      "id": "servicios",
+      "grupo": "seccion",
+      "n": "Servicios",
+      "dice": "lo que hacés, enumerado",
+      "tono": "paper",
+      "admite": [
+        "fondo",
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "indice",
+          "n": "Índice",
+          "dice": "lista numerada a ancho completo; nada de tres tarjetas"
+        },
+        {
+          "id": "alterno",
+          "n": "Alterno",
+          "dice": "filas que alternan texto y foto de lado"
+        },
+        {
+          "id": "bento",
+          "n": "Bento",
+          "dice": "rejilla de piezas de tamaños distintos"
+        }
+      ]
+    },
+    {
+      "id": "galeria",
+      "grupo": "seccion",
+      "n": "Trabajos",
+      "dice": "la prueba: lo que ya hiciste",
+      "tono": "alt",
+      "admite": [
+        "fondo"
+      ],
+      "variantes": [
+        {
+          "id": "rejilla",
+          "n": "Rejilla",
+          "dice": "fotos en cuadrícula, todas del mismo tratamiento"
+        },
+        {
+          "id": "carril",
+          "n": "Carril",
+          "dice": "tira horizontal con scroll; cabe mucho en poco"
+        },
+        {
+          "id": "destacado",
+          "n": "Una grande",
+          "dice": "una foto enorme y tres pequeñas debajo"
+        }
+      ]
+    },
+    {
+      "id": "datos",
+      "grupo": "seccion",
+      "n": "Cifras",
+      "dice": "lo que se puede medir de tu trabajo",
+      "tono": "paper",
+      "admite": [
+        "fondo",
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "fila",
+          "n": "En fila",
+          "dice": "los números uno al lado del otro"
+        },
+        {
+          "id": "rejilla",
+          "n": "En rejilla",
+          "dice": "cuatro o más, en dos filas"
+        }
+      ]
+    },
+    {
+      "id": "proceso",
+      "grupo": "seccion",
+      "n": "Proceso",
+      "dice": "cómo se trabaja, paso a paso",
+      "tono": "paper",
+      "admite": [
+        "fondo",
+        "escena",
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "plomada",
+          "n": "Plomada",
+          "dice": "una línea vertical de la que cuelgan los pasos"
+        },
+        {
+          "id": "pasos",
+          "n": "Numerados",
+          "dice": "pasos en fila con su número grande"
+        },
+        {
+          "id": "pestanas",
+          "n": "Pestañas",
+          "dice": "cada fase en su pestaña, sin JavaScript"
+        }
+      ]
+    },
+    {
+      "id": "testimonio",
+      "grupo": "seccion",
+      "n": "Lo que dicen",
+      "dice": "la palabra del cliente, no la tuya",
+      "tono": "alt",
+      "admite": [
+        "fondo"
+      ],
+      "variantes": [
+        {
+          "id": "cita",
+          "n": "Una cita",
+          "dice": "una sola reseña, grande, con nombre y fecha"
+        },
+        {
+          "id": "dos",
+          "n": "Dos columnas",
+          "dice": "dos reseñas enfrentadas"
+        }
+      ]
+    },
+    {
+      "id": "precios",
+      "grupo": "seccion",
+      "n": "Precios",
+      "dice": "lo que cuesta, sin hacerlo pedir",
+      "tono": "paper",
+      "admite": [
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "desplegable",
+          "n": "Desplegables",
+          "dice": "cada partida se abre; cerrada ya dice el precio"
+        },
+        {
+          "id": "tabla",
+          "n": "Tabla",
+          "dice": "cifras tabulares, densas, sin adorno"
+        }
+      ]
+    },
+    {
+      "id": "faq",
+      "grupo": "seccion",
+      "n": "Preguntas",
+      "dice": "lo que preguntan siempre antes de llamar",
+      "tono": "paper",
+      "admite": [
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "lista",
+          "n": "Lista",
+          "dice": "preguntas desplegables, una debajo de otra"
+        },
+        {
+          "id": "dos",
+          "n": "Dos columnas",
+          "dice": "para cuando son muchas y cortas"
+        }
+      ]
+    },
+    {
+      "id": "zona",
+      "grupo": "seccion",
+      "n": "Dónde trabajás",
+      "dice": "el mapa mental del cliente local",
+      "tono": "alt",
+      "admite": [
+        "fondo",
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "lista",
+          "n": "Lista de sitios",
+          "dice": "los nombres propios, que es lo que busca la gente"
+        },
+        {
+          "id": "mapa",
+          "n": "Con plano",
+          "dice": "la lista sobre un fondo de plano"
+        }
+      ]
+    },
+    {
+      "id": "contacto",
+      "grupo": "seccion",
+      "n": "Contacto",
+      "dice": "cómo se te llama",
+      "tono": "paper",
+      "admite": [
+        "fondo",
+        "escena",
+        "modulos"
+      ],
+      "variantes": [
+        {
+          "id": "directo",
+          "n": "Directo",
+          "dice": "teléfono y horario grandes, sin formulario"
+        },
+        {
+          "id": "formulario",
+          "n": "Formulario",
+          "dice": "cuatro campos, ni uno más"
+        }
+      ]
+    },
+    {
+      "id": "cierre",
+      "grupo": "seccion",
+      "n": "Cierre",
+      "dice": "la última pantalla: tiene que ser el producto",
+      "tono": "deep",
+      "admite": [
+        "fondo",
+        "escena",
+        "pieza"
+      ],
+      "variantes": [
+        {
+          "id": "centrado",
+          "n": "Centrado",
+          "dice": "una llamada y nada que distraiga"
+        },
+        {
+          "id": "partido",
+          "n": "Partido",
+          "dice": "el argumento a un lado, el botón al otro"
+        }
+      ]
     }
   ],
   "posiciones": {
@@ -1302,6 +1608,44 @@
       "aviso": [
         "Falta el gesto",
         "sin él la web estará bien hecha y será olvidable. Búscalo en las reseñas del cliente, no en su catálogo."
+      ]
+    }
+  ],
+  "composicionPorDefecto": [
+    {
+      "t": "hero",
+      "v": "columna",
+      "tono": "paper",
+      "capas": [
+        "fondo",
+        "escena",
+        "pieza"
+      ]
+    },
+    {
+      "t": "servicios",
+      "v": "indice",
+      "tono": "alt",
+      "capas": []
+    },
+    {
+      "t": "galeria",
+      "v": "carril",
+      "tono": "paper",
+      "capas": []
+    },
+    {
+      "t": "testimonio",
+      "v": "cita",
+      "tono": "alt",
+      "capas": []
+    },
+    {
+      "t": "cierre",
+      "v": "centrado",
+      "tono": "deep",
+      "capas": [
+        "fondo"
       ]
     }
   ]

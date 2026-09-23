@@ -138,6 +138,68 @@ body {
 .ui-hint { margin: 0.6rem 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ui-soft); }
 .ui-hint code { background: var(--ui-panel-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 11px; }
 
+/* ── El compositor de secciones ──────────────────────────────────────────────
+   Una fila por sección. Se reordena con botones, no arrastrando: en una lista
+   de doce dentro de un panel que ya hace scroll, arrastrar es peor de usar. */
+#secciones { display: grid; gap: 0.5rem; }
+
+.ui-sec {
+  border: 1px solid var(--ui-line);
+  border-radius: 9px;
+  background: var(--ui-panel-2);
+  padding: 0.55rem 0.6rem;
+}
+.ui-sec-top { display: flex; align-items: flex-start; gap: 0.5rem; }
+.ui-sec-n { font-size: 11px; font-weight: 700; color: var(--ui-soft); padding-top: 0.15rem; }
+.ui-sec-n2 { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.ui-sec-n2 b { font-size: 12.5px; }
+.ui-sec-n2 em {
+  font-style: normal; font-size: 11px; color: var(--ui-soft);
+  /* Dos líneas y corta: el «qué dice» orienta, no es un párrafo. */
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ui-sec-acc { display: flex; gap: 0.15rem; flex: none; }
+.ui-sec-acc button {
+  font: inherit; font-size: 12px; line-height: 1;
+  width: 22px; height: 22px; padding: 0; cursor: pointer;
+  border: 1px solid transparent; border-radius: 5px;
+  background: transparent; color: var(--ui-soft);
+}
+.ui-sec-acc button:hover:not(:disabled) { background: var(--ui-line); color: var(--ui-text); }
+.ui-sec-acc button:disabled { opacity: 0.28; cursor: default; }
+.ui-sec-acc button[data-a="quita"]:hover { background: color-mix(in srgb, #f87171 25%, transparent); color: #fecaca; }
+
+.ui-sec-vars, .ui-sec-tono { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.ui-sec-vars { margin-top: 0.5rem; }
+.ui-sec-vars button, .ui-sec-tono button {
+  font: inherit; font-size: 11px; font-weight: 600;
+  padding: 0.22rem 0.45rem; border-radius: 5px; cursor: pointer;
+  border: 1px solid var(--ui-line); background: var(--ui-bg); color: var(--ui-soft);
+}
+.ui-sec-vars button:hover, .ui-sec-tono button:hover { color: var(--ui-text); }
+.ui-sec-vars button.on, .ui-sec-tono button.on {
+  background: var(--ui-accent); border-color: var(--ui-accent); color: #06202e;
+}
+
+.ui-sec-pie {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  margin-top: 0.45rem; padding-top: 0.45rem; border-top: 1px solid var(--ui-line);
+}
+.ui-sec-capas { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: auto; }
+.ui-sec-capas label {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-size: 11px; color: var(--ui-soft); cursor: pointer;
+}
+.ui-sec-capas input { accent-color: var(--ui-accent); margin: 0; }
+
+.ui-sec-add { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
+.ui-sec-add button {
+  font: inherit; font-size: 11px; font-weight: 600;
+  padding: 0.3rem 0.5rem; border-radius: 6px; cursor: pointer;
+  border: 1px dashed var(--ui-line); background: transparent; color: var(--ui-soft);
+}
+.ui-sec-add button:hover { border-style: solid; border-color: var(--ui-accent); color: var(--ui-text); }
+
 /* Avisos de coherencia */
 .ui-avisos { padding: 1rem; display: grid; gap: 0.5rem; }
 .ui-aviso {
