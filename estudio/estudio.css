@@ -100,7 +100,24 @@ body {
   .ui-preview-nota { display: none; }
   /* Sin el padding, la muestra gana 30 px de alto, que en un móvil se notan. */
   .ui-preview-stage { padding: 0.4rem; }
+
+  /* ── Ver entero ───────────────────────────────────────────────────────────
+     Repartir la pantalla de un móvil entre el panel y la muestra deja los dos
+     inservibles: se puede navegar pero no se ve el conjunto, que es para lo
+     que existe la previsualización. Así que en móvil no se reparte — se elige.
+     Se toca «Ver entero» y la muestra ocupa todo; se vuelve y están los
+     ajustes. Es la misma idea de una app de diseño en el teléfono. */
+  #pantalla { display: inline-flex; font-size: 12px; padding: 0.35rem 0.6rem; }
+
+  body.ui-solo-muestra .ui-panel { display: none; }
+  body.ui-solo-muestra .ui-shell { grid-template-rows: 1fr; }
+  body.ui-solo-muestra .ui-top { display: none; }
+  body.ui-solo-muestra .ui-preview-stage { padding: 0; }
+  body.ui-solo-muestra #lienzo { border-radius: 0; box-shadow: none; }
 }
+
+/* En escritorio el botón sobra: ahí ya se ve todo. */
+#pantalla { display: none; }
 
 /* Pantalla muy estrecha: la barra de acciones de arriba no cabe en una línea. */
 @media (width < 34rem) {
@@ -173,6 +190,12 @@ body {
 
 .ui-hint { margin: 0.6rem 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ui-soft); }
 .ui-hint code { background: var(--ui-panel-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 11px; }
+
+/* Subida del logo. El <input type=file> nativo es feo y no se puede estilar;
+   se oculta y la etiqueta hace de botón, que es accesible igual. */
+.ui-logo { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.ui-logo .ui-btn { font-size: 12px; padding: 0.4rem 0.7rem; cursor: pointer; }
+#logo-diag .ui-aviso { font-size: 11.5px; }
 
 /* Descargas del diálogo. Un botón por fichero, con su nombre a la vista: si
    hay que adivinar cómo se llama lo que baja, acaba sin usarse. */

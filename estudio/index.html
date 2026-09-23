@@ -7,7 +7,7 @@
 <title>Estudio de marca · kit OpsPilot</title>
 <meta name="description" content="Herramienta interna: se compone la dirección de arte de una web y sale un encargo ejecutable.">
 <link rel="stylesheet" href="../_astro/kit-completo.css?v=fd949ab8">
-<link rel="stylesheet" href="estudio.css?v=42b8730c">
+<link rel="stylesheet" href="estudio.css?v=45c99b58">
 </head>
 <body>
 
@@ -53,6 +53,37 @@
       </label>
       <p class="ui-hint">
         Sin materiales no hay dirección de arte. Antes de esto: <code>ASSETS.md</code>.
+      </p>
+    </section>
+
+    <section class="ui-group">
+      <h2>La marca <em>— el logo como forma, no solo como esquina</em></h2>
+      <div class="ui-field">
+        <span>Logo <em>— SVG recortado o PNG con transparencia</em></span>
+        <div class="ui-logo">
+          <label class="ui-btn ui-btn-ghost" for="logo-file">Subir…</label>
+          <input type="file" id="logo-file" accept=".svg,.png,.webp,image/svg+xml,image/png,image/webp" hidden>
+          <button type="button" id="logo-quitar" class="ui-btn ui-btn-ghost">Quitar</button>
+        </div>
+        <div id="logo-diag"></div>
+      </div>
+      <div class="ui-field">
+        <span>O una forma <em>— para jugar antes de tener el logo</em></span>
+        <div id="marca-forma"></div>
+      </div>
+      <label class="ui-field ui-inline">
+        <span>Usarlo en cabecera y pie</span>
+        <input type="checkbox" id="marca-chrome" checked>
+      </label>
+      <div class="ui-field">
+        <span>Juego <em>— dónde vuelve a aparecer la forma</em></span>
+        <div id="marca-juego"></div>
+      </div>
+      <p class="ui-hint">
+        Marcá <code>marca</code> en las secciones donde quieras que salga. Es la lección de
+        Córdoba Soluciona: el arco de su logo vuelve tres veces como ventana, y eso es lo que
+        hace que la web se lea como suya. Pero solo funciona si el logo es una <strong>silueta
+        simple y sin fondo</strong>: si trae fondo blanco, la máscara sale cuadrada.
       </p>
     </section>
 
@@ -176,6 +207,7 @@
         <button data-w="820px">Tableta</button>
         <button data-w="390px">Móvil</button>
       </div>
+      <button type="button" id="pantalla" class="ui-btn ui-btn-ghost" aria-pressed="false">Ver entero</button>
       <span class="ui-preview-nota">Previsualización real: usa el CSS y los efectos del kit</span>
     </div>
     <div class="ui-preview-stage">
@@ -216,6 +248,6 @@
   </article>
 </dialog>
 
-<script src="estudio.js?v=f0c3e096"></script>
+<script src="estudio.js?v=dae4ce58"></script>
 </body>
 </html>

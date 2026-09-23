@@ -18,7 +18,8 @@
 let DISPLAY = [], TEXTO = [], BASES = {}, FONDOS = {}, ESCENAS = {}, FOTOS = {},
     FORMAS = {}, HEADERS = {}, BOTONES = {}, TITULARES = {}, FOOTERS = {},
     MODULOS = {}, MOVIMIENTO = {}, PIEZAS = {}, POSICIONES = {}, TAMANOS = {},
-    RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [], SECCIONES = {}, COMPOSICION = [];
+    RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [], SECCIONES = {}, COMPOSICION = [],
+    MARCAJUEGOS = {};
 
 /* El registro de las webs ya hechas (opspilot-kit/marcas.json). Es lo que
    convierte la regla anti-clon de la skill en una comprobación: sin lista
@@ -49,7 +50,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=378ead06', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=4bc19480', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -70,6 +71,7 @@ async function cargaManifiesto() {
   MOVIMIENTO = porGrupo(M, 'movimiento');
   PIEZAS = porGrupo(M, 'pieza');
   SECCIONES = porGrupo(M, 'seccion');
+  MARCAJUEGOS = porGrupo(M, 'marca');
   COMPOSICION = M.composicionPorDefecto || [];
 
   POSICIONES = M.posiciones;
@@ -113,6 +115,10 @@ const FOTOS_DEMO = [
 /* ── Estado ───────────────────────────────────────────────────────────────── */
 const inicial = () => ({
   marca: 'Nombre del cliente', oficio: '',
+  /* La marca aplicada. `logo` es null o {src (data URL), w, h, tipo, bytes}.
+     Vive en localStorage pero NO en el enlace compartible: un data URL de
+     200 KB dentro del hash hace una URL que ningún sitio acepta pegar. */
+  logo: null, marcaForma: 'arco', marcaEnChrome: true, marcaJuego: 'ninguno',
   ejes: { peso: 3, temperatura: 3, memoria: 3, aire: 3 },
   display: 'Archivo', texto: 'Instrument Sans', ancho: false,
   acento: '#FEFE00', tinta: '#101316', base: 'papelFrio',
@@ -412,6 +418,28 @@ function miniMovimiento(id) {
 }
 
 /** Despacha según el grupo. */
+/* La miniatura del juego de marca usa la marca REAL —el logo subido o la forma
+   elegida— porque es lo único que se está decidiendo. Una aproximación aquí no
+   informa de nada: lo que cambia entre un juego y otro es dónde y cómo cae TU
+   forma, no qué forma es. */
+function miniMarca(id) {
+  const m = (S.logo && S.logo.src) ? S.logo.src : marcaSVG();
+  const mask = (tam, rep = 'no-repeat', pos = 'center') =>
+    `-webkit-mask:url("${m}") ${pos}/${tam} ${rep};mask:url("${m}") ${pos}/${tam} ${rep};`;
+  const capa = (estilo) => `<span style="position:absolute;${estilo}"></span>`;
+  const base = 'inset:0;background:var(--color-paper);';
+
+  if (id === 'ninguno') return capa(base) + capa('left:6px;top:6px;width:22px;height:10px;background:var(--color-ink);opacity:.5;' + mask('contain'));
+  if (id === 'sello') return capa(base) + capa('top:5px;right:5px;width:20px;height:20px;border-radius:999px;border:1px solid var(--color-ink);opacity:.5') +
+    capa('top:9px;right:9px;width:12px;height:12px;background:var(--color-brand);' + mask('contain'));
+  if (id === 'agua') return capa(base) + capa('right:-10%;bottom:-25%;width:70%;height:120%;background:var(--color-ink);opacity:.14;' + mask('contain'));
+  if (id === 'ventana') return capa(base + 'background:repeating-linear-gradient(45deg,var(--color-ink) 0 2px,transparent 2px 5px);opacity:.35') +
+    capa('left:50%;top:50%;transform:translate(-50%,-50%);width:60%;height:70%;background:var(--color-brand);' + mask('contain'));
+  if (id === 'trama') return capa(base) + capa('inset:0;background:var(--color-ink);opacity:.16;' + mask('13px 13px', 'repeat', '0 0'));
+  if (id === 'calado') return capa(base) + capa('left:-14%;bottom:-30%;width:55%;height:95%;background:var(--color-brand);opacity:.5;' + mask('contain'));
+  return capa(base);
+}
+
 function mini(tipo, id, extra) {
   switch (tipo) {
     case 'fondo': return miniFondo(id);
@@ -427,6 +455,7 @@ function mini(tipo, id, extra) {
     case 'movimiento': return miniMovimiento(id);
     case 'base': return miniBase(id);
     case 'tipo': return miniTipo(id, extra);
+    case 'marca': return miniMarca(id);
     default: return '';
   }
 }
@@ -468,6 +497,32 @@ function pintaControles() {
   opciones('#footer', Object.entries(FOOTERS).map(([k, v]) => [k, v.n]), S.footer, (v) => set('footer', v), { tipo: 'footer', cols: 2 });
   opciones('#modulos', Object.entries(MODULOS).map(([k, v]) => [k, v.n, v.nota]), S.modulos, (v) => toggle('modulos', v), { tipo: 'modulo', multi: true, cols: 2 });
   opciones('#movimiento', Object.entries(MOVIMIENTO).map(([k, v]) => [k, v.n]), S.movimiento, (v) => toggle('movimiento', v), { tipo: 'movimiento', multi: true });
+
+  /* La marca. La rejilla de formas se pinta a mano porque la miniatura tiene
+     que ser la forma DE VERDAD —o el logo subido—, no una aproximación: es lo
+     único que se está eligiendo aquí. */
+  const hostF = $('#marca-forma');
+  if (hostF) {
+    hostF.className = 'ui-ops';
+    hostF.innerHTML = '';
+    Object.entries(FORMAS_MARCA).forEach(([id, [n, d]]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ui-op' + (!S.logo && S.marcaForma === id ? ' on' : '');
+      b.title = n;
+      b.innerHTML = `<span class="ui-op-vis" style="display:grid;place-items:center">
+        <svg viewBox="0 0 96 96" width="34" height="34" aria-hidden="true"><path d="${d}" fill="var(--color-ink)"/></svg>
+      </span><span class="ui-op-lbl">${esc(n)}</span>`;
+      b.addEventListener('click', () => { S.logo = null; $('#logo-file') && ($('#logo-file').value = ''); $('#logo-diag') && ($('#logo-diag').innerHTML = ''); set('marcaForma', id); });
+      hostF.appendChild(b);
+    });
+    // Si hay logo subido, manda él: las formas quedan como alternativa.
+    hostF.style.opacity = S.logo ? '.45' : '1';
+  }
+  const chrome = $('#marca-chrome');
+  if (chrome) chrome.checked = !!S.marcaEnChrome;
+  opciones('#marca-juego', Object.entries(MARCAJUEGOS).map(([k, v]) => [k, v.n, v.dice]), S.marcaJuego, (v) => set('marcaJuego', v), { tipo: 'marca', cols: 2 });
+
   pintaColocacion();
 }
 
@@ -862,6 +917,106 @@ function moduloHTML(id) {
   }
 }
 
+/* ── La marca ─────────────────────────────────────────────────────────────
+   El logo no es sólo lo que va arriba a la izquierda. Bien hecho, la forma de
+   la marca se reutiliza como elemento de composición: en Córdoba Soluciona el
+   arco del logo vuelve a aparecer como ventana en tres sitios, y eso es lo que
+   hace que la web se lea como suya y no como una plantilla.
+
+   Todo esto funciona con UN mecanismo: `mask-image`. Se enmascara un bloque
+   con el logo y se pinta el bloque, no el logo. Con eso salen gratis las cinco
+   cosas que hacen falta:
+     · recolorear un logo de cualquier formato (para el pie oscuro)
+     · el sello, la marca de agua y la trama repetida
+     · la VENTANA, que es la buena: el fondo o la foto se ven POR DENTRO de la
+       forma, porque lo que se enmascara es la capa de debajo.
+   Y funciona igual con un SVG que con un PNG con transparencia, que es lo que
+   suele mandar el cliente.
+
+   El precio: el logo tiene que ser una silueta. Si trae fondo blanco, la
+   máscara es un rectángulo y no hay nada que mirar. Por eso hay diagnóstico. */
+
+/** Formas de repuesto, para poder jugar antes de tener el logo del cliente. */
+const FORMAS_MARCA = {
+  arco: ['Arco', 'M6 96V54A42 42 0 1 1 90 54V96H78V56A30 30 0 1 0 18 56V96Z'],
+  disco: ['Disco', 'M48 8A40 40 0 1 1 48 88A40 40 0 1 1 48 8ZM48 26A22 22 0 1 0 48 70A22 22 0 1 0 48 26Z'],
+  triangulo: ['Triángulo', 'M48 10L90 84H6Z'],
+  rombo: ['Rombo', 'M48 6L90 48L48 90L6 48Z'],
+  hexagono: ['Hexágono', 'M48 6L85 27V69L48 90L11 69V27Z'],
+  cruz: ['Cruz', 'M38 6H58V38H90V58H58V90H38V58H6V38H38Z'],
+  galon: ['Galón', 'M14 18L48 52L82 18L92 30L48 76L4 30Z'],
+  barra: ['Barra', 'M6 30H90V48H6ZM6 60H62V78H6Z'],
+};
+
+/** La forma elegida como SVG en data URL, para poder usarla de máscara. */
+function marcaSVG() {
+  const f = FORMAS_MARCA[S.marcaForma] || FORMAS_MARCA.arco;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="${f[1]}" fill="#000"/></svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+/** La fuente de la marca: el logo subido si lo hay, si no la forma elegida. */
+const fuenteMarca = () => (S.logo && S.logo.src) ? S.logo.src : marcaSVG();
+const proporcionMarca = () => (S.logo && S.logo.w && S.logo.h) ? S.logo.w / S.logo.h : 1;
+
+/**
+ * Un bloque enmascarado con la marca. `color` puede ser un color (el logo sale
+ * plano de ese color, que es como se recolorea) o 'fondo', y entonces se deja
+ * transparente para que se vea lo que haya debajo: eso es la ventana.
+ */
+function marcaMascara(alto, color, extra = '') {
+  const ancho = `calc(${alto} * ${proporcionMarca().toFixed(3)})`;
+  const pintura = color === 'fondo' ? '' : `background:${color};`;
+  return `width:${ancho};height:${alto};${pintura}
+    -webkit-mask:url("${fuenteMarca()}") center/contain no-repeat;
+    mask:url("${fuenteMarca()}") center/contain no-repeat;${extra}`;
+}
+
+/** El logo para la cabecera y el pie. En oscuro se recolorea con la máscara. */
+function marcaHTML(alto, oscuro) {
+  if (!S.marcaEnChrome) {
+    return `<strong style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;${S.ancho ? 'font-stretch:116%' : ''}">${esc(S.marca)}</strong>`;
+  }
+  const color = oscuro ? '#fff' : 'var(--color-ink)';
+  return `<span aria-label="${esc(S.marca)}" role="img" style="display:inline-block;${marcaMascara(alto, color)}"></span>`;
+}
+
+/** La marca como capa de sección: sello, agua, ventana, trama o calado. */
+function capaMarca(oscuro) {
+  const j = S.marcaJuego;
+  if (!j || j === 'ninguno') return '';
+  const tinta = oscuro ? '#fff' : 'var(--color-ink)';
+
+  if (j === 'sello') {
+    return `<span aria-hidden="true" style="position:absolute;top:1.5rem;right:1.5rem;z-index:0;
+      display:grid;place-items:center;width:5.5rem;height:5.5rem;border-radius:999px;
+      border:1px solid ${oscuro ? 'rgb(255 255 255/.35)' : 'var(--color-line-strong)'};">
+      <span style="${marcaMascara('2.6rem', 'var(--color-brand)')}"></span></span>`;
+  }
+  if (j === 'agua') {
+    return `<span aria-hidden="true" style="position:absolute;right:-6%;bottom:-18%;z-index:0;
+      opacity:.07;${marcaMascara('34rem', tinta)}"></span>`;
+  }
+  if (j === 'ventana') {
+    // La máscara NO se pinta: recorta el fondo de marca, así que por dentro de
+    // la forma se ve el color de acento y alrededor no hay nada.
+    return `<span aria-hidden="true" style="position:absolute;left:50%;top:50%;
+      transform:translate(-50%,-50%);z-index:0;opacity:.85;
+      ${marcaMascara('26rem', 'var(--color-brand)')}"></span>`;
+  }
+  if (j === 'trama') {
+    return `<span aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:.06;
+      background:${tinta};
+      -webkit-mask:url("${fuenteMarca()}") 0 0/4.5rem 4.5rem repeat;
+      mask:url("${fuenteMarca()}") 0 0/4.5rem 4.5rem repeat;"></span>`;
+  }
+  if (j === 'calado') {
+    return `<span aria-hidden="true" style="position:absolute;left:-4rem;bottom:-4rem;z-index:0;
+      opacity:.16;${marcaMascara('16rem', 'var(--color-brand)')}"></span>`;
+  }
+  return '';
+}
+
 /* ── El compositor de secciones ───────────────────────────────────────────
    Antes el lienzo tenía tres secciones escritas a mano: se elegía cómo se veía
    la página, no cuál era. Ahora la página ES `S.secciones`, un array ordenado,
@@ -1136,7 +1291,8 @@ function seccionHTML(s) {
   const capas = (s.capas || []).filter((c) => admite.includes(c));
   const osc = s.tono === 'deep';
 
-  const pintadas = (capas.includes('fondo') ? capaFondo(osc) : '')
+  const pintadas = (capas.includes('marca') ? capaMarca(osc) : '')
+    + (capas.includes('fondo') ? capaFondo(osc) : '')
     + (capas.includes('escena') ? capaEscena() : '')
     + (capas.includes('pieza') ? piezaHTML() : '');
   const arco = capas.includes('escena') && ESCENAS[S.escena].borde
@@ -1156,7 +1312,7 @@ function seccionHTML(s) {
 function headerHTML() {
   const nav = ['Servicios', 'Trabajos', 'Contacto']
     .map((t) => `<a href="#" style="text-decoration:none;color:var(--color-ink);font-size:.9rem;font-weight:500">${t}</a>`).join('');
-  const marca = `<strong style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;${S.ancho ? 'font-stretch:116%' : ''}">${esc(S.marca)}</strong>`;
+  const marca = marcaHTML('1.6rem', false);
   if (S.header === 'isla') {
     return `<div style="position:sticky;top:0;z-index:20;padding:1rem">
       <header style="display:flex;align-items:center;justify-content:space-between;gap:1.5rem;max-width:64rem;margin:0 auto;
@@ -1178,12 +1334,12 @@ function footerHTML() {
   if (S.footer === 'franja') {
     return `<footer style="padding:2rem clamp(1rem,4vw,3rem);background:var(--color-deep);color:#fff;
       display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center">
-      <strong style="font-family:var(--font-display)">${esc(S.marca)}</strong>
+      ${marcaHTML('1.5rem', true)}
       <span style="font-size:.85rem;opacity:.7">Teléfono · Dirección · Horario</span></footer>`;
   }
   return `<footer style="padding:3rem clamp(1rem,4vw,3rem);background:var(--color-deep);color:#fff">
     <div style="display:grid;gap:2rem;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))">
-      <div><strong style="font-family:var(--font-display);font-size:1.1rem">${esc(S.marca)}</strong>
+      <div>${marcaHTML('1.8rem', true)}
         <p style="margin:.6rem 0 0;font-size:.85rem;opacity:.65">${esc(S.oficio || 'Lo que hace, en una línea.')}</p></div>
       ${['Qué hacemos', 'Dónde', 'Contacto'].map((t) => `<div><p style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;opacity:.5;margin:0 0 .6rem">${t}</p>
         ${[1, 2, 3].map(() => `<p style="margin:.3rem 0;font-size:.85rem;opacity:.75">Enlace</p>`).join('')}</div>`).join('')}
@@ -1848,6 +2004,92 @@ function pintaSalida() {
 }
 
 
+/* ── El logo: subirlo y saber si sirve ────────────────────────────────────
+   Esto es más que un selector de fichero. La mitad de los logos que manda un
+   cliente NO se pueden reutilizar como forma —vienen con fondo blanco, o son
+   un JPG, o tienen ocho colores— y eso se descubre tarde, cuando ya montaste
+   media web alrededor de la idea. Aquí se dice al subirlo. */
+
+const LIMITE_LOGO = 400 * 1024;   // 400 KB: por encima no es un logo, es una foto
+
+/** Mira el logo y dice qué se puede hacer con él. Sin opinar: mirando píxeles. */
+async function diagnosticaLogo(src, tipo) {
+  const d = { transparente: null, colores: null, avisos: [] };
+
+  if (tipo === 'image/svg+xml') {
+    // En un SVG lo que descalifica es un fondo a sangre: un rect que cubra
+    // todo el viewBox. Y los colores se cuentan por los atributos de pintura.
+    const texto = decodeURIComponent(escape(atob(src.split(',')[1] || '')));
+    const pinturas = new Set([...texto.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{3,8}|[a-z]+)"/g)]
+      .map((m) => m[1].toLowerCase()).filter((c) => c !== 'none'));
+    d.colores = pinturas.size;
+    if (/<rect[^>]*width="(100%|\d{2,})"[^>]*height="(100%|\d{2,})"/.test(texto))
+      d.avisos.push(['Puede llevar fondo a sangre', 'hay un rectángulo que cubre todo el lienzo. Si es un fondo, la máscara sale cuadrada y los juegos de forma no valen.']);
+    d.transparente = !/<rect[^>]*width="100%"/.test(texto);
+  } else {
+    // En un mapa de bits: se pinta en un canvas y se miran los píxeles.
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+    const n = 64;
+    const c = Object.assign(document.createElement('canvas'), { width: n, height: n });
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, 0, n, n);
+    const px = cx.getImageData(0, 0, n, n).data;
+    let opacos = 0; const tonos = new Set();
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] > 200) { opacos++; tonos.add(`${px[i] >> 4},${px[i + 1] >> 4},${px[i + 2] >> 4}`); }
+    }
+    const cobertura = opacos / (n * n);
+    d.transparente = cobertura < 0.92;
+    d.colores = tonos.size;
+    if (!d.transparente) d.avisos.push(['Sin transparencia', 'el logo cubre todo el rectángulo, así que trae fondo. Para usarlo como forma hace falta un PNG o un SVG recortado.']);
+    if (tonos.size > 24) d.avisos.push(['Demasiados colores', `se han contado ${tonos.size} tonos. Un logo con degradados o fotografía dentro no se puede recolorear para el pie oscuro.`]);
+  }
+  return d;
+}
+
+function pintaDiagnostico(d) {
+  const host = $('#logo-diag');
+  if (!host) return;
+  if (!S.logo) { host.innerHTML = ''; return; }
+  const filas = [
+    `${S.logo.w}×${S.logo.h} px · ${(S.logo.bytes / 1024).toFixed(0)} KB · ${S.logo.tipo.replace('image/', '')}`,
+    d.colores != null ? `${d.colores} ${d.colores === 1 ? 'color' : 'colores'}` : null,
+    d.transparente === true ? '✓ recortado, sirve como forma' : d.transparente === false ? '✕ sin transparencia' : null,
+  ].filter(Boolean);
+  host.innerHTML = `<p class="ui-hint" style="margin:.5rem 0 0">${filas.join(' · ')}</p>` +
+    (d.avisos || []).map(([t, x]) => `<div class="ui-aviso" style="margin-top:.45rem"><span>⚠</span><span><b>${esc(t)}:</b> ${esc(x)}</span></div>`).join('');
+}
+
+function enlazaLogo() {
+  const inp = $('#logo-file');
+  if (!inp) return;
+  inp.addEventListener('change', async () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    if (f.size > LIMITE_LOGO) {
+      $('#logo-diag').innerHTML = `<div class="ui-aviso grave"><span>✕</span><span><b>Pesa ${(f.size / 1024).toFixed(0)} KB:</b> el límite son ${LIMITE_LOGO / 1024} KB. Un logo que pesa esto es una imagen exportada, no un logo. Pedí el SVG.</span></div>`;
+      inp.value = '';
+      return;
+    }
+    const src = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; })
+      .catch(() => null);
+    if (!img) { $('#logo-diag').innerHTML = `<div class="ui-aviso grave"><span>✕</span><span>No se ha podido leer el fichero como imagen.</span></div>`; return; }
+
+    S.logo = { src, tipo: f.type || 'image/png', w: img.naturalWidth || 96, h: img.naturalHeight || 96, bytes: f.size };
+    S.marcaEnChrome = true;
+    pintaControles(); render();
+    pintaDiagnostico(await diagnosticaLogo(src, f.type));
+  });
+
+  $('#logo-quitar')?.addEventListener('click', () => {
+    S.logo = null;
+    $('#logo-file').value = '';
+    $('#logo-diag').innerHTML = '';
+    pintaControles(); render();
+  });
+}
+
 /* ── El panel del compositor ──────────────────────────────────────────────
    Una lista vertical, una fila por sección. NADA de arrastrar: con ↑↓ se
    reordena igual de rápido, funciona con teclado y no necesita librería. El
@@ -1999,10 +2241,16 @@ const descodifica = (s) => JSON.parse(decodeURIComponent(escape(atob(s))));
 function guarda() {
   try { localStorage.setItem(CLAVE, JSON.stringify(S)); } catch { /* modo privado: se sigue trabajando */ }
 }
+/* El enlace va SIN el logo. Un data URL de 200 KB dentro del hash produce una
+   URL que ni el navegador ni WhatsApp ni el correo aceptan pegar: el enlace
+   dejaría de funcionar justo cuando más falta hace. El logo se queda en
+   localStorage, que para eso está, y quien abra el enlace verá la forma de
+   repuesto con todo lo demás intacto. */
 function enlaceDeEstado() {
-  const u = location.origin + location.pathname + '#' + codifica(S);
-  try { history.replaceState(null, '', '#' + codifica(S)); } catch { /* da igual */ }
-  return u;
+  const { logo, ...sinLogo } = S;
+  const b64 = codifica(sinLogo);
+  try { history.replaceState(null, '', '#' + b64); } catch { /* da igual */ }
+  return location.origin + location.pathname + '#' + b64;
 }
 
 const clonaComposicion = () => JSON.parse(JSON.stringify(COMPOSICION));
@@ -2027,6 +2275,13 @@ function normaliza(d) {
     };
   });
   if (!n.secciones.length) n.secciones = clonaComposicion();
+
+  // La marca, contra el catálogo de hoy.
+  if (!FORMAS_MARCA[n.marcaForma]) n.marcaForma = 'arco';
+  if (!MARCAJUEGOS[n.marcaJuego]) n.marcaJuego = 'ninguno';
+  // Un logo guardado sin `src` no es un logo: se descarta en vez de pintar un hueco.
+  if (!n.logo || typeof n.logo.src !== 'string' || !n.logo.src.startsWith('data:')) n.logo = null;
+
   return n;
 }
 
@@ -2146,6 +2401,18 @@ function enlaza() {
   });
 
   $('#dados').addEventListener('click', azar);
+
+  enlazaLogo();
+  $('#marca-chrome')?.addEventListener('change', (e) => { S.marcaEnChrome = e.target.checked; render(); });
+
+  /* Pantalla completa de la muestra. En un móvil no caben el panel y la
+     previsualización a la vez: por mucho que se reparta, ninguno queda usable.
+     Se elige una cosa y se ve entera. */
+  $('#pantalla')?.addEventListener('click', () => {
+    const on = document.body.classList.toggle('ui-solo-muestra');
+    $('#pantalla').textContent = on ? 'Ajustes' : 'Ver entero';
+    $('#pantalla').setAttribute('aria-pressed', String(on));
+  });
 }
 
 /* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */

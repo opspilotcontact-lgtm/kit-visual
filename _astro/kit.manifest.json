@@ -81,6 +81,12 @@
       "multi": false,
       "mini": "boceto",
       "nota": "No se elige UNA: se apilan. El estudio compone la página con ellas."
+    },
+    "marca": {
+      "n": "La marca aplicada",
+      "multi": false,
+      "mini": "clase",
+      "nota": "Qué se hace con el logo aparte de ponerlo arriba a la izquierda. Todos funcionan por mask-image, así que sirven igual para un SVG que para un PNG con transparencia, y toman el color o el fondo de debajo."
     }
   },
   "piezas": [
@@ -903,7 +909,8 @@
       "admite": [
         "fondo",
         "escena",
-        "pieza"
+        "pieza",
+        "marca"
       ],
       "variantes": [
         {
@@ -930,7 +937,8 @@
       "dice": "una línea que corta y respira entre dos bloques densos",
       "tono": "deep",
       "admite": [
-        "fondo"
+        "fondo",
+        "marca"
       ],
       "variantes": [
         {
@@ -1131,7 +1139,8 @@
       "tono": "alt",
       "admite": [
         "fondo",
-        "modulos"
+        "modulos",
+        "marca"
       ],
       "variantes": [
         {
@@ -1155,7 +1164,8 @@
       "admite": [
         "fondo",
         "escena",
-        "modulos"
+        "modulos",
+        "marca"
       ],
       "variantes": [
         {
@@ -1179,7 +1189,8 @@
       "admite": [
         "fondo",
         "escena",
-        "pieza"
+        "pieza",
+        "marca"
       ],
       "variantes": [
         {
@@ -1193,6 +1204,47 @@
           "dice": "el argumento a un lado, el botón al otro"
         }
       ]
+    },
+    {
+      "id": "ninguno",
+      "grupo": "marca",
+      "n": "Sin juego",
+      "dice": "el logo solo en cabecera y pie, que es lo mínimo"
+    },
+    {
+      "id": "sello",
+      "grupo": "marca",
+      "n": "Sello",
+      "dice": "la marca dentro de un disco, como un cuño sobre el papel",
+      "nota": "Funciona cuando el logo es un símbolo compacto. Con un logotipo horizontal se lee apretado."
+    },
+    {
+      "id": "agua",
+      "grupo": "marca",
+      "n": "Marca de agua",
+      "dice": "enorme y casi transparente detrás del contenido: se intuye, no se lee",
+      "nota": "Da pertenencia sin gritar. Ojo: si se ve a la primera está demasiado fuerte."
+    },
+    {
+      "id": "ventana",
+      "grupo": "marca",
+      "n": "Ventana",
+      "dice": "el logo recortado sobre el fondo: la trama o la foto se ven POR DENTRO de la forma",
+      "nota": "El más potente y el que más pide un logo simple. Con un logo de trazo fino no queda hueco por donde mirar."
+    },
+    {
+      "id": "trama",
+      "grupo": "marca",
+      "n": "Trama",
+      "dice": "el símbolo repetido en rejilla, muy tenue, como un papel de regalo",
+      "nota": "Sirve de fondo de sección entera. Compite con cualquier otro fondo: o uno u otro."
+    },
+    {
+      "id": "calado",
+      "grupo": "marca",
+      "n": "Calado en el borde",
+      "dice": "media marca asomando por el canto de la sección, cortada por el borde",
+      "nota": "Convierte el logo en estructura en vez de en adorno. Pide sitio: con aire bajo estorba."
     }
   ],
   "posiciones": {
