@@ -39,6 +39,21 @@ fs.writeFileSync(f, s);
 console.log('  ' + (s.match(/url\(\.\.\/fonts\//g) || []).length + ' @font-face apuntan a ../fonts/');
 "
 
+# 2c) Los efectos con JS. El runtime (Fx.astro_…js) salió de un build con base
+# «/», y el precargador de Vite pide cada módulo a /_astro/… (la raíz del
+# DOMINIO): 404 en Pages por cada efecto usado en el lienzo. Los import() son
+# relativos y el efecto se pinta igual, pero la consola se llenaba de errores
+# que tapaban los de verdad (medido el 23-sep). Se resuelve relativo al módulo.
+echo "› precarga de efectos relativa al módulo"
+node -e "
+const fs = require('fs');
+for (const f of fs.readdirSync('_astro').filter((f) => /^Fx\.astro.*\.js$/.test(f))) {
+  const p = '_astro/' + f, s = fs.readFileSync(p, 'utf8');
+  const t = s.split('function(t){return\"/\"+t}').join('function(t){return new URL(\"../\"+t,import.meta.url).href}');
+  if (t !== s) { fs.writeFileSync(p, t); console.log('  ' + f + ': corregido'); }
+}
+"
+
 # 3) Verificar que manifiesto y kit coinciden. Si no, se para aquí.
 echo "› verificando el manifiesto"
 node "$KIT/build/verificar.mjs"
@@ -63,6 +78,9 @@ vmar = h('_astro/marcas.json')
 # manifiesto, el registro). Va antes de calcular su propio hash: si no, el hash
 # no refleja el contenido que se publica.
 scripts = sorted(glob.glob('estudio/*.js'))
+# OJO: el runtime de efectos (_astro/Fx.astro_…js) NO se versiona con ?v=: sus
+# módulos lo importan por el nombre a secas y con dos URL habría dos instancias
+# (cada efecto se iniciaba dos veces). Tras cambiarlo, Pages tarda 10 min.
 for p in scripts:
     s = io.open(p, encoding='utf-8').read()
     s = re.sub(r'href="_astro/kit-completo\.css(\?v=[a-f0-9]+)?"', f'href="_astro/kit-completo.css?v={vkit}"', s)

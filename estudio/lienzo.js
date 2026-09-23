@@ -652,6 +652,9 @@ function documento() {
 
   ${footerHTML()}
 
+  ${/* SIN ?v=: los módulos de cada efecto importan este runtime por su nombre
+       a secas; con otra URL habría dos instancias y cada efecto se iniciaría
+       dos veces (medido: dos canvas en el mismo contenedor). */ ''}
   ${necesitaFx ? `<script type="module" src="${raiz}_astro/Fx.astro_astro_type_script_index_0_lang.CGbv7hfv.js"><\/script>` : ''}
   <script>document.querySelectorAll('.reveal').forEach(e=>e.classList.add('is-in'));<\/script>
 </body></html>`;
