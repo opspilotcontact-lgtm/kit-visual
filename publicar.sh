@@ -54,6 +54,19 @@ for (const f of fs.readdirSync('_astro').filter((f) => /^Fx\.astro.*\.js$/.test(
 }
 "
 
+# 2d) Las fuentes y los iconos viven en el kit; Pages solo sirve este repo.
+# Antes se copiaban a mano y se separaron: Source Sans 3 estaba aquí y no en
+# el kit (visto el 23-sep). Ahora se copian siempre, y el paso 3 comprueba en
+# el kit que cada @font-face y cada icono de la lista tienen su fichero.
+echo "› fuentes e iconos desde el kit"
+mkdir -p fonts iconos
+cp "$KIT"/fonts/*.woff2 fonts/
+cp "$KIT"/iconos/*.svg "$KIT"/iconos/LICENSE "$KIT"/iconos/README.md iconos/
+node -e "
+const fs = require('fs'), n = (d, e) => fs.readdirSync(d).filter((f) => f.endsWith(e)).length;
+console.log('  ' + n('fonts', '.woff2') + ' fuentes · ' + n('iconos', '.svg') + ' iconos');
+"
+
 # 3) Verificar que manifiesto y kit coinciden. Si no, se para aquí.
 echo "› verificando el manifiesto"
 node "$KIT/build/verificar.mjs"

@@ -16,7 +16,9 @@ const JUEGOS_FIRMA = ['ventana', 'sello', 'calado', 'agua'];
    caía al pie de la portada, por debajo de los 800 px; el sello era un punto de
    3rem y la marca de agua va al 7 %. Están, pero no se recuerdan: valen 1. */
 const JUEGOS_REPOSO = ['ventana'];
-const TITULAR_TRATADO = ['knockout', 'extendido', 'trama', 'escalonado', 'outline'];
+const TITULAR_TRATADO = ['knockout', 'extendido', 'trama', 'escalonado', 'outline',
+  // Biblioteca libre (23-sep): también son letra con carácter.
+  'mezcla', 'sombra', 'cartel', 'subrayado', 'dostonos', 'degradado'];
 
 const capasDe = (s) => (s.capas || []).filter((c) => ((SECCIONES[s.t] || {}).admite || []).includes(c));
 

@@ -226,6 +226,42 @@
       "aporta": "Cuando mandan las cifras y las tablas (precios, medidas). Funcional: no es memorable por sí sola."
     },
     {
+      "id": "Anybody",
+      "grupo": "display",
+      "n": "Anybody",
+      "dice": "ancho variable: condensada o extendida con un solo fichero",
+      "peso": 800,
+      "evitar": false,
+      "aporta": "Cuando el titular tiene que ser cartel y Archivo ya está gastada en el portfolio: eventos, gimnasios, marcas jóvenes. Estrecha y pesada para decir mucho en poco ancho; extendida para dos palabras. En una marca de trato íntimo, grita."
+    },
+    {
+      "id": "Gloock",
+      "grupo": "display",
+      "n": "Gloock",
+      "dice": "serif de alto contraste con cuerpo: editorial que aguanta",
+      "peso": 800,
+      "evitar": false,
+      "aporta": "Cuando se vende criterio y confianza con letra de periódico: despachos, clínicas, librerías. Más robusta que Bodoni: aguanta tamaños medios y aire 3. Para público mayor, con texto Atkinson Next o Source Sans 3."
+    },
+    {
+      "id": "Caprasimo",
+      "grupo": "display",
+      "n": "Caprasimo",
+      "dice": "redonda y gorda, de rótulo de los setenta",
+      "peso": 800,
+      "evitar": false,
+      "aporta": "Cuando la marca es de barrio y cálida: bar, obrador, heladería, comercio de toda la vida. Titulares de tres o cuatro palabras. En un despacho o una ingeniería, disfraza."
+    },
+    {
+      "id": "Zilla Slab",
+      "grupo": "display",
+      "n": "Zilla Slab",
+      "dice": "egipcia en negrita: oficio sin nostalgia",
+      "peso": 800,
+      "evitar": false,
+      "aporta": "Cuando el oficio es de manos y herramienta (taller, reformas, transporte) y Young Serif o Fraunces ya están en uso. Solo titulares: tiene un único peso."
+    },
+    {
       "id": "Bricolage Grotesque",
       "grupo": "display",
       "n": "Bricolage",
@@ -266,10 +302,24 @@
       "dice": "Humanista y muy legible: para quien lee en el móvil con vista cansada (40-60)."
     },
     {
+      "id": "Atkinson Hyperlegible Next",
+      "grupo": "texto",
+      "n": "Atkinson Next",
+      "peso": 500,
+      "dice": "Diseñada para baja visión: no confunde I, l y 1. Para quien lee en el móvil con vista cansada."
+    },
+    {
       "id": "JetBrains Mono",
       "grupo": "texto",
       "n": "JetBrains Mono",
       "peso": 500
+    },
+    {
+      "id": "Fragment Mono",
+      "grupo": "texto",
+      "n": "Fragment Mono",
+      "peso": 400,
+      "dice": "Monoespaciada cálida: precios, horarios y medidas. Como texto de toda la web, solo si es casi toda datos."
     },
     {
       "id": "papelFrio",
@@ -446,6 +496,94 @@
       "clase": "fx-halo",
       "vars": "--halo-a:26%",
       "aporta": "Cuando hay un único objeto que destacar (producto, logo). Uno por página."
+    },
+    {
+      "id": "grano",
+      "grupo": "fondo",
+      "n": "Grano",
+      "dice": "ruido fino sobre color plano",
+      "clase": "fx-grain",
+      "aporta": "Cuando la sección es un color liso y se ve demasiado digital. Casi invisible: se nota cuando se quita."
+    },
+    {
+      "id": "veta",
+      "grupo": "fondo",
+      "n": "Veta",
+      "dice": "veta de madera o acero cepillado",
+      "clase": "fx-streak",
+      "aporta": "Cuando el material es madera o metal cepillado (carpintería, cerrajería, cocinas). Muy tenue: a más de 0,12 parece una foto."
+    },
+    {
+      "id": "ondas",
+      "grupo": "fondo",
+      "n": "Ondas",
+      "dice": "línea ondulada repetida",
+      "clase": "fx-waves",
+      "aporta": "Cuando hay agua o ritmo (piscinas, costa, fontanería, baile). Tenue; a más de 15 % marea."
+    },
+    {
+      "id": "cruces",
+      "grupo": "fondo",
+      "n": "Cruces",
+      "dice": "retícula de replanteo",
+      "clase": "fx-plus",
+      "aporta": "Cuando se mide antes de hacer (replanteo, carpintería, sanidad) y la rejilla pesa demasiado."
+    },
+    {
+      "id": "curvas",
+      "grupo": "fondo",
+      "n": "Curvas",
+      "dice": "curvas de nivel sin JavaScript",
+      "clase": "fx-rings",
+      "aporta": "Cuando se trabaja el terreno (topografía, jardinería, obra civil) y no se quiere depender del JS de «Topográfico»."
+    },
+    {
+      "id": "celosia",
+      "grupo": "fondo",
+      "n": "Celosía",
+      "dice": "rombos de ventana andaluza",
+      "clase": "fx-lattice",
+      "aporta": "Cuando la marca es de casa, patio o jardín del sur. Muy fina; con otra forma de marca fuerte, sobra."
+    },
+    {
+      "id": "damero",
+      "grupo": "fondo",
+      "n": "Damero",
+      "dice": "baldosa en ajedrez, tenue",
+      "clase": "fx-checker",
+      "aporta": "Cuando se venden suelos, cocinas o cafetería de barrio. Al 5 %: más y parece un tablero."
+    },
+    {
+      "id": "tejas",
+      "grupo": "fondo",
+      "n": "Tejas",
+      "dice": "escamas en arco",
+      "clase": "fx-scales",
+      "aporta": "Cuando son cubiertas y tejados, o el mar (pescadería, costa). En la bisagra, no en todas."
+    },
+    {
+      "id": "pautado",
+      "grupo": "fondo",
+      "n": "Pautado",
+      "dice": "renglones con margen de cuaderno",
+      "clase": "fx-ruled",
+      "aporta": "Cuando se enseña o se escribe (academias, autoescuelas, despachos). La línea de margen lleva el acento."
+    },
+    {
+      "id": "hidraulica",
+      "grupo": "fondo",
+      "n": "Hidráulica",
+      "dice": "baldosa hidráulica de casa antigua",
+      "clase": "fx-tile",
+      "aporta": "Cuando la reforma tiene memoria (casa antigua, patio, restauración). El punto central lleva el acento."
+    },
+    {
+      "id": "aurora",
+      "grupo": "fondo",
+      "n": "Aurora",
+      "dice": "luz de color que se mueve muy despacio",
+      "clase": "fx-aurora",
+      "aporta": "Cuando el ambiente es el producto (estética, eventos, hostelería de noche). Genérico si se abusa: una sección, no la web."
     },
     {
       "id": "ninguna",
@@ -834,6 +972,54 @@
       "aporta": "Cuando el titular es un cartel de tres líneas cortas."
     },
     {
+      "id": "degradado",
+      "grupo": "titular",
+      "n": "Degradado",
+      "clase": "fx-title-gradient",
+      "nota": "de la tinta al acento",
+      "aporta": "Cuando el acento se lee sobre el papel (≥3:1) y la marca es de tecnología o luz. Con acento claro, no."
+    },
+    {
+      "id": "mezcla",
+      "grupo": "titular",
+      "n": "Dos voces",
+      "clase": "fx-title-mix",
+      "nota": "una palabra en serif cursiva",
+      "aporta": "Cuando una palabra del titular es la emoción (bienestar, hogar, oficio con cuidado). Una palabra, no media frase."
+    },
+    {
+      "id": "sombra",
+      "grupo": "titular",
+      "n": "Sombra de cartel",
+      "clase": "fx-title-shadow",
+      "nota": "sombra dura en el color de marca",
+      "aporta": "Cuando el oficio es de cartel, feria o rótulo pintado a mano. Con display gruesa; con serif fina se ensucia."
+    },
+    {
+      "id": "subrayado",
+      "grupo": "titular",
+      "n": "Subrayado",
+      "clase": "fx-title-underline",
+      "nota": "raya gruesa de marca bajo cada línea",
+      "aporta": "Cuando la marca es clara y directa (despachos, academias). Titulares de dos líneas como mucho."
+    },
+    {
+      "id": "dostonos",
+      "grupo": "titular",
+      "n": "Dos tonos",
+      "clase": "fx-title-twotone",
+      "nota": "la primera línea en otro color",
+      "aporta": "Cuando el titular tiene dos partes (qué y dónde). Sin marcado: la parte la decide el salto de línea."
+    },
+    {
+      "id": "cartel",
+      "grupo": "titular",
+      "n": "Cartel",
+      "clase": "fx-title-poster",
+      "nota": "mayúsculas apretadas",
+      "aporta": "Cuando la display es estrecha y gruesa (Anton, Big Shoulders) y el oficio es deporte, obra o feria."
+    },
+    {
       "id": "completo",
       "grupo": "footer",
       "n": "Completo"
@@ -992,6 +1178,41 @@
       "grupo": "movimiento",
       "n": "Quieto",
       "aporta": "Cuando la marca es seria o el público mayor. Legítimo: la firma no puede depender del movimiento."
+    },
+    {
+      "id": "subida",
+      "grupo": "movimiento",
+      "n": "Subida al scroll",
+      "clase": "fx-enter-rise",
+      "aporta": "Cuando se quiere la aparición de siempre sin JavaScript (vale en la vía B). Sin soporte, todo visible."
+    },
+    {
+      "id": "barrido",
+      "grupo": "movimiento",
+      "n": "Barrido",
+      "clase": "fx-enter-wipe",
+      "aporta": "Cuando la marca es de corte o de trazo (rotulación, costura, carpintería). Uno por web."
+    },
+    {
+      "id": "enfoque",
+      "grupo": "movimiento",
+      "n": "Enfoque",
+      "clase": "fx-enter-blur",
+      "aporta": "Cuando se vende mirada o luz (fotografía, óptica, estética). Suave; en móvil gasta batería."
+    },
+    {
+      "id": "escala",
+      "grupo": "movimiento",
+      "n": "Escala",
+      "clase": "fx-enter-scale",
+      "aporta": "Cuando hay tarjetas o fotos que presentar una a una. El más discreto de los tres."
+    },
+    {
+      "id": "progreso",
+      "grupo": "movimiento",
+      "n": "Barra de lectura",
+      "clase": "fx-progress",
+      "aporta": "Cuando la página es larga (guías, servicios con detalle). En una portada corta, sobra."
     },
     {
       "id": "hero",
@@ -1983,5 +2204,53 @@
     "modulo",
     "forma",
     "movimiento"
-  ]
+  ],
+  "iconos": {
+    "nota": "Iconos de línea para LEER (servicios, contacto, confianza), no para adornar. Lucide 1.47.0, licencia ISC (y MIT de Feather en cinco): el LICENSE viaja con ellos. Van en línea con stroke=currentColor, así toman la paleta del cliente. Uso y detalle: iconos/README.md.",
+    "origen": "https://cdn.jsdelivr.net/npm/lucide-static@1.47.0/icons/",
+    "licencia": "ISC",
+    "ruta": "iconos/",
+    "lista": [
+      "hammer",
+      "wrench",
+      "paintbrush",
+      "paint-roller",
+      "drill",
+      "ruler",
+      "hard-hat",
+      "key",
+      "house",
+      "building-2",
+      "store",
+      "utensils",
+      "coffee",
+      "truck",
+      "car",
+      "scissors",
+      "dumbbell",
+      "heart-pulse",
+      "baby",
+      "flower-2",
+      "leaf",
+      "sun",
+      "droplets",
+      "zap",
+      "lightbulb",
+      "phone",
+      "message-circle",
+      "map-pin",
+      "clock",
+      "calendar",
+      "shield-check",
+      "badge-check",
+      "star",
+      "quote",
+      "users",
+      "check",
+      "camera",
+      "file-text",
+      "euro",
+      "arrow-right"
+    ]
+  }
 }

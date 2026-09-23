@@ -58,6 +58,18 @@ const VARS_MINI = {
   halo:    '--halo-a:65%;--halo-size:3rem',
   orbs:    '--orb-a:75%;--orb-blur:4px',
   sweep:   '',
+  // Biblioteca libre (23-sep): los mismos patrones, marcados para que a 74 px se distingan.
+  grano:      '--noise-a:.55',
+  veta:       '--streak-a:.6',
+  ondas:      '--wave-a:45%;--wave-w:34px',
+  cruces:     '--plus-a:55%;--plus-w:14px',
+  curvas:     '--rings-a:40%;--rings-gap:7px',
+  celosia:    '--lat-a:35%;--lat:9px;--lat-fade:100%',
+  damero:     '--chk-a:22%;--chk:10px;--chk-fade:100%',
+  tejas:      '--scale-a:45%;--scale:9px;--scale-fade:100%',
+  pautado:    '--ruled-a:35%;--renglon:8px;--margen:14px',
+  hidraulica: '--tile-a:28%;--tile-b:70%;--tile:20px;--tile-fade:100%',
+  aurora:     '--aurora-a:70%;--aurora-blur:5px',
 };
 
 function miniFondo(id) {
@@ -143,6 +155,14 @@ function miniTitular(id) {
   if (id === 'escalonado') return [[10, 26, 46], [22, 44, 26], [34, 62, 10]]
     .map(([l, t, r]) => `<i style="${base};top:${t}%;left:${l}%;right:${r}%;height:12%;background:var(--color-ink)"></i>`).join('');
   if (id === 'extendido') return `<i style="${base};left:5%;right:5%;background:var(--color-ink)"></i><i style="${base};top:56%;height:12%;left:5%;right:34%;background:var(--color-ink);opacity:.25"></i>`;
+  // Biblioteca libre: con letras de verdad, que es lo que cambia entre uno y otro.
+  const letras = (clase, extra = '') => `<span class="m-txt ${clase}" style="left:10%;top:22%;font-family:var(--font-display);font-size:19px;${extra}">Ab <em>cd</em></span>`;
+  if (id === 'degradado') return letras('fx-title-gradient');
+  if (id === 'mezcla') return letras('fx-title-mix');
+  if (id === 'sombra') return letras('fx-title-shadow', '--ts-x:2px;--ts-y:2px');
+  if (id === 'subrayado') return letras('fx-title-underline');
+  if (id === 'dostonos') return `<span class="m-txt fx-title-twotone" style="left:10%;top:12%;font-family:var(--font-display);font-size:15px;line-height:1.05;--tt-c:var(--color-brand)">Uno<br>dos</span>`;
+  if (id === 'cartel') return letras('fx-title-poster', 'font-size:21px');
   return `<i style="${base};background:var(--color-ink)"></i><i style="${base};top:56%;height:12%;right:38%;background:var(--color-ink);opacity:.25"></i>`;
 }
 
@@ -186,6 +206,12 @@ function miniMovimiento(id) {
   if (id === 'spot') return `<i style="position:absolute;inset:0;background:radial-gradient(circle 34% at 62% 44%,color-mix(in srgb,var(--color-brand) 60%,transparent),transparent)"></i>`;
   if (id === 'tilt') return `<i class="m-img" style="left:20%;top:18%;width:60%;height:62%;rotate:-6deg"></i>`;
   if (id === 'trail') return [0, 1, 2].map((k) => `<i class="m-img" style="left:${14 + k * 22}%;top:${22 + k * 10}%;width:30%;height:44%;opacity:${.8 - k * .25}"></i>`).join('');
+  // Biblioteca libre (scroll, sin JS): el estado a medio entrar, quieto.
+  if (id === 'subida') return l(10, 30, 60, .55) + `<i class="m-line" style="left:10%;top:58%;width:44%;height:7%;opacity:.2;transform:translateY(5px)"></i>`;
+  if (id === 'barrido') return `<i class="m-line" style="left:10%;top:30%;width:60%;height:7%;opacity:.55;clip-path:inset(0 45% 0 0)"></i>` + l(10, 52, 44, .25);
+  if (id === 'enfoque') return `<i class="m-line" style="left:10%;top:30%;width:60%;height:7%;opacity:.5;filter:blur(2px)"></i>` + l(10, 52, 44, .25);
+  if (id === 'escala') return `<i class="m-img" style="left:26%;top:20%;width:48%;height:56%;transform:scale(.85);opacity:.6"></i>`;
+  if (id === 'progreso') return `<i style="position:absolute;left:0;top:0;height:8%;width:58%;background:var(--color-brand)"></i>` + l(10, 34, 60, .3) + l(10, 54, 44, .2);
   return l(10, 30, 60, .5) + l(10, 52, 44, .25);
 }
 

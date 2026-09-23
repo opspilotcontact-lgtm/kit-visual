@@ -526,6 +526,18 @@ function ficherosFuente() {
   }).join('\n');
 }
 
+/** Los iconos del kit, en líneas cortas para el encargo. */
+function listaIconos(sangria = '     ') {
+  const lineas = [];
+  let l = '';
+  for (const n of ICONOS.lista || []) {
+    const mas = l ? `${l} · ${n}` : n;
+    if (mas.length > 88) { lineas.push(l); l = n; } else l = mas;
+  }
+  if (l) lineas.push(l);
+  return lineas.map((x) => sangria + x).join('\n');
+}
+
 /** La capa de marca tal y como la pinta el lienzo, apuntando al fichero del logo. */
 function recetaMarca(ruta, enPortada = true) {
   // La ventana lleva una foto dentro: en el encargo, un fichero, no un blob.
@@ -646,7 +658,16 @@ function prompt() {
       (alt ? ` · vía B: .${alt.clase}${vars(alt.vars)}` : ''));
   }
   if (FORMAS[S.forma].clase) piezas.push(`Forma de foto: .${FORMAS[S.forma].clase}`);
-  if (TITULARES[S.titular].clase) piezas.push(`Titulares: .${TITULARES[S.titular].clase}`);
+  if (TITULARES[S.titular].clase) {
+    // Los que piden marcado lo dicen: sin él, la clase no hace nada (el escalonado del lienzo no se veía por eso).
+    const MARCADO_TITULAR = {
+      escalonado: ' · cada línea del titular en su <span> (dos o tres líneas cortas)',
+      mezcla: ' · la palabra-emoción (UNA) en <em>: va en serif cursiva',
+      dostonos: ' · el salto de línea decide qué va en el segundo tono (--tt-c)',
+      degradado: ' · solo si el acento se lee sobre el papel; si no, --tg-to: var(--color-ink-soft)',
+    };
+    piezas.push(`Titulares: .${TITULARES[S.titular].clase}${MARCADO_TITULAR[S.titular] || ''}`);
+  }
   if (S.boton === 'material') piezas.push('Botones: cara con degradado de marca + canto de metal (--color-brand → --color-brand-dim, borde --color-metal)');
   // Los módulos son de toda la web, pero se ven solo donde la sección lleva la
   // capa «módulos»: el encargo dice dónde, o avisa de que no van en ninguna.
@@ -669,8 +690,14 @@ function prompt() {
   S.modulos.forEach((m) => piezas.push(`Módulo: ${MODULOS[m].n} — ${MODULOS[m].nota}${MODULOS[m].js ? ' · vía B: se quita' : ''}` +
     ` · va en: ${conModulos.length ? conModulos.join(', ') : 'ninguna sección (se usa donde el contenido lo pida, no por tenerlo)'}` +
     (marcado(m) ? `\n  Marcado exacto (el texto es de ejemplo: se sustituye por el del cliente):\n  ${marcado(m)}` : '')));
-  S.movimiento.filter((m) => m !== 'quieto').forEach((m) => piezas.push(
-    `Movimiento: ${MOVIMIENTO[m].n}${MOVIMIENTO[m].js ? ` (data-fx="${MOVIMIENTO[m].js}") · vía B: se quita` : ''}`));
+  S.movimiento.filter((m) => m !== 'quieto').forEach((m) => {
+    const x = MOVIMIENTO[m];
+    // Los de CSS (biblioteca libre, 23-sep) valen en la vía B: no hay que quitarlos.
+    const donde = x.clase === 'fx-progress' ? ' en un <div aria-hidden="true"> vacío al principio del <body>'
+      : ' en el contenedor de cada sección (su .wrap): sus hijos entran al aparecer';
+    piezas.push(`Movimiento: ${x.n}${x.js ? ` (data-fx="${x.js}") · vía B: se quita` : ''}` +
+      (x.clase ? ` · clase .${x.clase}${donde}. CSS con animation-timeline: sin JavaScript, vale en la vía B; sin soporte o con reduced-motion no pasa nada` : ''));
+  });
 
   /* La marca como forma: dónde vuelve a salir el logo y con qué CSS. */
   const conMarca = S.secciones.map((s, i) => [s, i]).filter(([s]) =>
@@ -731,7 +758,8 @@ VÍA A · con el kit (Astro 5 + Tailwind v4), si tienes el repo privado
      (o descarga «${slug}.css» del Estudio: son los mismos tokens con su porqué).
   3. CSS del proyecto, en este orden: kit.css → fx.css → themes/${slug}.css → marca-${slug}.css (lo propio).
   4. Descarga «index.astro» del Estudio: es el andamio con los bloques reales y este mismo orden.
-  5. Si falta un bloque o un efecto, se añade AL KIT, nunca suelto en el proyecto.
+  5. Si falta un bloque o un efecto, se añade AL KIT, nunca suelto en el proyecto.${(ICONOS.lista || []).length ? `
+  6. Iconos: los de opspilot-kit/iconos/, con las reglas del paso 10 de la vía B.` : ''}
 
 VÍA B · sin el kit (HTML estático, otro framework, o un Claude sin acceso al repo)
   1. Descarga ${PUBLICO}_astro/kit-completo.css y guárdalo como /css/kit.css
@@ -754,7 +782,14 @@ ${ficherosFuente()}
   8. El titular de la portada es CORTO: la búsqueda principal (P11), qué y dónde. El resto (años,
      proceso, promesa) va al subtítulo o más abajo; un h1 de cinco líneas no se lee.
   9. Las máscaras (mask-image) no se ven abriendo el HTML con doble clic (file://): el navegador las
-     bloquea. Pruébalo SERVIDO (npx serve, python -m http.server…).
+     bloquea. Pruébalo SERVIDO (npx serve, python -m http.server…).${(ICONOS.lista || []).length ? `
+  10. Iconos, solo donde ayudan a LEER (servicios, teléfono, dirección, horario); nunca de adorno.
+     Los del kit: ${PUBLICO}iconos/<nombre>.svg
+     Son Lucide, licencia ISC: deja el comentario @license que traen y copia ${PUBLICO}iconos/LICENSE
+     junto a ellos. Pégalos EN LÍNEA, <svg> dentro del HTML y no <img>: van con stroke="currentColor"
+     y toman el color del texto. Con aria-hidden="true" si el texto de al lado ya dice lo mismo.
+     Hay ${ICONOS.lista.length}:
+${listaIconos()}` : ''}
 
 ═══ TOKENS · la paleta completa (no se añade ni un color) ═══
 ${lineasTokens()}

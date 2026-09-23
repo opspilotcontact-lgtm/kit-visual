@@ -31,6 +31,10 @@ let RUBRICA = [], APORTA = {};
    encargo dice exactamente qué .woff2 descargar para montar la web sin el kit. */
 let FUENTES = {};
 
+/* Los iconos del kit (biblioteca libre, 23-sep): Lucide, ISC. El encargo le
+   da la lista a quien maqueta, con la URL publicada de cada uno. */
+let ICONOS = { lista: [] };
+
 /* El registro de las webs ya hechas (opspilot-kit/marcas.json). Es lo que
    convierte la regla anti-clon de la skill en una comprobación: sin lista
    contra la que mirar, «no repitas la display» es una buena intención. */
@@ -63,7 +67,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=3ab7e430', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=d21c58fc', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -95,6 +99,7 @@ async function cargaManifiesto() {
   EJES = M.ejes.map((e) => [e.id, e.n, e.min, e.max]);
   REGLAS = M.reglas || [];
   RUBRICA = M.rubrica || [];
+  ICONOS = M.iconos || ICONOS;
   APORTA = {};
   M.piezas.filter((p) => p.aporta).forEach((p) => { (APORTA[p.grupo] = APORTA[p.grupo] || {})[p.id] = p.aporta; });
 

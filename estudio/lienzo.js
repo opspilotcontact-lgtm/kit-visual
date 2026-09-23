@@ -46,20 +46,39 @@ function botonHTML(txt, primario = true) {
     font-family:var(--font-display);font-weight:600;font-size:.95rem;text-decoration:none;${est}">${txt}</a>`;
 }
 
+/** El texto (ya escapado) en `n` líneas de palabras parecidas, para el escalonado. */
+function enLineas(txt, n) {
+  const ps = String(txt).split(/\s+/).filter(Boolean);
+  const por = Math.ceil(ps.length / Math.min(n, ps.length || 1));
+  const xs = [];
+  for (let i = 0; i < ps.length; i += por) xs.push(ps.slice(i, i + por).join(' '));
+  return xs;
+}
+
+/**
+ * El titular con su tratamiento. Cada pieza con clase la lleva; las que piden
+ * marcado (escalonado, mezcla) o un color que dependa del contraste lo reciben
+ * aquí. El escalonado existía en el kit y aquí no se aplicaba: espera una línea
+ * por <span> (biblioteca libre, 23-sep).
+ */
 function tituloHTML(txt) {
-  const t = TITULARES[S.titular];
+  const t = TITULARES[S.titular] || {};
   const stretch = S.ancho ? 'font-stretch:116%;' : '';
   let estilo = `font-family:var(--font-display);font-weight:800;line-height:.98;letter-spacing:-.03em;${stretch}`;
-  let clase = '';
-  if (S.titular === 'knockout') {
-    clase = 'fx-knockout';
-    estilo += `--knockout:url(${FL()[1]});`;
-  } else if (S.titular === 'outline') {
-    clase = 'fx-outline'; estilo += '--outline-c:var(--color-ink);--outline-w:2px;';
-  } else if (S.titular === 'trama') {
-    clase = 'fx-hatch-text'; estilo += '--htext-color:var(--color-ink);';
-  }
-  return `<h1 class="${clase}" style="${estilo}font-size:clamp(2.4rem,6vw,4.2rem);margin:0">${txt}</h1>`;
+  const clase = t.clase || '';
+  let cuerpo = txt;
+  const acentoSeLee = tintaDeAcento(false) === 'var(--color-brand)';
+  if (S.titular === 'knockout') estilo += `--knockout:url(${FL()[1]});`;
+  else if (S.titular === 'outline') estilo += '--outline-c:var(--color-ink);--outline-w:2px;';
+  else if (S.titular === 'trama') estilo += '--htext-color:var(--color-ink);';
+  else if (S.titular === 'escalonado') cuerpo = enLineas(txt, 3).map((l) => `<span>${l}</span>`).join('');
+  // La palabra-emoción, en cursiva serif: la última del titular.
+  else if (S.titular === 'mezcla') cuerpo = String(txt).replace(/(\S+)(\s*)$/, '<em>$1</em>$2');
+  // Con un acento que no se lee sobre el papel (el amarillo de Dígito), el segundo
+  // tono y el final del degradado van en tinta suave: nunca texto ilegible.
+  else if (S.titular === 'dostonos') estilo += `--tt-c:${acentoSeLee ? 'var(--color-brand)' : 'var(--color-ink-soft)'};`;
+  else if (S.titular === 'degradado' && !acentoSeLee) estilo += '--tg-to:var(--color-ink-soft);';
+  return `<h1 class="${clase}" style="${estilo}font-size:clamp(2.4rem,6vw,4.2rem);margin:0">${cuerpo}</h1>`;
 }
 
 /* Los módulos también traían contenido de ejemplo de un taller de rótulos
@@ -694,9 +713,12 @@ function seccionHTML(s) {
 
   const extras = capas.includes('modulos') ? S.modulos.map(moduloHTML).join('') : '';
 
+  // Los movimientos de CSS (subida, barrido, enfoque, escala) van en el contenedor:
+  // sus hijos entran al aparecer. La barra de lectura va aparte, en el <body>.
+  const mov = S.movimiento.map((m) => (MOVIMIENTO[m] || {}).clase).filter((c) => c && c !== 'fx-progress');
   return `<section class="sec" style="${TONOS[s.tono] || TONOS.paper};${aisla}${arco}">
     ${pintadas}
-    <div class="wrap"${aisla ? ' style="position:relative;z-index:1"' : ''}>
+    <div class="wrap${mov.length ? ' ' + mov.join(' ') : ''}"${aisla ? ' style="position:relative;z-index:1"' : ''}>
       ${CUERPO[s.t](s.v, osc)}${extras}
     </div>
   </section>`;
@@ -826,7 +848,7 @@ function documento() {
      parche sobra — y era el síntoma, no la causa.) */
 </style></head>
 <body class="${mov.includes('reveal') ? 'kit-js' : ''}">
-
+  ${mov.includes('progreso') ? '<div class="fx-progress" aria-hidden="true"></div>' : ''}
   ${headerHTML()}
 
   ${cuerpo || `<section class="sec"><div class="wrap">

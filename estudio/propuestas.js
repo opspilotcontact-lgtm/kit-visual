@@ -63,8 +63,13 @@ const AFIN_DISPLAY = {
   'Unbounded': [4, 2, 1], 'Syne': [3, 3, 1], 'Cormorant': [1, 4, 4],
   'Instrument Serif': [2, 3, 4], 'Epilogue': [3, 3, 2], 'Space Grotesk': [3, 1, 1],
   'Newsreader': [2, 3, 4], 'Literata': [3, 3, 4], 'Schibsted Grotesk': [3, 2, 2],
+  // Biblioteca libre (23-sep). Afinidad estimada, sin medir todavía en una web real.
+  'Anybody': [4, 2, 1], 'Gloock': [3, 3, 4], 'Caprasimo': [4, 5, 4], 'Zilla Slab': [4, 3, 3],
 };
-const SERIF = new Set(['Fraunces', 'Bodoni Moda', 'Young Serif', 'Cormorant', 'Instrument Serif', 'Newsreader', 'Literata']);
+const SERIF = new Set(['Fraunces', 'Bodoni Moda', 'Young Serif', 'Cormorant', 'Instrument Serif', 'Newsreader', 'Literata',
+  'Gloock', 'Caprasimo', 'Zilla Slab']);
+/* Las que tienen eje de anchura: solo en ellas «ancho extendido» cambia algo. */
+const CON_ANCHO = new Set(['Archivo', 'Anybody']);
 
 /* Colores de MATERIAL, no de catálogo: cada tono tiene nombre de cosa (así el
    porqué se entiende) y la temperatura que transmite. El motor los usa solo si
@@ -116,7 +121,7 @@ function candidato(rnd) {
     .map(([d, a]) => [d, Math.exp(-distEjes(a, e)) * (usadas.has(familia(d)) ? 0.12 : 1)]));
   c.texto = SERIF.has(c.display) ? (e.temperatura <= 2 ? 'Schibsted Grotesk' : 'Instrument Sans')
     : (e.memoria >= 4 ? 'Literata' : 'Instrument Sans');
-  c.ancho = c.display === 'Archivo' && e.peso >= 4 && rnd() < 0.6;
+  c.ancho = CON_ANCHO.has(c.display) && e.peso >= 4 && rnd() < 0.6;
 
   // El papel: cálido o frío según la temperatura; galería si pide mucho aire.
   if (!S.coloresFijos) {
@@ -180,6 +185,17 @@ function candidato(rnd) {
   if (e.temperatura <= 2) fondos.push(['grid', 1], ['blueprint', 1.2], ['gridwarp', 0.8], ['contour', e.aire <= 3 ? 0.8 : 0.3]);
   else if (e.temperatura >= 4) fondos.push(['hatch', 0.6], ['flowfield', 0.5], ['dots', 0.5], ['orbs', e.aire >= 4 ? 0.4 : 0.1]);
   else fondos.push(['dots', 0.8], ['halftone', e.memoria >= 3 ? 0.6 : 0.3], ['grid', 0.5]);
+  // Biblioteca libre (23-sep): texturas y patrones que salen del MATERIAL del
+  // oficio (el mismo criterio que el color), y el grano, que casi siempre suma.
+  const FONDOS_DEL_MATERIAL = {
+    madera: ['veta', 'grano'], piedra: ['hidraulica', 'celosia', 'tejas'], metal: ['cruces', 'veta'],
+    tierra: ['tejas', 'hidraulica', 'grano'], vegetal: ['celosia', 'curvas'], agua: ['ondas'],
+    textil: ['damero', 'grano'], cuerpo: ['aurora', 'ondas', 'grano'], papel: ['pautado', 'grano'], digital: ['cruces', 'curvas'],
+  };
+  (FONDOS_DEL_MATERIAL[S.materialOficio] || []).forEach((f) => fondos.push([f, 1.2]));
+  fondos.push(['grano', e.memoria >= 3 ? 0.5 : 0.2]);
+  if (e.temperatura <= 2) fondos.push(['cruces', 0.5], ['curvas', 0.4]);
+  else if (e.temperatura >= 4) fondos.push(['veta', 0.3], ['hidraulica', 0.3], ['tejas', 0.2]);
   c.fondo = conPeso(rnd, fondos.filter(([f]) => FONDOS[f]));
 
   // La firma EN REPOSO (la lección de Córdoba): la forma del logo dentro de la
@@ -200,7 +216,18 @@ function candidato(rnd) {
   c.forma = conPeso(rnd, [['recto', 2.5], ['redondo', 1], ['notch', e.peso >= 4 && e.temperatura <= 2 ? 1.2 : 0],
     ['blob', e.temperatura >= 4 && e.peso <= 2 ? 1 : 0], ['arch', e.temperatura >= 3 && c.marcaJuego !== 'ventana' ? 0.4 : 0]]);
 
-  c.titular = c.ancho ? 'extendido' : conPeso(rnd, [['normal', 4], ['escalonado', e.peso >= 4 && e.aire <= 3 ? 0.7 : 0]]);
+  // El titular: casi siempre normal; los tratamientos, cuando el carácter lo pide.
+  // Los que tiñen texto con el acento, solo si el acento se lee sobre SU papel.
+  const papelHex = c.papel || S.papel || (BASES[c.base || S.base] || {}).paper || '#F5F6F7';
+  const acentoLee = esHex(c.acento || S.acento) && ratio(c.acento || S.acento, papelHex) >= 3;
+  c.titular = c.ancho ? 'extendido' : conPeso(rnd, [['normal', 4],
+    ['escalonado', e.peso >= 4 && e.aire <= 3 ? 0.7 : 0],
+    ['mezcla', !SERIF.has(c.display) && e.temperatura >= 4 ? 0.9 : 0],
+    ['sombra', e.peso >= 4 && e.temperatura >= 3 && e.memoria >= 3 ? 0.6 : 0],
+    ['cartel', ['Anton', 'Big Shoulders Display', 'Anybody'].includes(c.display) ? 1.2 : 0],
+    ['subrayado', e.peso <= 3 && e.memoria <= 3 ? 0.5 : 0],
+    ['dostonos', acentoLee ? 0.5 : 0],
+    ['degradado', acentoLee && e.temperatura <= 2 && e.memoria <= 2 ? 0.5 : 0]].filter(([t]) => TITULARES[t]));
   c.header = conPeso(rnd, [['barra', 2], ['isla', e.aire >= 4 && e.temperatura >= 3 ? 1.2 : 0], ['minimo', e.aire >= 4 && e.peso <= 2 ? 1 : 0]]);
   c.boton = e.peso >= 4 || e.temperatura <= 2 ? 'recto' : conPeso(rnd, [['pildora', 1.5], ['recto', 1], ['flecha', 0.6]]);
   c.footer = e.peso >= 4 ? 'grande' : 'completo';
@@ -215,7 +242,10 @@ function candidato(rnd) {
   // La nota dice la objeción respondida: sin ella quedaba una caja vacía o con el ejemplo (F6, Brío).
   if (!m.length && S.respuestaObjecion.trim()) m.push('note');
   c.modulos = m.slice(0, 3);
-  c.movimiento = ['reveal'];
+  // La entrada: la de siempre (reveal, con JS) o una de CSS que vale sin
+  // JavaScript (biblioteca libre). El barrido es de oficios de corte o trazo.
+  c.movimiento = [conPeso(rnd, [['reveal', 2], ['subida', 1.2], ['barrido', e.peso >= 4 && e.temperatura <= 3 ? 0.8 : 0.2],
+    ['escala', 0.5], ['enfoque', e.temperatura >= 4 && e.aire >= 4 ? 0.4 : 0]].filter(([x]) => MOVIMIENTO[x]))];
   if (e.peso >= 4 && rnd() < 0.5) c.movimiento.push('split');
   if (cifrasCliente().length) c.movimiento.push('counter');
 
