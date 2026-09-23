@@ -21,6 +21,11 @@ let DISPLAY = [], TEXTO = [], BASES = {}, FONDOS = {}, ESCENAS = {}, FOTOS = {},
     RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [], SECCIONES = {}, COMPOSICION = [],
     MARCAJUEGOS = {}, COMPOSICIONES = {};
 
+/* Lo memorable (F0, 23-sep): la rúbrica de 7 pruebas y, por grupo y pieza,
+   cuándo aporta más. Los usan el asistente, el motor de propuestas y la
+   revisión. APORTA[grupo][id] = texto; RUBRICA = [{id, n, pregunta, …}]. */
+let RUBRICA = [], APORTA = {};
+
 /* Las tipografías que trae el CSS del kit: familia → URLs de sus ficheros.
    Se leen de las @font-face del CSS compilado, no se mantienen a mano: así el
    encargo dice exactamente qué .woff2 descargar para montar la web sin el kit. */
@@ -49,6 +54,7 @@ function porGrupo(M, grupo) {
     if (p.admite) v.admite = p.admite;
     if (p.protocolo) v.protocolo = p.protocolo;
     if (p.sinJs) v.sinJs = p.sinJs;
+    if (p.aporta) v.aporta = p.aporta;
     if (p.paleta) Object.assign(v, p.paleta, { hue: p.hue, oscuro: p.oscuro });
     o[p.id] = v;
   });
@@ -88,6 +94,9 @@ async function cargaManifiesto() {
   RECETAS = M.recetas;
   EJES = M.ejes.map((e) => [e.id, e.n, e.min, e.max]);
   REGLAS = M.reglas || [];
+  RUBRICA = M.rubrica || [];
+  APORTA = {};
+  M.piezas.filter((p) => p.aporta).forEach((p) => { (APORTA[p.grupo] = APORTA[p.grupo] || {})[p.id] = p.aporta; });
 
   return M;
 }

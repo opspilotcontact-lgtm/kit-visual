@@ -398,7 +398,15 @@ body {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
   padding: 1rem 1.1rem; border-bottom: 1px solid var(--ui-line);
 }
-.ui-dialog-panel h2 { margin: 0.1rem 0 0; font-size: 17px; }
+/* El color explícito: el CSS del kit pinta los h2 con --color-ink, que el
+   Estudio escribe en :root con la tinta del CLIENTE. Sin esto, el título del
+   encargo salía casi negro sobre el panel oscuro (medido: rgb(26 23 19)). */
+.ui-dialog-panel { color: var(--ui-text); }
+/* Y la letra: el mismo CSS da a los h2 --font-display, que es la display del
+   cliente. La herramienta no se viste con lo que diseña (ver la cabecera). */
+.ui-panel h2, .ui-dialog-panel h2 { font-family: inherit; line-height: 1.3; }
+.ui-asis-cab h2, .ui-dialog-panel h2 { letter-spacing: normal; font-weight: 700; }
+.ui-dialog-panel h2 { margin: 0.1rem 0 0; font-size: 17px; color: var(--ui-text); }
 .ui-eyebrow { margin: 0; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ui-soft); }
 .ui-dialog-tabs { display: flex; gap: 0.25rem; }
 .ui-dialog-tabs button {
@@ -442,3 +450,166 @@ body {
 }
 .ui-rejilla button:hover { border-color: #4b5560; }
 .ui-rejilla button.on { background: var(--ui-accent); border-color: var(--ui-accent); }
+
+/* ── El asistente (F2, 23-sep) ────────────────────────────────────────────────
+   Ocho pasos en vez de treinta decisiones a la vista. Mismo estado que el
+   panel: pasar de uno a otro no pierde nada. El body lleva la clase del modo. */
+
+/* `hidden` tiene que ganar a los display de las clases (.ui-field es block,
+   .ui-inicio-op es flex): sin esto, un elemento oculto seguía viéndose. */
+[hidden] { display: none !important; }
+
+body:not(.ui-modo-asistente) #asistente { display: none; }
+body.ui-modo-asistente #panel { display: none; }
+body.ui-modo-asistente .ui-shell { grid-template-columns: minmax(360px, 460px) 1fr; }
+/* En el móvil, con la muestra al 60 % el asistente se quedaba con 40 px de
+   cuerpo (medido a 375×812): inservible. En este modo lo que se está haciendo
+   es decidir, así que la muestra baja al 38 % y los pasos van solo con número. */
+@media (width < 60rem) {
+  body.ui-modo-asistente .ui-shell { grid-template-columns: 1fr; grid-template-rows: 38dvh 1fr; }
+  .ui-asis-pasos { padding: 0.4rem 0.5rem; }
+  .ui-asis-pasos button em { display: none; }
+  .ui-asis-pie { padding: 0.55rem 0.8rem; }
+}
+
+.ui-asis { display: flex; flex-direction: column; overflow: hidden; }
+
+.ui-asis-pasos {
+  list-style: none; margin: 0; padding: 0.55rem 0.6rem; flex: none;
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.2rem;
+  border-bottom: 1px solid var(--ui-line);
+}
+.ui-asis-pasos button {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  padding: 0.25rem 0; border: 0; border-radius: 6px; background: none;
+  font: inherit; color: var(--ui-soft); cursor: pointer;
+}
+.ui-asis-pasos button:hover { background: var(--ui-panel-2); }
+.ui-asis-pasos button span {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11px; font-weight: 700; border: 1px solid var(--ui-line);
+}
+.ui-asis-pasos button em { font-style: normal; font-size: 9.5px; line-height: 1.15; text-align: center; }
+.ui-asis-pasos button.on { color: var(--ui-text); }
+.ui-asis-pasos button.on span { background: var(--ui-accent); border-color: var(--ui-accent); color: #06202e; }
+.ui-asis-pasos button.hecho:not(.on) span { border-color: #4ade80; color: #4ade80; }
+
+.ui-asis-cuerpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem 1.1rem 1.5rem; }
+.ui-asis-cab h2 { margin: 0.15rem 0 0.4rem; font-size: 18px; color: var(--ui-text); }
+.ui-asis-para { margin: 0 0 1.1rem; font-size: 12.5px; line-height: 1.55; color: var(--ui-soft); }
+
+.ui-asis-pie {
+  flex: none; display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 1rem; border-top: 1px solid var(--ui-line); background: var(--ui-panel);
+}
+.ui-asis-pie .ui-btn:disabled { opacity: 0.4; cursor: default; }
+.ui-asis-falta { flex: 1; margin: 0; font-size: 11.5px; line-height: 1.4; color: var(--ui-warn); }
+.ui-asis-falta .ok { color: #4ade80; }
+
+.ui-field select {
+  width: 100%; font: inherit; font-size: 13px; color: var(--ui-text);
+  background: var(--ui-bg); border: 1px solid var(--ui-line); border-radius: 8px; padding: 0.5rem 0.6rem;
+}
+
+/* Paso 1: dos tarjetas en vez de un sí/no, para que se lea qué implica cada una. */
+.ui-asis-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.ui-asis-tarjeta {
+  display: flex; flex-direction: column; gap: 0.25rem; text-align: left; cursor: pointer;
+  font: inherit; color: var(--ui-text); background: var(--ui-panel-2);
+  border: 1px solid var(--ui-line); border-radius: 9px; padding: 0.7rem 0.75rem;
+}
+.ui-asis-tarjeta span { font-size: 11.5px; line-height: 1.45; color: var(--ui-soft); }
+.ui-asis-tarjeta.on { border-color: var(--ui-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 40%, transparent); }
+
+/* Paso 2: el logo y los colores medidos en él. */
+.ui-asis-logo {
+  margin: 0.5rem 0 0; padding: 0.6rem; border-radius: 8px; display: grid; place-items: center;
+  background: repeating-conic-gradient(#20252b 0 25%, #191d22 0 50%) 0 0 / 14px 14px;
+}
+.ui-asis-logo img { max-width: 100%; max-height: 64px; }
+.ui-asis-sw { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.7rem; }
+.ui-asis-sw button { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--ui-line); cursor: pointer; }
+.ui-asis-sw button.on { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+
+.ui-asis-mas { margin-top: 0.4rem; border-top: 1px solid var(--ui-line); padding-top: 0.7rem; }
+.ui-asis-mas summary { cursor: pointer; font-size: 12.5px; font-weight: 600; margin-bottom: 0.8rem; }
+.ui-asis-mas summary em { font-style: normal; font-weight: 400; color: var(--ui-soft); }
+
+/* Paso 4: cada eje con sus dos extremos escritos y qué mueve. */
+.ui-asis-eje { margin-bottom: 1rem; }
+.ui-asis-eje-top { display: flex; justify-content: space-between; font-size: 12.5px; }
+.ui-asis-eje-top output { font-variant-numeric: tabular-nums; color: var(--ui-accent); font-weight: 700; }
+.ui-asis-eje input { width: 100%; accent-color: var(--ui-accent); margin: 0.35rem 0 0.1rem; }
+.ui-asis-eje-ext { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ui-soft); }
+.ui-asis-lectura { margin: 0.4rem 0 0; font-size: 13px; font-weight: 600; }
+
+/* Paso 5: las tres direcciones con su primera pantalla a escala. */
+.ui-asis-props { display: grid; gap: 0.9rem; }
+.ui-asis-prop { border: 1px solid var(--ui-line); border-radius: 10px; overflow: hidden; background: var(--ui-panel-2); }
+.ui-asis-prop.on { border-color: var(--ui-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 40%, transparent); }
+.ui-asis-mini { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #fff; }
+.ui-asis-mini iframe {
+  position: absolute; left: 0; top: 0; width: 1280px; height: 800px;
+  border: 0; transform-origin: 0 0; pointer-events: none;
+}
+.ui-asis-prop-txt { padding: 0.7rem 0.8rem 0.85rem; }
+.ui-asis-prop-txt b { font-size: 13px; }
+.ui-asis-prop-txt p { margin: 0.3rem 0 0.6rem; font-size: 12px; line-height: 1.5; color: #c9d0d8; }
+.ui-asis-prop-txt .ui-asis-nota { font-size: 11px; color: var(--ui-soft); }
+.ui-asis-acc { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+/* Pasos 6 y 8: pruebas de la rúbrica, con su nota. */
+.ui-asis-fila { display: grid; grid-template-columns: auto 1fr; gap: 0.7rem; padding: 0.7rem 0; border-top: 1px solid var(--ui-line); }
+.ui-asis-fila b { font-size: 12.5px; }
+.ui-asis-fila p { margin: 0.2rem 0 0; font-size: 11.5px; line-height: 1.5; color: #c9d0d8; }
+.ui-asis-fila .ui-asis-cal { color: var(--ui-soft); font-size: 11px; }
+.ui-pts { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.ui-pts.p0, .ui-asis-juicio button.p0 { background: color-mix(in srgb, #f87171 22%, transparent); color: #fca5a5; }
+.ui-pts.p1, .ui-asis-juicio button.p1 { background: color-mix(in srgb, var(--ui-warn) 22%, transparent); color: #fde68a; }
+.ui-pts.p2, .ui-asis-juicio button.p2 { background: color-mix(in srgb, #4ade80 20%, transparent); color: #86efac; }
+.ui-asis-juicio { display: flex; flex-direction: column; gap: 0.2rem; }
+.ui-asis-juicio button {
+  width: 26px; height: 22px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700;
+  border: 1px solid var(--ui-line); background: transparent; color: var(--ui-soft);
+}
+.ui-asis-juicio button.on { border-color: transparent; }
+
+.ui-asis-total { display: flex; align-items: baseline; gap: 0.4rem; }
+.ui-asis-total b { font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ui-asis-total span { font-size: 12px; color: var(--ui-soft); }
+.ui-asis-barra { position: relative; height: 8px; margin: 0.6rem 0 1.9rem; border-radius: 99px; background: var(--ui-panel-2); }
+.ui-asis-barra i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: var(--ui-accent); }
+.ui-asis-barra b {
+  position: absolute; top: 14px; translate: -50% 0; white-space: nowrap;
+  font-size: 10px; font-weight: 600; color: var(--ui-soft);
+}
+.ui-asis-barra b::before { content: ''; position: absolute; left: 50%; top: -12px; width: 1px; height: 10px; background: var(--ui-soft); }
+
+/* Paso 7: la página, con el estado del contenido de cada sección. */
+.ui-asis-sec { display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0; border-top: 1px solid var(--ui-line); }
+.ui-asis-sec-n { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.ui-asis-sec-n b { font-size: 12.5px; }
+.ui-asis-sec-n em { font-style: normal; font-size: 11px; color: var(--ui-soft); }
+.ui-asis-est { margin-left: auto; font-size: 11px; line-height: 1.35; text-align: right; max-width: 55%; }
+.ui-asis-est.ok { color: #4ade80; }
+.ui-asis-est.todo { color: var(--ui-warn); }
+.ui-asis-sec button {
+  flex: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer;
+  border: 0; background: transparent; color: var(--ui-soft); font-size: 12px;
+}
+.ui-asis-sec button:hover { background: color-mix(in srgb, #f87171 25%, transparent); color: #fecaca; }
+.ui-sec-add button em { font-style: normal; color: var(--ui-soft); }
+
+/* Al entrar: tres caminos, uno por línea. */
+#inicio[open] { display: grid; place-items: center; }
+.ui-dialog-panel.ui-inicio { height: auto; width: min(100% - 2rem, 38rem); }
+.ui-inicio-ops { display: grid; gap: 0.6rem; padding: 1.1rem; }
+.ui-inicio-op {
+  display: flex; flex-direction: column; gap: 0.3rem; text-align: left; cursor: pointer;
+  font: inherit; color: var(--ui-text); background: var(--ui-panel-2);
+  border: 1px solid var(--ui-line); border-radius: 10px; padding: 0.9rem 1rem;
+}
+.ui-inicio-op:hover { border-color: var(--ui-accent); }
+.ui-inicio-op.primero { border-color: color-mix(in srgb, var(--ui-accent) 55%, var(--ui-line)); }
+.ui-inicio-op b { font-size: 14px; }
+.ui-inicio-op > span { font-size: 12px; line-height: 1.5; color: var(--ui-soft); }

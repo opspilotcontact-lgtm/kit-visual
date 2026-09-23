@@ -52,15 +52,8 @@ function enlaza() {
     setTimeout(() => { $('#enlace').textContent = 'Copiar enlace'; }, 2200);
   });
 
-  $('#reset').addEventListener('click', () => {
-    S = normaliza({});
-    try { localStorage.removeItem(CLAVE); } catch { /* nada que borrar */ }
-    // Empezar de cero es cliente nuevo: las fotos del anterior no se quedan.
-    quitaFotos(); firmaPrevia = null;
-    history.replaceState(null, '', location.pathname);
-    sincronizaCampos();
-    pintaControles(); pintaEjes(); pintaSecciones(); render();
-  });
+  // «Empezar de cero» es ahora «Proyecto nuevo»: lo lleva asistente.js
+  // (proyectoNuevo), que además arranca con la arquitectura de P12.
 
   $('#dados').addEventListener('click', azar);
 
@@ -80,7 +73,7 @@ function enlaza() {
 
 /* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */
 Promise.all([cargaManifiesto(), cargaMarcas(), cargaFuentes(), recuperaFotos()]).then(() => {
-  recupera();
+  const origen = recupera();
   chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
   chips('#composiciones', [['defecto', 'La de siempre', 'Portada, servicios, trabajos, reseña y cierre'],
     ...Object.entries(COMPOSICIONES).map(([k, c]) => [k, c.n, c.dice])], null, aplicaComposicion);
@@ -90,6 +83,7 @@ Promise.all([cargaManifiesto(), cargaMarcas(), cargaFuentes(), recuperaFotos()])
   enlaza();
   sincronizaCampos();
   render();
+  iniciaAsistente(origen);
 }).catch((e) => {
   document.querySelector('#avisos').innerHTML =
     `<div class="ui-aviso"><span>⚠</span><span><b>No se pudo cargar el catálogo:</b> ${e.message}.

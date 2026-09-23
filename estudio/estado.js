@@ -46,6 +46,16 @@ const inicial = () => ({
   cifras: '',           // P8 · una por línea: cifra · qué mide · de dónde sale la prueba
   datosContacto: '',    // P21/ASSETS · WhatsApp, horario, a dónde llega el formulario y quién lo atiende
   canales: [],          // P12 · el canal que el cliente usa DE VERDAD
+  /* Lo que decide el asistente (F2). Con identidad propia, sus colores y su
+     letra NO los toca nadie: ni el motor de propuestas ni el Sorpréndeme (P9:
+     «nunca proponer cambiar el logo; el color es EL DEL CLIENTE»). */
+  identidad: '',        // '' sin decidir · 'propia' · 'nueva'
+  coloresFijos: false,  // acento, tinta y papel son de su marca
+  displayFija: false,   // la tipografía display es la de su marca
+  materialOficio: '',   // con qué material trabaja (de ahí sale el color si no trae el suyo)
+  // Las pruebas de juicio de la rúbrica (logo tapado, cambiazo, teléfono):
+  // null = sin responder, 0-2 = la respuesta de quien revisa.
+  juicio: { logo: null, cambiazo: null, telefono: null },
   /* La ARQUITECTURA de la página, no solo su estilo. Antes el lienzo tenía tres
      secciones escritas a mano y se elegía cómo se veían pero no cuáles eran.
      Se rellena desde el manifiesto al arrancar. */
@@ -88,4 +98,8 @@ const canal = (c) => (S.canales || []).includes(c);
 /** Sin canales marcados todavía no se ha decidido: el lienzo enseña el ejemplo. */
 const canalesDecididos = () => (S.canales || []).length > 0;
 let S = inicial();
+
+/* Quien necesite enterarse de cada repintado (el asistente) se apunta aquí;
+   render() los llama. Así lienzo.js no conoce al asistente. */
+const ALRENDER = [];
 

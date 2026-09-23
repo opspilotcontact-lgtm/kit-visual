@@ -12,6 +12,45 @@
 
 const LIMITE_LOGO = 400 * 1024;   // 400 KB: por encima no es un logo, es una foto
 
+/* El último diagnóstico del logo: lo usa el motor de propuestas para saber si
+   el logo sirve como forma (si no, la firma va por la escenografía). */
+let ULTIMO_DIAG_LOGO = null;
+
+/**
+ * Los colores del logo, medidos: se pinta a 64 px, se agrupan los píxeles
+ * opacos por tono (a 5 bits por canal) y se quitan los casi blancos, los casi
+ * negros y los grises (croma < 0,03), que no son color de marca. Devuelve hasta
+ * cuatro, del más al menos presente. ASSETS.md: el color «del logo» suele venir
+ * mal medido de un JPG; esto es un punto de partida, no el Pantone.
+ */
+async function paletaDeLogo(src) {
+  try {
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+    const n = 64;
+    const c = Object.assign(document.createElement('canvas'), { width: n, height: n });
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, 0, n, n);
+    const px = cx.getImageData(0, 0, n, n).data;
+    const cubos = new Map();
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] < 200) continue;
+      const k = `${px[i] >> 3},${px[i + 1] >> 3},${px[i + 2] >> 3}`;
+      const b = cubos.get(k) || { n: 0, r: 0, g: 0, b: 0 };
+      b.n++; b.r += px[i]; b.g += px[i + 1]; b.b += px[i + 2];
+      cubos.set(k, b);
+    }
+    const hex = (b) => '#' + [b.r / b.n, b.g / b.n, b.b / b.n].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+    const colores = [...cubos.values()].sort((a, b) => b.n - a.n).map(hex).filter((h) => {
+      const o = oklch(h);
+      return o.L > 0.15 && o.L < 0.93 && o.C >= 0.03;
+    });
+    // Sin repetir casi el mismo color: a menos de 0,06 en Oklab es el mismo.
+    const unicos = [];
+    for (const h of colores) if (!unicos.some((u) => deltaE(u, h) < 0.06)) unicos.push(h);
+    return unicos.slice(0, 4);
+  } catch { return []; }
+}
+
 /** Mira el logo y dice qué se puede hacer con él. Sin opinar: mirando píxeles. */
 async function diagnosticaLogo(src, tipo) {
   const d = { transparente: null, colores: null, avisos: [] };
@@ -48,6 +87,9 @@ async function diagnosticaLogo(src, tipo) {
 }
 
 function pintaDiagnostico(d) {
+  ULTIMO_DIAG_LOGO = S.logo ? d : null;
+  // El diagnóstico llega DESPUÉS del repintado (es asíncrono): se avisa otra vez.
+  ALRENDER.forEach((f) => { try { f(); } catch (e) { console.error(e); } });
   const host = $('#logo-diag');
   if (!host) return;
   if (!S.logo) { host.innerHTML = ''; return; }

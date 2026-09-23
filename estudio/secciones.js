@@ -102,12 +102,16 @@ function nuevaSeccion(t) {
 
 function anadeSeccion(t) {
   if (!SECCIONES[t]) return;
-  // Se inserta ANTES del cierre si lo hay: el cierre es la última pantalla por
-  // definición, y tener que bajarlo a mano cada vez es un impuesto tonto.
-  const fin = S.secciones.findIndex((x) => x.t === 'cierre');
+  // Se inserta ANTES de la llamada final si la hay: es la última pantalla por
+  // definición, y tener que bajarla a mano cada vez es un impuesto tonto. La
+  // llamada final es el cierre o, en la composición P12, el contacto que la
+  // termina (sin esto, «+ Lo que dicen» caía detrás del contacto).
+  const xs = S.secciones;
+  const cierre = xs.findIndex((x) => x.t === 'cierre');
+  const fin = cierre > -1 ? cierre : (xs.length && xs[xs.length - 1].t === 'contacto' ? xs.length - 1 : -1);
   const s = nuevaSeccion(t);
-  if (t !== 'cierre' && fin > -1) S.secciones.splice(fin, 0, s);
-  else S.secciones.push(s);
+  if (t !== 'cierre' && t !== 'contacto' && fin > -1) xs.splice(fin, 0, s);
+  else xs.push(s);
   pintaSecciones(); render();
 }
 

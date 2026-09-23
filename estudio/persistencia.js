@@ -107,6 +107,15 @@ function normaliza(d) {
   if (!esHex(n.papel)) n.papel = '';
   n.canales = (Array.isArray(n.canales) ? n.canales : []).filter((c) => CANALES[c]);
 
+  // Lo del asistente, contra valores válidos.
+  if (!['', 'propia', 'nueva'].includes(n.identidad)) n.identidad = '';
+  n.coloresFijos = !!n.coloresFijos;
+  n.displayFija = !!n.displayFija;
+  if (typeof n.materialOficio !== 'string') n.materialOficio = '';
+  const j = n.juicio && typeof n.juicio === 'object' ? n.juicio : {};
+  const val = (v) => (Number.isInteger(v) && v >= 0 && v <= 2 ? v : null);
+  n.juicio = { logo: val(j.logo), cambiazo: val(j.cambiazo), telefono: val(j.telefono) };
+
   return n;
 }
 

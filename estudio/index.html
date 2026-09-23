@@ -7,7 +7,7 @@
 <title>Estudio de marca · kit OpsPilot</title>
 <meta name="description" content="Herramienta interna: se compone la dirección de arte de una web y sale un encargo ejecutable.">
 <link rel="stylesheet" href="../_astro/kit-completo.css?v=29690652">
-<link rel="stylesheet" href="estudio.css?v=45c99b58">
+<link rel="stylesheet" href="estudio.css?v=d65a3679">
 </head>
 <body>
 
@@ -20,14 +20,27 @@
     </div>
   </div>
   <div class="ui-top-actions">
+    <button id="nuevo" class="ui-btn ui-btn-ghost" title="Otro cliente, o elegir cómo trabajar">Proyecto nuevo</button>
+    <button id="modo" class="ui-btn ui-btn-ghost">Asistente</button>
     <button id="dados" class="ui-btn ui-btn-ghost" title="Combina al azar respetando las reglas">Sorpréndeme</button>
     <button id="enlace" class="ui-btn ui-btn-ghost" title="Copia un enlace con esta composición">Copiar enlace</button>
-    <button id="reset" class="ui-btn ui-btn-ghost">Empezar de cero</button>
     <button id="ver-brief" class="ui-btn ui-btn-primary">Generar el encargo</button>
   </div>
 </header>
 
 <main class="ui-shell">
+
+  <!-- ══ EL ASISTENTE ═════════════════════════════════════════════════
+       Los mismos datos que el panel, en ocho pasos. Lo pinta asistente.js. -->
+  <aside class="ui-panel ui-asis" id="asistente" aria-label="Asistente de proyecto">
+    <ol class="ui-asis-pasos" id="asis-pasos"></ol>
+    <div class="ui-asis-cuerpo" id="asis-cuerpo"></div>
+    <footer class="ui-asis-pie">
+      <button type="button" id="asis-atras" class="ui-btn ui-btn-ghost">Atrás</button>
+      <p class="ui-asis-falta" id="asis-falta" role="status"></p>
+      <button type="button" id="asis-sigue" class="ui-btn ui-btn-primary">Siguiente</button>
+    </footer>
+  </aside>
 
   <!-- ══ PANEL DE DECISIONES ══════════════════════════════════════════ -->
   <aside class="ui-panel" id="panel">
@@ -345,19 +358,41 @@
   </article>
 </dialog>
 
+<!-- ══ AL ENTRAR ════════════════════════════════════════════════════ -->
+<dialog id="inicio" class="ui-dialog">
+  <form method="dialog" class="ui-dialog-dismiss"><button tabindex="-1" aria-label="Cerrar"></button></form>
+  <article class="ui-dialog-panel ui-inicio">
+    <header><div>
+      <p class="ui-eyebrow">Estudio de marca</p>
+      <h2>¿Qué hacemos?</h2>
+    </div></header>
+    <div class="ui-inicio-ops">
+      <button type="button" class="ui-inicio-op primero" data-inicio="nuevo">
+        <b>Proyecto nuevo</b><span id="inicio-nuevo-d"></span></button>
+      <button type="button" class="ui-inicio-op" data-inicio="seguir" id="inicio-seguir">
+        <b>Seguir con <span id="inicio-marca"></span></b><span>Donde lo dejaste, en el asistente o en el panel.</span></button>
+      <button type="button" class="ui-inicio-op" data-inicio="panel">
+        <b>Panel completo</b><span>Todas las opciones a la vista y sin pasos: para afinar, o si ya sabes lo que quieres.</span></button>
+    </div>
+  </article>
+</dialog>
+
 <!-- El Estudio, por responsabilidades. Scripts clásicos que comparten el ámbito
      global: EL ORDEN IMPORTA y es el mismo que usan las pruebas
      (opspilot-kit/build/cargar-estudio.mjs lo lee de aquí). arranque.js, el último. -->
-<script src="catalogo.js?v=f46e43c0"></script>
-<script src="estado.js?v=1ae379a5"></script>
+<script src="catalogo.js?v=c19246fe"></script>
+<script src="estado.js?v=c9e0a363"></script>
 <script src="color.js?v=aa7ecb19"></script>
 <script src="panel.js?v=8cd4c6cf"></script>
 <script src="criterio.js?v=e0d9715a"></script>
-<script src="lienzo.js?v=79a10891"></script>
+<script src="lienzo.js?v=856a0d7d"></script>
 <script src="encargo.js?v=2252238f"></script>
-<script src="materiales.js?v=8070ac3d"></script>
-<script src="secciones.js?v=60b8e5db"></script>
-<script src="persistencia.js?v=d4cb5c25"></script>
-<script src="arranque.js?v=58fdd1e9"></script>
+<script src="materiales.js?v=881e2594"></script>
+<script src="secciones.js?v=30c04890"></script>
+<script src="persistencia.js?v=4e369ada"></script>
+<script src="rubrica.js?v=e94f8125"></script>
+<script src="propuestas.js?v=21a532b0"></script>
+<script src="asistente.js?v=8b86da44"></script>
+<script src="arranque.js?v=0e362a10"></script>
 </body>
 </html>

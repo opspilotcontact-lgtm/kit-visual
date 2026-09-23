@@ -710,6 +710,7 @@ function render() {
   guarda();
   lectura();
   pintaFotos();   // el aviso de luces depende del tratamiento elegido
+  ALRENDER.forEach((f) => { try { f(); } catch (e) { console.error(e); } });
 
   const f = firmaEstructural();
   const soloColor = f === firmaPrevia;
