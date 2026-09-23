@@ -69,8 +69,40 @@ body {
   flex: 1;
   min-height: 0;
 }
+/* ── Pantalla estrecha ───────────────────────────────────────────────────────
+   Antes esto partía la pantalla en 45%/55% con el `body` a `100dvh` y
+   `overflow:hidden`. En un móvil eso deja el panel en ~300 px y la muestra en
+   otros ~350: no cabe nada en ninguno de los dos y no se puede salir de ahí.
+
+   Ahora la página entera hace scroll —que es lo natural en un móvil— y la
+   muestra va ARRIBA y PEGADA: se toca una opción del panel y se ve el efecto
+   sin tener que volver a subir. Es el único sitio donde `sticky` se gana el
+   puesto: aquí la previsualización es la razón de estar en la página. */
 @media (width < 60rem) {
-  .ui-shell { grid-template-columns: 1fr; grid-template-rows: 45% 55%; }
+  body { height: auto; min-height: 100dvh; overflow: visible; }
+  .ui-shell { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+
+  .ui-preview {
+    order: -1;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    height: 62dvh;
+    border-bottom: 1px solid var(--ui-line);
+  }
+  .ui-panel {
+    overflow: visible;          /* deja de ser su propio contenedor de scroll */
+    border-right: 0;
+  }
+  /* La nota de la barra de la muestra no cabe y empuja a los tres tamaños. */
+  .ui-preview-nota { display: none; }
+}
+
+/* Pantalla muy estrecha: la barra de acciones de arriba no cabe en una línea. */
+@media (width < 34rem) {
+  .ui-top { flex-wrap: wrap; }
+  .ui-top-actions { width: 100%; }
+  .ui-top-actions .ui-btn { flex: 1; }
 }
 
 /* ── Panel ───────────────────────────────────────────────────────────────── */

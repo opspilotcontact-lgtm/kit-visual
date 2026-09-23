@@ -1206,8 +1206,16 @@ function documento() {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
 <link rel="stylesheet" href="_astro/kit-completo.css?v=fd949ab8">
-<link rel="stylesheet" href="estudio/estudio.css?v=9255722f">
 <style>
+  /* AQUÍ NO VA estudio.css. Estuvo, y rompía la muestra sin que se viera la
+     causa: ese fichero viste la HERRAMIENTA, y su regla de body
+     —height:100dvh; display:flex; flex-direction:column; overflow:hidden—
+     caía sobre el body de la previsualización. Consecuencias: las secciones
+     pasaban a ser items de flex y se ENCOGÍAN para caber en una pantalla
+     (4178px de página aplastados en 598), y overflow:hidden impedía
+     deslizar para ver el resto.
+     Regla: el lienzo carga el CSS del KIT y nada más. Lo de la herramienta
+     se queda fuera. */
   :root{${vars}}
   html{scroll-behavior:auto}
   body{margin:0;background:var(--color-paper);color:var(--color-ink);font-family:var(--font-sans)}
@@ -1216,7 +1224,9 @@ function documento() {
   h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;${S.ancho ? 'font-stretch:116%;' : ''}font-size:clamp(1.7rem,3.4vw,2.6rem);margin:0 0 1rem;line-height:1.02}
   p{line-height:1.65}
   .lead{color:var(--color-ink-soft);max-width:60ch;font-size:1.05rem}
-  .ui-aviso,.ui-panel{display:none}
+  /* (Aquí había un display:none para .ui-aviso y .ui-panel: tapaba el mobiliario
+     de la herramienta que se colaba con estudio.css. Al dejar de cargarlo, el
+     parche sobra — y era el síntoma, no la causa.) */
 </style></head>
 <body class="${mov.includes('reveal') ? 'kit-js' : ''}">
 
