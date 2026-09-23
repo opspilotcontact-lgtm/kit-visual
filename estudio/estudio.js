@@ -19,7 +19,12 @@ let DISPLAY = [], TEXTO = [], BASES = {}, FONDOS = {}, ESCENAS = {}, FOTOS = {},
     FORMAS = {}, HEADERS = {}, BOTONES = {}, TITULARES = {}, FOOTERS = {},
     MODULOS = {}, MOVIMIENTO = {}, PIEZAS = {}, POSICIONES = {}, TAMANOS = {},
     RELLENOS = {}, RECETAS = {}, EJES = [], REGLAS = [], SECCIONES = {}, COMPOSICION = [],
-    MARCAJUEGOS = {};
+    MARCAJUEGOS = {}, COMPOSICIONES = {};
+
+/* Las tipografías que trae el CSS del kit: familia → URLs de sus ficheros.
+   Se leen de las @font-face del CSS compilado, no se mantienen a mano: así el
+   encargo dice exactamente qué .woff2 descargar para montar la web sin el kit. */
+let FUENTES = {};
 
 /* El registro de las webs ya hechas (opspilot-kit/marcas.json). Es lo que
    convierte la regla anti-clon de la skill en una comprobación: sin lista
@@ -42,6 +47,8 @@ function porGrupo(M, grupo) {
     if (p.variantes) v.variantes = p.variantes;
     if (p.tono) v.tono = p.tono;
     if (p.admite) v.admite = p.admite;
+    if (p.protocolo) v.protocolo = p.protocolo;
+    if (p.sinJs) v.sinJs = p.sinJs;
     if (p.paleta) Object.assign(v, p.paleta, { hue: p.hue, oscuro: p.oscuro });
     o[p.id] = v;
   });
@@ -50,7 +57,7 @@ function porGrupo(M, grupo) {
 
 /** Carga el manifiesto y rellena los catálogos. Sin él no hay estudio. */
 async function cargaManifiesto() {
-  const r = await fetch('../_astro/kit.manifest.json?v=0ea64ce2', { cache: 'no-cache' });
+  const r = await fetch('../_astro/kit.manifest.json?v=1967a8c7', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`no se pudo cargar el manifiesto (HTTP ${r.status})`);
   const M = await r.json();
 
@@ -73,6 +80,7 @@ async function cargaManifiesto() {
   SECCIONES = porGrupo(M, 'seccion');
   MARCAJUEGOS = porGrupo(M, 'marca');
   COMPOSICION = M.composicionPorDefecto || [];
+  COMPOSICIONES = M.composiciones || {};
 
   POSICIONES = M.posiciones;
   TAMANOS = M.tamanos;
@@ -96,6 +104,30 @@ async function cargaMarcas() {
     MARCAS = (await r.json()).marcas || [];
   } catch (e) {
     console.warn('registro de marcas no disponible, sin avisos de clon:', e.message);
+  }
+}
+
+/**
+ * Lee las @font-face del CSS del kit que ya ha cargado la página. Como el
+ * registro, si falla no para nada: el encargo solo pierde la lista exacta de
+ * ficheros de fuente y remite al CSS.
+ */
+async function cargaFuentes() {
+  try {
+    const link = document.querySelector('link[href*="kit-completo.css"]');
+    if (!link) return;
+    const css = await (await fetch(link.href)).text();
+    for (const [, cuerpo] of css.matchAll(/@font-face\{([^}]*)\}/g)) {
+      const fam = (cuerpo.match(/font-family:\s*["']?([^;"']+)/) || [])[1];
+      const url = (cuerpo.match(/url\(["']?([^)"']+)/) || [])[1];
+      if (!fam || !url) continue;
+      const abs = new URL(url, link.href).href;
+      const k = fam.trim();
+      FUENTES[k] = FUENTES[k] || [];
+      if (!FUENTES[k].includes(abs)) FUENTES[k].push(abs);
+    }
+  } catch (e) {
+    console.warn('no se pudieron leer las fuentes del kit:', e.message);
   }
 }
 
@@ -127,11 +159,56 @@ const inicial = () => ({
   header: 'barra', boton: 'pildora', titular: 'normal', footer: 'completo',
   modulos: ['disclosure', 'pull'], movimiento: ['reveal'],
   gesto: '',
+  /* El CONTENIDO, del protocolo OpsPilot (plantillas F4 y F5 del cliente en
+     NotionPilot). El Estudio decidía cómo se ve y callaba qué dice: el encargo
+     salía con un TODO por sección y quien maquetaba lo rellenaba con tópicos.
+     Lo que quede vacío aquí viaja como TODO con la P que lo rellena — nunca
+     se inventa. */
+  np: '',               // proyecto o documento del cliente en NotionPilot
+  posicionamiento: '',  // P7
+  prueba: '',           // P8 · la prueba principal, va en el subtítulo
+  busqueda: '',         // P11 · la búsqueda principal
+  zona: '',             // P11 · los pueblos, por su nombre
+  voz: '',              // P9 · tres adjetivos
+  palabrasSi: '',       // P9
+  palabrasNo: '',       // P9
+  objecion: '',         // P12 · la objeción principal que responde la portada
+  listaServicios: '',   // P12 · uno por línea: nombre · qué incluye · desde X €
+  listaResenas: '',     // P8 · una por línea: texto literal · dónde y cuándo
+  canales: [],          // P12 · el canal que el cliente usa DE VERDAD
   /* La ARQUITECTURA de la página, no solo su estilo. Antes el lienzo tenía tres
      secciones escritas a mano y se elegía cómo se veían pero no cuáles eran.
      Se rellena desde el manifiesto al arrancar. */
   secciones: [],
 });
+
+/* Los canales posibles. Lo que no esté marcado NO se pone en la web: un
+   teléfono que nadie coge es peor que no tener teléfono (Córdoba Soluciona
+   quitó todos los tel: por eso). */
+const CANALES = {
+  whatsapp: 'WhatsApp',
+  formulario: 'Formulario',
+  telefono: 'Teléfono',
+  correo: 'Correo',
+};
+
+/* ── El contenido del cliente, leído de los campos ─────────────────────────
+   Una línea por elemento y las partes separadas por « · », « | » o « — ».
+   Si no hay nada, el lienzo usa el ejemplo y el encargo deja el TODO. */
+const lineas = (t) => String(t || '').split('\n').map((x) => x.trim()).filter(Boolean);
+const trozos = (l) => l.split(/\s+[·|—–]\s+/).map((x) => x.trim());
+const serviciosCliente = () => lineas(S.listaServicios).map((l) => {
+  const [t, d = '', p = ''] = trozos(l);
+  return [t, d, p];
+});
+const resenasCliente = () => lineas(S.listaResenas).map((l) => {
+  const [t, f = ''] = trozos(l);
+  return [t, f];
+});
+const sitiosCliente = () => String(S.zona || '').split(/[,;·\n]/).map((x) => x.trim()).filter(Boolean);
+const canal = (c) => (S.canales || []).includes(c);
+/** Sin canales marcados todavía no se ha decidido: el lienzo enseña el ejemplo. */
+const canalesDecididos = () => (S.canales || []).length > 0;
 let S = inicial();
 
 /* ── Utilidades ───────────────────────────────────────────────────────────── */
@@ -522,6 +599,8 @@ function pintaControles() {
   const chrome = $('#marca-chrome');
   if (chrome) chrome.checked = !!S.marcaEnChrome;
   opciones('#marca-juego', Object.entries(MARCAJUEGOS).map(([k, v]) => [k, v.n, v.dice]), S.marcaJuego, (v) => set('marcaJuego', v), { tipo: 'marca', cols: 2 });
+
+  if ($('#canales')) chips('#canales', Object.entries(CANALES), S.canales, (v) => toggle('canales', v), true);
 
   pintaColocacion();
 }
@@ -964,7 +1043,13 @@ function marcaSVG() {
  * como `url("")` y el juego de marca desaparece sin ningún error en consola.
  * Pasó. Por eso ahora es `url('…')` y aquí se neutraliza la comilla simple.
  */
-const fuenteMarca = () => String((S.logo && S.logo.src) ? S.logo.src : marcaSVG()).replace(/'/g, '%27');
+/* Para el encargo: la misma capa que pinta el lienzo, pero apuntando al fichero
+   del logo en el proyecto en vez de a un data URL de 200 KB. Se pinta con
+   capaMarca() y no con una copia escrita a mano, para que la receta que se
+   entrega sea EXACTAMENTE lo que se vio. */
+let MARCA_FIJA = null;
+const fuenteMarca = () => MARCA_FIJA
+  || String((S.logo && S.logo.src) ? S.logo.src : marcaSVG()).replace(/'/g, '%27');
 const proporcionMarca = () => (S.logo && S.logo.w && S.logo.h) ? S.logo.w / S.logo.h : 1;
 
 /**
@@ -1078,6 +1163,16 @@ const EJ = {
   sitios: ['La Carlota', 'Écija', 'Palma del Río', 'Fuente Palmera', 'Posadas', 'Almodóvar del Río', 'La Rambla', 'Santaella'],
 };
 
+/* Lo del cliente si lo hay; el ejemplo si no. Así el lienzo pasa a ser la
+   maqueta de F5 —su marca, sus servicios, sus reseñas— en cuanto se rellena
+   el bloque de contenido, y mientras tanto sigue enseñando algo con sentido.
+   El texto del cliente se escapa AQUÍ y no en la fuente: la fuente también
+   alimenta el encargo (texto plano) y el andamio (cadenas de JavaScript). */
+const escFila = (xs) => xs.map((x) => esc(x));
+const svc = () => (serviciosCliente().length ? serviciosCliente().map(escFila) : EJ['servicios']);
+const res = () => (resenasCliente().length ? resenasCliente().map(escFila) : EJ['resenas']);
+const sit = () => (sitiosCliente().length ? escFila(sitiosCliente()) : EJ['sitios']);
+
 function filaServicio([t, d, p], i, osc) {
   return `<div style="display:grid;grid-template-columns:2.5rem 1fr auto;gap:1.2rem;align-items:baseline;
     padding:1.4rem 0;border-top:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'}">
@@ -1091,9 +1186,11 @@ function filaServicio([t, d, p], i, osc) {
 const CUERPO = {
   hero(v) {
     const titulo = S.titular === 'knockout' ? 'TU NOMBRE' : (S.oficio ? esc(S.oficio) : 'Lo que hacemos, en claro.');
-    const entrada = lead('Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.');
+    const entrada = lead(S.prueba.trim() ? esc(S.prueba.trim())
+      : 'Una línea que explica qué se vende y a quién, con palabras del cliente y no del sector.');
+    const primario = canalesDecididos() && canal('whatsapp') && !canal('formulario') ? 'Escribir por WhatsApp' : 'Pedir presupuesto';
     const botones = `<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">
-      ${botonHTML('Pedir presupuesto')}${botonHTML('Ver trabajos', false)}</div>`;
+      ${botonHTML(primario)}${botonHTML('Ver trabajos', false)}</div>`;
     const texto = `${ojo(S.marca)}${tituloHTML(titulo)}<div style="margin-top:1.4rem">${entrada}</div>${botones}`;
 
     if (v === 'partida') {
@@ -1116,7 +1213,7 @@ const CUERPO = {
       // mide media pista para que el bucle no tenga costura).
       const tira = `<span style="font-family:var(--font-display);font-weight:800;white-space:nowrap;
         font-size:clamp(1.6rem,4vw,2.8rem);letter-spacing:-.02em;padding-inline:1.5rem">
-        ${EJ.sitios.slice(0, 5).join(' · ')} · </span>`;
+        ${sit().slice(0, 5).join(' · ')} · </span>`;
       return `<div data-fx="marquee" style="overflow:hidden">
         <div data-fx-track style="display:flex;width:max-content">${tira}${tira}</div></div>`;
     }
@@ -1134,7 +1231,7 @@ const CUERPO = {
       ${lead('Nada de subcontratas: el taller es propio y por eso podemos cambiar algo a mitad.', osc)}`;
     if (v === 'alterno') {
       return `${cab}<div style="margin-top:3rem;display:grid;gap:clamp(2rem,4vw,3.5rem)">
-        ${EJ.servicios.slice(0, 3).map(([t, d], i) => `
+        ${svc().slice(0, 3).map(([t, d], i) => `
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:2rem;align-items:center">
             <div style="${i % 2 ? 'order:2' : ''}">
               <p style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;margin:0">${t}</p>
@@ -1143,14 +1240,14 @@ const CUERPO = {
     }
     if (v === 'bento') {
       return `${cab}<div style="margin-top:2.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
-        ${EJ.servicios.map(([t, d], i) => {
+        ${svc().map(([t, d], i) => {
           const ancho = i === 0 ? 'grid-column:span 2;grid-row:span 2' : 'grid-column:span 2';
           return `<div class="frame" style="${ancho};padding:1.5rem;border:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'};border-radius:14px">
             <p style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;margin:0">${t}</p>
             <p style="margin:.5rem 0 0;font-size:.9rem;color:${suave(osc)}">${d}</p></div>`;
         }).join('')}</div>`;
     }
-    return `${cab}<div style="margin-top:2.5rem">${EJ.servicios.map((s, i) => filaServicio(s, i, osc)).join('')}</div>`;
+    return `${cab}<div style="margin-top:2.5rem">${svc().map((s, i) => filaServicio(s, i, osc)).join('')}</div>`;
   },
 
   galeria(v, osc) {
@@ -1202,11 +1299,11 @@ const CUERPO = {
   testimonio(v, osc) {
     if (v === 'dos') {
       return `${ojo('Lo que dicen')}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:2.5rem;margin-top:1rem">
-        ${EJ.resenas.map(([t, f]) => `<div>
+        ${res().map(([t, f]) => `<div>
           <blockquote class="fx-pull" style="margin:0">${t}</blockquote>
           <p style="margin:.75rem 0 0;font-size:.85rem;color:${suave(osc)}">${f}</p></div>`).join('')}</div>`;
     }
-    const [t, f] = EJ.resenas[0];
+    const [t, f] = res()[0];
     return `${ojo('Lo que dicen')}
       <blockquote class="fx-pull" style="margin:0;max-width:34ch">${t}</blockquote>
       <p style="margin:.75rem 0 0;font-size:.85rem;color:${suave(osc)}">${f}</p>`;
@@ -1217,12 +1314,12 @@ const CUERPO = {
       ${lead('Son precios de partida reales. El presupuesto cerrado sale tras medir.', osc)}`;
     if (v === 'tabla') {
       return `${cab}<table class="tabular" style="width:100%;border-collapse:collapse;margin-top:2rem;font-size:.95rem">
-        ${EJ.servicios.map(([t, d, p]) => `<tr style="border-top:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'}">
+        ${svc().map(([t, d, p]) => `<tr style="border-top:1px solid ${osc ? 'rgb(255 255 255/.15)' : 'var(--color-line)'}">
           <td style="padding:.9rem 0">${t}<br><span style="font-size:.85rem;color:${suave(osc)}">${d}</span></td>
           <td style="padding:.9rem 0;text-align:right;white-space:nowrap">${p}</td></tr>`).join('')}</table>`;
     }
     return `${cab}<div style="margin-top:2rem">
-      ${EJ.servicios.slice(0, 3).map(([t, d, p], i) => `<details class="fx-disc-item"${i === 0 ? ' open' : ''}>
+      ${svc().slice(0, 3).map(([t, d, p], i) => `<details class="fx-disc-item"${i === 0 ? ' open' : ''}>
         <summary class="fx-disc-head">
           <span class="fx-disc-n tabular">0${i + 1}</span>
           <span class="fx-disc-titles"><span class="fx-disc-title">${t}</span><span class="fx-disc-hint">${d}</span></span>
@@ -1250,7 +1347,7 @@ const CUERPO = {
 
   zona(v, osc) {
     const sitios = `<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2rem">
-      ${EJ.sitios.map((s) => `<span style="font-size:.9rem;padding:.4rem .8rem;border-radius:999px;
+      ${sit().map((s) => `<span style="font-size:.9rem;padding:.4rem .8rem;border-radius:999px;
         border:1px solid ${osc ? 'rgb(255 255 255/.2)' : 'var(--color-line-strong)'}">${s}</span>`).join('')}</div>`;
     const cab = `${ojo('Dónde trabajamos')}${h2('La provincia, y lo que cae al lado')}
       ${lead('Los nombres propios de los pueblos, que es lo que la gente escribe en el buscador.', osc)}`;
@@ -1262,7 +1359,18 @@ const CUERPO = {
   },
 
   contacto(v, osc) {
-    const cab = `${ojo('Contacto')}${h2('Se contesta el teléfono')}`;
+    // Con los canales decididos, se enseña SOLO lo que el cliente atiende.
+    if (canalesDecididos() && !canal('telefono') && v === 'directo') {
+      const vias = [
+        canal('whatsapp') ? botonHTML('Escribir por WhatsApp') : '',
+        canal('formulario') ? botonHTML('Pedir presupuesto', !canal('whatsapp')) : '',
+        canal('correo') ? `<p style="margin:1rem 0 0;color:${suave(osc)}">O por correo: <a href="#" style="color:inherit">hola@…</a></p>` : '',
+      ].join('');
+      return `${ojo('Contacto')}${h2('Escríbenos y te contestamos')}
+        <p style="margin:.6rem 0 0;color:${suave(osc)};max-width:46ch">Por escrito y a tu ritmo: mándanos fotos y medidas y te contestamos.</p>
+        <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem">${vias}</div>`;
+    }
+    const cab = `${ojo('Contacto')}${h2(canalesDecididos() && !canal('telefono') ? 'Cuéntanos qué necesitas' : 'Se contesta el teléfono')}`;
     if (v === 'formulario') {
       const campo = (l, t) => `<label style="display:block"><span style="display:block;font-size:.85rem;
         font-weight:600;margin-bottom:.35rem;color:${suave(osc)}">${l}</span>
@@ -1373,7 +1481,7 @@ function documento() {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="../">
-<link rel="stylesheet" href="_astro/kit-completo.css?v=fd949ab8">
+<link rel="stylesheet" href="_astro/kit-completo.css?v=29690652">
 <style>
   /* AQUÍ NO VA estudio.css. Estuvo, y rompía la muestra sin que se viera la
      causa: ese fichero viste la HERRAMIENTA, y su regla de body
@@ -1429,11 +1537,15 @@ function documento() {
    invierte, y eso es marcado. Lo mismo `ancho`, que escribe font-stretch en
    varios sitios. Ante la duda, reconstruir. */
 const SOLO_TOKENS = ['acento', 'tinta', 'display', 'texto'];
+/* Campos de contenido que van al encargo pero no se pintan en el lienzo:
+   escribir en ellos no puede recargar la muestra en cada tecla. */
+const SOLO_ENCARGO = ['np', 'posicionamiento', 'busqueda', 'voz', 'palabrasSi', 'palabrasNo', 'objecion', 'gesto'];
 let firmaPrevia = null;
 
 function firmaEstructural() {
   const c = { ...S };
   SOLO_TOKENS.forEach((k) => delete c[k]);
+  SOLO_ENCARGO.forEach((k) => delete c[k]);
   return JSON.stringify(c);
 }
 
@@ -1616,15 +1728,21 @@ function astroSeccion(s, i) {
   const nota = [
     `  {/* ${String(i + 1).padStart(2, '0')} · ${def.n} — ${v.n || s.v}`,
     `      ${v.dice || def.dice || ''}`,
-    capas.length ? `      Capas decididas aquí: ${capas.map((c) => NOMBRE_CAPA[c]).join(', ')}` : null,
+    capas.length ? `      Capas decididas aquí: ${capas.map((c) => NOMBRE_CAPA[c] || c).join(', ')}` : null,
+    (v.protocolo || def.protocolo) ? `      Contenido: ${v.protocolo || def.protocolo}` : null,
     `      TODO: sustituir el contenido de ejemplo por el del cliente. */}`,
   ].filter(Boolean).join('\n');
+
+  // El texto del cliente entra como expresión JS ({"…"}), no como atributo
+  // literal: una comilla en una reseña cerraría el atributo y rompería el build.
+  const js = (t) => JSON.stringify(String(t));
+  const limpio = (t) => String(t).replace(/["{}<>`]/g, '');
 
   const dentro = {
     hero: () => `  <HeroSplit
     eyebrow="${esc(S.marca)}"
-    titleHtml="TODO: el titular, con <em>énfasis</em> donde toque"
-    lead="TODO: una línea que explique qué se vende y a quién, con palabras del cliente."
+    titleHtml="TODO (P12): qué es, dónde y qué hacer, con <em>énfasis</em> donde toque${S.busqueda.trim() ? ` · con «${limpio(S.busqueda.trim())}»` : ''}"
+    lead=${S.prueba.trim() ? `{${js(S.prueba.trim())}}` : '"TODO (P8): la prueba principal, en una línea y con palabras del cliente."'}
     photo={{ src: '/img/TODO.webp', alt: 'TODO: describe la foto', width: 1200, height: 900 }}
   />`,
     servicios: () => bloque === 'ServiceIndex'
@@ -1689,9 +1807,13 @@ function astroSeccion(s, i) {
     </div>
   </Section>`,
     testimonio: () => `  <Section tone="${TONO_SECCION[s.tono]}">
-    {/* TODO: reseñas REALES, con nombre y fecha. Una inventada se nota y cuesta la venta. */}
-    <blockquote class="fx-pull max-w-[34ch]">TODO: la reseña, literal.</blockquote>
-    <p class="mt-3 text-sm text-ink-soft">TODO: dónde y cuándo se publicó</p>
+    {/* Reseñas REALES, literales, con nombre y fecha. Una inventada se nota y cuesta la venta. */}
+    {resenas.slice(0, ${s.v === 'dos' ? 2 : 1}).map((r) => (
+      <figure class="m-0 mt-8 first:mt-0">
+        <blockquote class="fx-pull max-w-[34ch]">{r.text}</blockquote>
+        <figcaption class="mt-3 text-sm text-ink-soft">{r.source}</figcaption>
+      </figure>
+    ))}
   </Section>`,
     precios: () => bloque === 'Disclosure'
       ? `  <Section tone="${TONO_SECCION[s.tono]}">
@@ -1721,19 +1843,35 @@ function astroSeccion(s, i) {
       {sitios.map((z) => <li class="text-sm px-3 py-1.5 rounded-full border border-line-strong">{z}</li>)}
     </ul>
   </Section>`,
-    contacto: () => `  <Section tone="${TONO_SECCION[s.tono]}" id="contacto">
-    <SectionHead eyebrow="Contacto" title="TODO: el titular de contacto"${tone} />
-    ${s.v === 'formulario'
-      ? `{/* Cuatro campos. Cada campo de más es gente que no lo rellena. */}
+    contacto: () => {
+      /* Con los canales decididos (P12) sale SOLO lo que el cliente atiende:
+         ni un tel: si no coge el teléfono. Sin decidir, el andamio de siempre. */
+      const decididos = canalesDecididos();
+      const quiere = (c) => !decididos || canal(c);
+      const form = s.v === 'formulario' && quiere('formulario');
+      const partes = [];
+      if (form) {
+        partes.push(`{/* Cuatro campos. Cada campo de más es gente que no lo rellena. */}
     {/* TODO: conectar el envío. Un formulario que no manda nada es peor que no tenerlo. */}
     <form class="grid gap-4 max-w-[40rem] sm:grid-cols-2 mt-8">
       {/* TODO: nombre, teléfono, qué necesita, dónde */}
       <Button type="submit" variant="primary" class="sm:col-span-2">Enviar</Button>
-    </form>`
-      : `<p class="font-display text-d2 mt-4"><a href="tel:+34TODO" class="text-inherit no-underline">TODO: el teléfono</a></p>
-    <p class="mt-2 text-ink-soft">TODO: el horario REAL. Uno inventado genera la primera queja.</p>
-    <Button href="https://wa.me/34TODO" variant="wa" external class="mt-8">Escribir por WhatsApp</Button>`}
-  </Section>`,
+    </form>`);
+      } else if (quiere('telefono')) {
+        partes.push(`<p class="font-display text-d2 mt-4"><a href="tel:+34TODO" class="text-inherit no-underline">TODO: el teléfono</a></p>
+    <p class="mt-2 text-ink-soft">TODO: el horario REAL. Uno inventado genera la primera queja.</p>`);
+      } else {
+        partes.push(`<p class="mt-4 text-ink-soft max-w-[46ch]">TODO (P12): cuánto se tarda en contestar DE VERDAD y quién contesta.</p>`);
+      }
+      if (quiere('whatsapp') && (decididos || !form))
+        partes.push(`<Button href="https://wa.me/34TODO" variant="wa" external class="mt-8">Escribir por WhatsApp</Button>`);
+      if (decididos && canal('correo'))
+        partes.push(`<p class="mt-4"><a href="mailto:TODO">TODO: el correo que alguien lee de verdad</a></p>`);
+      return `  <Section tone="${TONO_SECCION[s.tono]}" id="contacto">
+    <SectionHead eyebrow="Contacto" title="TODO: el titular de contacto"${tone} />
+    ${partes.join('\n    ')}
+  </Section>`;
+    },
     cierre: () => `  <CtaPanel title="TODO: la última llamada" text="TODO: qué pasa cuando te escriben." />`,
   };
 
@@ -1746,10 +1884,25 @@ function astroDatos() {
   const usa = (t) => S.secciones.some((s) => s.t === t);
   const usaBloque = (b) => S.secciones.some((s) => bloqueDe(s) === b);
   const d = [];
-  if (usa('servicios') && S.secciones.some((s) => s.t === 'servicios' && s.v === 'indice'))
+  // Lo que el cliente ya dio (bloque de contenido) entra tal cual; lo que no,
+  // como TODO con el paso del protocolo que lo rellena.
+  const q = (t) => JSON.stringify(String(t));
+  if (usa('servicios') && S.secciones.some((s) => s.t === 'servicios' && s.v === 'indice')) {
+    const sv = serviciosCliente();
     d.push(`const servicios = [
-  { href: '/servicios/todo', name: 'TODO: el servicio', claim: 'TODO: qué es, en una línea', price: 'desde TODO €' },
+${sv.length
+    ? sv.map(([t, dd, p]) => `  { href: ${q(`/${slugDe(t)}/`)}, name: ${q(t)}, claim: ${q(dd || 'TODO (P12): qué es, en una línea')}, price: ${q(p || 'TODO')} },`).join('\n')
+    : `  { href: '/servicios/todo', name: 'TODO (P12): el servicio', claim: 'TODO: qué es, en una línea', price: 'desde TODO €' },`}
 ];`);
+  }
+  if (usa('testimonio')) {
+    const rs = resenasCliente();
+    d.push(`const resenas = [
+${rs.length
+    ? rs.map(([t, f]) => `  { text: ${q(t)}, source: ${q(f || 'TODO: dónde y cuándo se publicó')} },`).join('\n')
+    : `  { text: 'TODO (P8): la reseña, literal.', source: 'TODO: dónde y cuándo se publicó' },`}
+];`);
+  }
   if (usaBloque('Bento') || usa('galeria'))
     d.push(`const trabajos = [
   { src: '/img/TODO.webp', alt: 'TODO: describe la foto', width: 1200, height: 900 },
@@ -1770,8 +1923,10 @@ function astroDatos() {
     d.push(`const preguntas = [
   { q: 'TODO: la pregunta que hacen siempre', a: 'TODO: la respuesta, sin rodeos.' },
 ];`);
-  if (usa('zona'))
-    d.push(`const sitios = ['TODO: los pueblos, con su nombre propio'];`);
+  if (usa('zona')) {
+    const si = sitiosCliente();
+    d.push(`const sitios = [${si.length ? si.map(q).join(', ') : `'TODO (P11): los pueblos, con su nombre propio'`}];`);
+  }
   return d;
 }
 
@@ -1810,7 +1965,7 @@ ${datos.join('\n\n')}
 ---
 
 <Layout
-  title="TODO: título de 55-60 caracteres con el servicio y el sitio"
+  title="TODO (P11): título de 55-60 caracteres con el servicio y el sitio${S.busqueda.trim() ? ` · «${S.busqueda.trim().replace(/["{}<>`]/g, '')}»` : ''}"
   description="TODO: 150-160 caracteres. Lo que hace y dónde, sin adjetivos."
 >
   {/* Cabecera: ${HEADERS[S.header].n} */}
@@ -1887,6 +2042,14 @@ ${S.secciones.map((s, i) => {
   return `${i + 1}. **${def.n}** · ${v.n || s.v} — ${v.dice || def.dice || ''}`;
 }).join('\n')}
 
+## El contenido (protocolo OpsPilot)
+
+Lo que sale de las plantillas F4 y F5 del cliente. Lo marcado TODO se pide; no se inventa.
+
+\`\`\`
+${bloqueContenido()}
+\`\`\`
+
 ## Lo que la herramienta avisó
 
 ${problemas.length
@@ -1904,44 +2067,208 @@ ${JSON.stringify(entrada, null, 2)}
 `;
 }
 
+/* ── El encargo, autosuficiente ────────────────────────────────────────────
+   Lo lee OTRO Claude, que no tiene esta pantalla ni, muchas veces, el repo del
+   kit (es privado). Medido el 23-sep: el encargo anterior pesaba 3.080
+   caracteres y no llevaba NI UN token de color —remitía a «el bloque Tema CSS
+   de este encargo», que no viajaba al copiar—, así que el que lo recibía tenía
+   el acento y se inventaba el papel, la tinta suave y el fondo profundo, que
+   son justo los pares que mide el suelo. Tampoco decía qué va dentro de cada
+   sección. Regla: todo lo que hace falta para maquetar viaja en el texto; lo
+   que no se sabe viaja como TODO con el paso del protocolo que lo rellena. */
+
+const PUBLICO = 'https://opspilotcontact-lgtm.github.io/kit-visual/';
+
+/** El enlace a esta composición, sin tocar la barra de direcciones. */
+function enlaceEstudio() {
+  const { logo, ...sinLogo } = S;
+  const aqui = typeof location !== 'undefined' && /^https?:/.test(location.origin || '')
+    ? location.origin + location.pathname : PUBLICO + 'estudio/';
+  return aqui + '#' + codifica(sinLogo);
+}
+
+/** Los tokens como líneas de CSS, con su porqué. Sirven igual en @theme que en :root. */
+function lineasTokens() {
+  const t = tokens();
+  const nota = Object.fromEntries(BLOQUES_TEMA.flatMap(([, filas]) => filas));
+  return Object.entries(t).map(([k, v]) => `  ${`${k}: ${v};`.padEnd(52)} /* ${nota[k] || ''} */`).join('\n');
+}
+
+/** Los .woff2 exactos de las dos familias de esta web. */
+function ficherosFuente() {
+  const fams = [...new Set([S.display, S.texto])];
+  return fams.map((f) => {
+    const urls = FUENTES[f] || [];
+    return urls.length
+      ? urls.map((u) => `     ${u}`).join('\n')
+      : `     (${f}: busca su @font-face en kit-completo.css y descarga el fichero que nombra)`;
+  }).join('\n');
+}
+
+/** La capa de marca tal y como la pinta el lienzo, apuntando al fichero del logo. */
+function recetaMarca(ruta) {
+  MARCA_FIJA = ruta;
+  try {
+    return capaMarca(false).replace(/\s+/g, ' ').replace(/ ;/g, ';').trim();
+  } finally { MARCA_FIJA = null; }
+}
+
+const vacio = (v, p, que) => (String(v || '').trim() ? String(v).trim() : `TODO (${p}): ${que}`);
+
+function bloqueContenido() {
+  const sv = serviciosCliente(), rs = resenasCliente(), si = sitiosCliente();
+  const prohibidas = '«líderes», «soluciones a medida», «vanguardia», «Elevate», «Impulsa», «Transformamos tu…», «calidad-precio»';
+  const noCanales = Object.keys(CANALES).filter((c) => !canal(c)).map((c) => CANALES[c].toLowerCase());
+  return [
+    `Fuente: ${S.np.trim() ? `NotionPilot · ${S.np.trim()}` : 'NotionPilot · TODO: enlaza el proyecto o el documento F4 del cliente'}`,
+    'Lo que falte aquí va a la web como TODO (Pn) y se pide: NO se inventa. Ni cifras, ni reseñas, ni plazos.',
+    '',
+    `P7  Posicionamiento:    ${vacio(S.posicionamiento, 'P7', 'para [quién] que necesita [qué], [cliente] es [qué] que [prueba que un competidor no podría firmar]')}`,
+    `P8  Prueba principal:   ${vacio(S.prueba, 'P8', 'una cifra, foto, nombre o fecha que se pueda enseñar')}`,
+    '                        → va en el subtítulo de la portada',
+    `P11 Búsqueda principal: ${S.busqueda.trim() ? `«${S.busqueda.trim()}»` : 'TODO (P11): la búsqueda tal como la escribe el cliente'}`,
+    '                        → en el <title>, el H1 y la URL de la portada',
+    `    Zona:               ${si.length ? si.join(', ') : 'TODO (P11): los pueblos, por su nombre propio'}`,
+    `P9  Voz:                ${vacio(S.voz, 'P9', 'tres adjetivos, con un ejemplo de cada')}`,
+    `    Decimos:            ${vacio(S.palabrasSi, 'P9', 'palabras que usa el cliente')}`,
+    `    Nunca decimos:      ${S.palabrasNo.trim() ? S.palabrasNo.trim() + ' · ' : ''}${prohibidas}`,
+    `P12 Objeción principal: ${vacio(S.objecion, 'P12', 'la duda que frena al cliente antes de escribir')}`,
+    '',
+    'Servicios (P12 · qué, para quién, plazo y beneficio):',
+    sv.length ? sv.map(([t, d, p], i) => `  ${i + 1}. ${[t, d, p].filter(Boolean).join(' — ')}`).join('\n')
+      : '  TODO (P12): la lista de servicios con sus palabras y su «desde X €» si lo hay',
+    '',
+    'Reseñas reales (P8 · literales, sin corregir):',
+    rs.length ? rs.map(([t, f]) => `  «${t}»${f ? ` — ${f}` : ''}`).join('\n')
+      : '  TODO (P8): reseñas literales con nombre (con permiso) y fecha. Si no hay, la sección de testimonio se quita.',
+    '',
+    canalesDecididos()
+      ? `Canal real (P12): ${(S.canales || []).map((c) => CANALES[c]).join(' y ')}.${noCanales.length ? ` NO poner ${noCanales.join(' ni ')}: lo que no está aquí no existe en la web (ni tel: ni mailto: sueltos).` : ''}`
+      : 'Canal real (P12): TODO: qué canal atiende el cliente DE VERDAD. Sin esto no se maqueta el contacto.',
+  ].join('\n');
+}
+
 function prompt() {
   const b = BASES[S.base];
   const f = FONDOS[S.fondo];
+  const slug = slugDe(S.marca);
+  const vars = (x) => (x ? ` con ${x}` : '');
+
+  /* Cada pieza con su clase exacta y, si necesita JavaScript, lo que se pone en
+     su lugar cuando se monta sin el kit (vía B). */
   const piezas = [];
-  if (S.fondo !== 'ninguno') piezas.push(f.js ? `Fondo: data-fx="${S.fondo}" (JS, se carga solo)` : `Fondo: .${FONDOS[S.fondo].clase}${f.vars ? ` con ${f.vars}` : ''}`);
-  if (ESCENAS[S.escena].clase) piezas.push(`Escenografía: .${ESCENAS[S.escena].clase}${ESCENAS[S.escena].vars ? ` con ${ESCENAS[S.escena].vars}` : ''}`);
+  if (S.fondo !== 'ninguno') {
+    if (f.js) {
+      const alt = f.sinJs && FONDOS[f.sinJs];
+      piezas.push(`Fondo: data-fx="${S.fondo}" (JS, se carga solo)${alt ? ` · vía B: .${alt.clase}${vars(alt.vars)}` : ' · vía B: color plano'}`);
+    } else piezas.push(`Fondo: .${f.clase}${vars(f.vars)}`);
+  }
+  if (ESCENAS[S.escena].clase) piezas.push(`Escenografía: .${ESCENAS[S.escena].clase}${vars(ESCENAS[S.escena].vars)}`);
   if (ESCENAS[S.escena].borde) piezas.push('Escenografía: .fx-arc-b en el corte de sección');
   if (S.pieza !== 'ninguna') piezas.push(
     `Pieza geométrica: ${PIEZAS[S.pieza].n.toLowerCase()} ${RELLENOS[S.relleno].n.toLowerCase()}, ` +
     `${TAMANOS[S.tam].n.toLowerCase()} (${TAMANOS[S.tam].v}), colocada ${POSICIONES[S.pos].n.toLowerCase()} ` +
-    `(left:${POSICIONES[S.pos].x} top:${POSICIONES[S.pos].y}), en un span absoluto detrás del contenido`);
-  if (FOTOS[S.foto].clase) piezas.push(`Foto: .${FOTOS[S.foto].clase}${FOTOS[S.foto].vars ? ` con ${FOTOS[S.foto].vars}` : ''}`);
-  if (FOTOS[S.foto].js) piezas.push(`Foto: data-fx="ink" con {"mode":"dots","color":"--color-brand","invert":${b.oscuro},"reveal":true}`);
+    `(left:${POSICIONES[S.pos].x} top:${POSICIONES[S.pos].y}), en un span absoluto detrás del contenido: ${PIEZAS[S.pieza].css || ''}`);
+  const fo = FOTOS[S.foto];
+  if (fo.clase) piezas.push(`Foto: .${fo.clase}${vars(fo.vars)}`);
+  if (fo.js) {
+    const alt = fo.sinJs && FOTOS[fo.sinJs];
+    piezas.push(`Foto: data-fx="ink" con {"mode":"dots","color":"--color-brand","invert":${b.oscuro},"reveal":true}` +
+      (alt ? ` · vía B: .${alt.clase}${vars(alt.vars)}` : ''));
+  }
   if (FORMAS[S.forma].clase) piezas.push(`Forma de foto: .${FORMAS[S.forma].clase}`);
   if (TITULARES[S.titular].clase) piezas.push(`Titulares: .${TITULARES[S.titular].clase}`);
-  if (S.boton === 'material') piezas.push('Botones: cara con degradado de marca + canto de metal (ver marca-digito.css como referencia)');
-  S.modulos.forEach((m) => piezas.push(`Módulo: ${MODULOS[m].n} — ${MODULOS[m].nota}`));
-  S.movimiento.filter((m) => m !== 'quieto').forEach((m) => piezas.push(`Movimiento: ${MOVIMIENTO[m].n}${MOVIMIENTO[m].js ? ` (data-fx="${MOVIMIENTO[m].js}")` : ''}`));
+  if (S.boton === 'material') piezas.push('Botones: cara con degradado de marca + canto de metal (--color-brand → --color-brand-dim, borde --color-metal)');
+  // Los módulos son de toda la web, pero se ven solo donde la sección lleva la
+  // capa «módulos»: el encargo dice dónde, o avisa de que no van en ninguna.
+  const conModulos = S.secciones.map((s, i) => [s, i]).filter(([s]) =>
+    (s.capas || []).includes('modulos') && ((SECCIONES[s.t] || {}).admite || []).includes('modulos'))
+    .map(([s, i]) => `${String(i + 1).padStart(2, '0')} ${(SECCIONES[s.t] || {}).n}`);
+  S.modulos.forEach((m) => piezas.push(`Módulo: ${MODULOS[m].n} — ${MODULOS[m].nota}${MODULOS[m].js ? ' · vía B: se quita' : ''}` +
+    ` · va en: ${conModulos.length ? conModulos.join(', ') : 'ninguna sección (se usa donde el contenido lo pida, no por tenerlo)'}`));
+  S.movimiento.filter((m) => m !== 'quieto').forEach((m) => piezas.push(
+    `Movimiento: ${MOVIMIENTO[m].n}${MOVIMIENTO[m].js ? ` (data-fx="${MOVIMIENTO[m].js}") · vía B: se quita` : ''}`));
 
+  /* La marca como forma: dónde vuelve a salir el logo y con qué CSS. */
+  const conMarca = S.secciones.map((s, i) => [s, i]).filter(([s]) =>
+    (s.capas || []).includes('marca') && ((SECCIONES[s.t] || {}).admite || []).includes('marca'));
+  const juego = MARCAJUEGOS[S.marcaJuego] || {};
+  const logo = S.logo
+    ? `el del cliente (${S.logo.tipo.replace('image/', '')}, ${S.logo.w}×${S.logo.h} px). Se usa el fichero original en vector: /img/logo.svg`
+    : `TODO: el logo del cliente en SVG. En el Estudio se compuso con la forma de repuesto «${(FORMAS_MARCA[S.marcaForma] || FORMAS_MARCA.arco)[0]}»; se sustituye por el logo real`;
+  const marca = [
+    `Logo: ${logo}.`,
+    `Cabecera y pie: ${S.marcaEnChrome ? 'el logo como forma; en el pie oscuro se recolorea con mask-image (un solo fichero, sin versión en negativo)' : 'el nombre en la tipografía display, sin logo'}.`,
+    S.marcaJuego && S.marcaJuego !== 'ninguno'
+      ? `Juego: ${juego.n}${juego.dice ? ` — ${juego.dice}` : ''}. Va en ${conMarca.length ? conMarca.map(([s, i]) => `${String(i + 1).padStart(2, '0')} ${(SECCIONES[s.t] || {}).n}`).join(', ') : 'ninguna sección todavía (marca la capa «marca» donde toque)'}.\n` +
+        `  CSS exacto (el mismo que pinta el Estudio; la sección lleva position:relative;isolation:isolate;overflow:hidden y el contenido z-index:1):\n  ${recetaMarca('/img/logo.svg')}`
+      : 'Juego: ninguno. El logo solo va en cabecera y pie.',
+  ].join('\n');
+
+  const problemas = conflictos();
+  const contraste = problemasContraste();
   const e = S.ejes;
+
   return `ENCARGO DE MAQUETACIÓN · ${S.marca}
-Generado con el Estudio de marca del kit OpsPilot.
+Generado con el Estudio de marca del kit OpsPilot · ${new Date().toISOString().slice(0, 10)}
 
 ═══ QUÉ HAY QUE HACER ═══
-Maquetar la web de ${S.marca}${S.oficio ? ` (${S.oficio})` : ''} con @opspilot/kit (Astro 5 + Tailwind v4),
-aplicando exactamente la dirección de arte de abajo. No la reinterpretes: está decidida.
+Maquetar la web de ${S.marca}${S.oficio ? ` (${S.oficio})` : ''} aplicando EXACTAMENTE la dirección de arte y el
+contenido de abajo. No los reinterpretes: están decididos.
 
-Kit: Documents/GitHub/opspilot-kit  ·  Catálogo vivo: https://opspilotcontact-lgtm.github.io/kit-visual/
-Lee antes: opspilot-kit/ASSETS.md (materiales) y opspilot-kit/RECETAS.md (combinaciones).
+Este encargo se basta solo: trae la paleta completa, las piezas con su clase exacta, el orden
+de la página y lo que va dentro de cada sección. Lo que no se sabe va marcado como TODO con el
+paso del protocolo que lo rellena (P7, P8…): NO lo inventes, pídeselo a quien te pasó el encargo.
+
+═══ ANTES DE MAQUETAR: MATERIALES ═══
+Mínimo: logo en vector · 12 fotos reales de ≥1600 px · nombre, dirección y teléfono exactos ·
+qué vende y a quién, en sus palabras · razón social y NIF. Sin eso no se arranca: se piden.
+Fotos: nunca de banco ni generadas con IA. Si son de móvil y con luces distintas, el tratamiento
+de foto de abajo las iguala.
+
+═══ CÓMO SE MONTA: DOS VÍAS ═══
+VÍA A · con el kit (Astro 5 + Tailwind v4), si tienes el repo privado
+  github.com/opspilotcontact-lgtm/opspilot-kit (en la máquina del fundador: Documents/GitHub/opspilot-kit)
+  1. En el proyecto Astro: npm i file:<ruta-al-kit> y npm i -D tailwindcss @tailwindcss/vite
+  2. Crea opspilot-kit/src/styles/themes/${slug}.css con el bloque TOKENS dentro de @theme { … }
+     (o descarga «${slug}.css» del Estudio: son los mismos tokens con su porqué).
+  3. CSS del proyecto, en este orden: kit.css → fx.css → themes/${slug}.css → marca-${slug}.css (lo propio).
+  4. Descarga «index.astro» del Estudio: es el andamio con los bloques reales y este mismo orden.
+  5. Si falta un bloque o un efecto, se añade AL KIT, nunca suelto en el proyecto.
+
+VÍA B · sin el kit (HTML estático, otro framework, o un Claude sin acceso al repo)
+  1. Descarga ${PUBLICO}_astro/kit-completo.css y guárdalo como /css/kit.css
+     (83 KB, 16 KB en gzip; trae las utilidades fx-* y las @font-face de todas las familias).
+  2. Descarga a /fonts/ SOLO las fuentes de esta web (el CSS las busca en ../fonts/, al lado de /css/):
+${ficherosFuente()}
+  3. Pega el bloque TOKENS dentro de :root { … } en una hoja cargada DESPUÉS de kit.css.
+  4. Autoalójalo todo. NO enlaces el CSS ni las fuentes desde github.io en producción: le das la IP
+     de cada visitante a un tercero (RGPD) y Pages cachea diez minutos.
+  5. Los efectos con JavaScript (data-fx) no existen en esta vía: cada pieza dice abajo qué va en su
+     lugar. La web tiene que entenderse entera sin ellos.
+
+═══ TOKENS · la paleta completa (no se añade ni un color) ═══
+${lineasTokens()}
+
+Contraste medido por el Estudio sobre estos valores: ${contraste.length
+    ? `${contraste.length} de ${PARES.length} pares NO cumplen — corrígelos ANTES de maquetar (ver AVISOS).`
+    : `los ${PARES.length} pares que importan cumplen (texto ≥4.5:1, titulares grandes ≥3:1).`}
+Sobre foto, degradado o fondo animado no se puede medir aquí: mídelo en la zona PEOR.
 
 ═══ LAS SEIS LÍNEAS ═══
 Ejes:     peso ${e.peso} · temperatura ${e.temperatura} · memoria ${e.memoria} · aire ${e.aire}
 Display:  ${S.display}${S.ancho ? ' en ancho extendido (font-stretch 116%)' : ''}
 Texto:    ${S.texto}
-Acento:   ${S.acento} sobre base «${b.n}» (${b.hue}). Tinta ${S.tinta}.
+Acento:   ${S.acento.toUpperCase()} sobre base «${b.n}» (${b.hue}). Tinta ${S.tinta.toUpperCase()}.
 Fondo:    ${f.n}${f.dice ? ` — ${f.dice}` : ''}
-Foto:     ${FOTOS[S.foto].n}${FOTOS[S.foto].nota ? ` — ${FOTOS[S.foto].nota}` : ''}, recorte ${FORMAS[S.forma].n.toLowerCase()}
+Foto:     ${fo.n}${fo.nota ? ` — ${fo.nota}` : ''}, recorte ${FORMAS[S.forma].n.toLowerCase()}
 Gesto:    ${S.gesto.trim() || '⚠ SIN DEFINIR. Búscalo en las reseñas del cliente antes de maquetar: es lo único que no se puede copiar.'}
+
+═══ LA MARCA COMO FORMA ═══
+${marca}
+
+═══ EL CONTENIDO · protocolo OpsPilot ═══
+${bloqueContenido()}
 
 ═══ LA PÁGINA, EN ESTE ORDEN ═══
 ${S.secciones.map((s, i) => {
@@ -1950,8 +2277,9 @@ ${S.secciones.map((s, i) => {
   const capas = (s.capas || []).filter((c) => (def.admite || []).includes(c));
   return `${String(i + 1).padStart(2, '0')}. ${def.n} · ${v.n || s.v}` +
     `\n    ${v.dice || def.dice || ''}` +
-    `\n    Fondo de sección: ${({ paper: 'papel', alt: 'papel alterno', deep: 'profundo (texto en blanco)' })[s.tono]}` +
-    (capas.length ? `\n    Capas aquí: ${capas.map((c) => NOMBRE_CAPA[c]).join(', ')}` : '');
+    `\n    Fondo de sección: ${({ paper: 'papel (--color-paper)', alt: 'papel alterno (--color-paper-alt)', deep: 'profundo (--color-deep, texto en blanco)' })[s.tono]}` +
+    (capas.length ? `\n    Capas aquí: ${capas.map((c) => NOMBRE_CAPA[c] || c).join(', ')}` : '') +
+    ((v.protocolo || def.protocolo) ? `\n    Contenido: ${v.protocolo || def.protocolo}` : '');
 }).join('\n')}
 
 El orden es una decisión, no una lista: no lo reordenes «para que fluya mejor».
@@ -1963,10 +2291,6 @@ ${piezas.map((p) => '· ' + p).join('\n')}
 · Botones: ${BOTONES[S.boton].n}
 · Pie: ${FOOTERS[S.footer].n}
 
-═══ TEMA (crear este fichero) ═══
-opspilot-kit/src/styles/themes/<marca>.css con los tokens del bloque «Tema CSS» de este encargo.
-Importar en el CSS del proyecto: kit.css → fx.css → themes/<marca>.css → marca-<cliente>.css (lo propio).
-
 ═══ REGLAS QUE NO SE SALTAN ═══
 1. UN fondo principal en toda la web. Un segundo solo si una sección cambia de asunto a propósito.
 2. UN tratamiento de foto, el mismo en todas.
@@ -1976,12 +2300,21 @@ Importar en el CSS del proyecto: kit.css → fx.css → themes/<marca>.css → m
 6. Contraste real: cuerpo ≥4.5:1, titulares ≥3:1, medido en la zona PEOR del fondo.
 7. Sin JS, todo visible. Ningún efecto puede esconder un precio.
 8. prefers-reduced-motion cortado de verdad, no «más suave».
-9. Nada de foto de banco. Ni una.
-10. Si falta un bloque, se añade AL KIT, nunca suelto en el proyecto.
+9. Nada de foto de banco ni generada. Ni una.
+10. Una sola familia de grises: todo gris sale de los tokens, nunca un #999 suelto.
+${problemas.length ? `
+═══ AVISOS ABIERTOS DEL ESTUDIO ═══
+${problemas.map(([t, d, n]) => `${n === 'grave' ? '✕ SUELO' : '⚠'} ${t}: ${d}`).join('\n')}
+` : ''}
+═══ TERMINADA CUANDO ═══
+· Abre en un móvil de 390 px sin scroll lateral.
+· No hay ni un color fuera del bloque TOKENS.
+· Sin JavaScript todo se lee; con prefers-reduced-motion no se mueve nada.
+· No queda ni un TODO publicado, ni un texto que no salga del bloque CONTENIDO o de NotionPilot.
+· Quitas todos los efectos y la página sigue entendiéndose. Si se cae, no estabas diseñando: estabas tapando.
 
-═══ PRUEBA FINAL ═══
-Quita todos los efectos y mira la página. Si sigue entendiéndose, sumaban.
-Si se cae, no estabas diseñando: estabas tapando.`;
+Para reabrir esta composición en el Estudio (sin el logo, que no viaja en el enlace):
+${enlaceEstudio()}`;
 }
 
 /* ── Diálogo de salida ────────────────────────────────────────────────────── */
@@ -2108,7 +2441,10 @@ function enlazaLogo() {
    arrastre en una lista de doce elementos dentro de un panel que ya hace
    scroll es peor de usar, no mejor. */
 
-const NOMBRE_CAPA = { fondo: 'fondo', escena: 'escena', pieza: 'pieza', modulos: 'módulos' };
+/* 'marca' faltaba aquí desde que se añadió la capa: el panel la rotulaba
+   «undefined» y en el encargo desaparecía en silencio («Capas aquí: fondo, »),
+   porque join() convierte undefined en cadena vacía. */
+const NOMBRE_CAPA = { fondo: 'fondo', escena: 'escena', pieza: 'pieza', modulos: 'módulos', marca: 'marca' };
 const NOMBRE_TONO = { paper: 'Papel', alt: 'Alterno', deep: 'Profundo' };
 
 function pintaSecciones() {
@@ -2227,8 +2563,26 @@ function aplicaReceta(id) {
   pintaControles(); pintaEjes(); pintaSecciones(); render();
 }
 
+/* Una composición de partida: sustituye la lista de secciones y nada más. El
+   estilo no se toca, igual que la receta no toca la arquitectura. */
+function aplicaComposicion(id) {
+  const lista = id === 'defecto' ? COMPOSICION : (COMPOSICIONES[id] || {}).secciones;
+  if (!lista) return;
+  S.secciones = normaliza({ ...S, secciones: JSON.parse(JSON.stringify(lista)) }).secciones;
+  // La llamada final de P12 va por el canal real: sin formulario, directo.
+  if (canalesDecididos() && !canal('formulario'))
+    S.secciones.forEach((s) => { if (s.t === 'contacto') s.v = 'directo'; });
+  pintaSecciones(); render();
+}
+
+/* Los campos de contenido. Los que se ven en el lienzo lo repintan; los que
+   solo van al encargo actualizan avisos y guardan, sin recargar la muestra. */
+const CAMPOS_CONTENIDO = ['np', 'posicionamiento', 'prueba', 'busqueda', 'zona', 'voz',
+  'palabrasSi', 'palabrasNo', 'objecion', 'listaServicios', 'listaResenas'];
+
 /** Los campos que no son fichas hay que ponerlos a mano. */
 function sincronizaCampos() {
+  CAMPOS_CONTENIDO.forEach((k) => { const el = $('#' + k); if (el) el.value = S[k] || ''; });
   $('#marca').value = S.marca;
   $('#oficio').value = S.oficio;
   $('#gesto').value = S.gesto;
@@ -2294,6 +2648,11 @@ function normaliza(d) {
   // Un logo guardado sin `src` no es un logo: se descarta en vez de pintar un hueco.
   if (!n.logo || typeof n.logo.src !== 'string' || !n.logo.src.startsWith('data:')) n.logo = null;
 
+  // El contenido: texto, y canales que existan. Un estado de antes de que hubiera
+  // bloque de contenido llega sin estas claves y se queda con las vacías.
+  CAMPOS_CONTENIDO.forEach((k) => { if (typeof n[k] !== 'string') n[k] = ''; });
+  n.canales = (Array.isArray(n.canales) ? n.canales : []).filter((c) => CANALES[c]);
+
   return n;
 }
 
@@ -2337,8 +2696,9 @@ function azar() {
     S.acento = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
     EJES.forEach(([id]) => { S.ejes[id] = 1 + Math.floor(Math.random() * 5); });
 
-    // El gesto siempre falta en una tirada al azar: no cuenta como conflicto.
-    const n = conflictos().filter(([t]) => t !== 'Falta el gesto').length;
+    // El gesto y el contenido siempre faltan en una tirada al azar: el dado
+    // decide el estilo, no lo que dice el cliente. No cuentan como conflicto.
+    const n = conflictos().filter(([t]) => !t.startsWith('Falta el')).length;
     if (n === 0) { mejor = null; break; }
     if (n < mejorN) { mejorN = n; mejor = JSON.parse(JSON.stringify(S)); }
   }
@@ -2369,7 +2729,11 @@ function azar() {
 function enlaza() {
   $('#marca').addEventListener('input', (e) => { S.marca = e.target.value || 'Nombre del cliente'; render(); });
   $('#oficio').addEventListener('input', (e) => { S.oficio = e.target.value; render(); });
-  $('#gesto').addEventListener('input', (e) => { S.gesto = e.target.value; avisos(); });
+  $('#gesto').addEventListener('input', (e) => { S.gesto = e.target.value; avisos(); guarda(); });
+  CAMPOS_CONTENIDO.forEach((k) => $('#' + k)?.addEventListener('input', (e) => {
+    S[k] = e.target.value;
+    if (SOLO_ENCARGO.includes(k)) { avisos(); guarda(); } else render();
+  }));
   $('#acento').addEventListener('input', (e) => { S.acento = e.target.value; render(); });
   $('#tinta').addEventListener('input', (e) => { S.tinta = e.target.value; render(); });
   $('#ancho').addEventListener('change', (e) => { S.ancho = e.target.checked; render(); });
@@ -2428,9 +2792,11 @@ function enlaza() {
 }
 
 /* Arranque. Todo espera al manifiesto: sin catálogo no hay nada que pintar. */
-Promise.all([cargaManifiesto(), cargaMarcas()]).then(() => {
+Promise.all([cargaManifiesto(), cargaMarcas(), cargaFuentes()]).then(() => {
   recupera();
   chips('#recetas', Object.entries(RECETAS).map(([k, v]) => [k, v.n, v.d]), null, aplicaReceta);
+  chips('#composiciones', [['defecto', 'La de siempre', 'Portada, servicios, trabajos, reseña y cierre'],
+    ...Object.entries(COMPOSICIONES).map(([k, c]) => [k, c.n, c.dice])], null, aplicaComposicion);
   pintaControles();
   pintaEjes();
   pintaSecciones();

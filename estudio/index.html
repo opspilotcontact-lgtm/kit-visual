@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Estudio de marca · kit OpsPilot</title>
 <meta name="description" content="Herramienta interna: se compone la dirección de arte de una web y sale un encargo ejecutable.">
-<link rel="stylesheet" href="../_astro/kit-completo.css?v=fd949ab8">
+<link rel="stylesheet" href="../_astro/kit-completo.css?v=29690652">
 <link rel="stylesheet" href="estudio.css?v=45c99b58">
 </head>
 <body>
@@ -57,6 +57,60 @@
     </section>
 
     <section class="ui-group">
+      <h2>El contenido <em>— del protocolo, no de la IA</em></h2>
+      <p class="ui-hint" style="margin-top:0">
+        Sale de las plantillas F4 (P7–P9) y F5 (P11–P12) del cliente en NotionPilot.
+        Lo que quede vacío viaja al encargo como <code>TODO (Pn)</code>: se pide, no se inventa.
+      </p>
+      <label class="ui-field">
+        <span>NotionPilot <em>— proyecto o documento F4 del cliente</em></span>
+        <input type="text" id="np" placeholder="8a5758f2 · F4 Decisiones de marca" autocomplete="off">
+      </label>
+      <label class="ui-field">
+        <span>P7 · Posicionamiento</span>
+        <textarea id="posicionamiento" rows="2" placeholder="Para quien quiere reformar el baño sin estar encima de la obra, X es… que [la prueba que un competidor no podría firmar]."></textarea>
+      </label>
+      <label class="ui-field">
+        <span>P8 · La prueba principal <em>— va en el subtítulo</em></span>
+        <input type="text" id="prueba" placeholder="Presupuesto cerrado en 48 h tras medir, por escrito" autocomplete="off">
+      </label>
+      <label class="ui-field">
+        <span>P11 · Búsqueda principal</span>
+        <input type="text" id="busqueda" placeholder="reforma de baño en Córdoba" autocomplete="off">
+      </label>
+      <label class="ui-field">
+        <span>P11 · Zona <em>— pueblos, separados por comas</em></span>
+        <input type="text" id="zona" placeholder="Córdoba, Lucena, Montilla, Puente Genil" autocomplete="off">
+      </label>
+      <label class="ui-field">
+        <span>P9 · Voz <em>— tres adjetivos</em></span>
+        <input type="text" id="voz" placeholder="claro, de oficio, sin prisas" autocomplete="off">
+      </label>
+      <div class="ui-field ui-row">
+        <label class="ui-field" style="flex:1"><span>Decimos</span>
+          <input type="text" id="palabrasSi" placeholder="partida, medir, por escrito" autocomplete="off"></label>
+        <label class="ui-field" style="flex:1"><span>Nunca decimos</span>
+          <input type="text" id="palabrasNo" placeholder="calidad-precio, integral" autocomplete="off"></label>
+      </div>
+      <label class="ui-field">
+        <span>P12 · La objeción principal</span>
+        <input type="text" id="objecion" placeholder="«¿Y si luego cuesta más de lo que me dijeron?»" autocomplete="off">
+      </label>
+      <label class="ui-field">
+        <span>Servicios <em>— uno por línea: nombre · qué incluye · desde X €</em></span>
+        <textarea id="listaServicios" rows="4" placeholder="Cambio de bañera por plato · plato, mampara y alicatado de la zona · desde 1.450 €"></textarea>
+      </label>
+      <label class="ui-field">
+        <span>Reseñas reales <em>— una por línea: texto literal · dónde y cuándo</em></span>
+        <textarea id="listaResenas" rows="3" placeholder="Lo que dijeron que costaba fue lo que costó. · Google, marzo de 2026"></textarea>
+      </label>
+      <div class="ui-field">
+        <span>P12 · El canal que atiende DE VERDAD <em>— lo que no se marque no sale en la web</em></span>
+        <div class="ui-chips ui-chips-sm" id="canales"></div>
+      </div>
+    </section>
+
+    <section class="ui-group">
       <h2>La marca <em>— el logo como forma, no solo como esquina</em></h2>
       <div class="ui-field">
         <span>Logo <em>— SVG recortado o PNG con transparencia</em></span>
@@ -89,6 +143,10 @@
 
     <section class="ui-group">
       <h2>La página <em>— <span id="secciones-cuenta"></span></em></h2>
+      <div class="ui-field">
+        <span>Empezar desde <em>— sustituye la lista de abajo</em></span>
+        <div class="ui-chips ui-chips-sm" id="composiciones"></div>
+      </div>
       <div id="secciones"></div>
       <p class="ui-hint">
         Esto es la arquitectura, no el estilo: el orden de las secciones decide en qué
@@ -238,6 +296,7 @@
       <p id="copiado" class="ui-copiado" role="status"></p>
       <span class="ui-bajar">
         <span>Descargar:</span>
+        <button type="button" class="ui-btn ui-btn-ghost" data-bajar="prompt">ENCARGO.md</button>
         <button type="button" class="ui-btn ui-btn-ghost" data-bajar="astro">index.astro</button>
         <button type="button" class="ui-btn ui-btn-ghost" data-bajar="tema">tema.css</button>
         <button type="button" class="ui-btn ui-btn-ghost" data-bajar="arte">DIRECCION-ARTE.md</button>
@@ -248,6 +307,6 @@
   </article>
 </dialog>
 
-<script src="estudio.js?v=39faf831"></script>
+<script src="estudio.js?v=3cd6385b"></script>
 </body>
 </html>

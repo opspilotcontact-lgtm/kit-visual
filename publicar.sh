@@ -23,6 +23,22 @@ node "$KIT/build/generar-completo.mjs"
 echo "› compilando kit-completo.css"
 npx --yes @tailwindcss/cli@4 -i "$KIT/build/completo.css" -o _astro/kit-completo.css --minify
 
+# 2b) Las fuentes. El kit declara url(/fonts/...), que es lo correcto DENTRO de
+# un proyecto: ahí /fonts/ es la raíz del sitio. En Pages la raíz es
+# /kit-visual/, así que /fonts/ daba 404 y las tipografías caían a la del
+# sistema —en el lienzo Y en las miniaturas— sin ningún error a la vista.
+# Medido el 23-sep: 18 de 18 familias en error. Se reescribe relativo al CSS
+# (../fonts/), que funciona aquí y en cualquier web que ponga el CSS en /css/ y
+# las fuentes en /fonts/, que es justo lo que pide la vía B del encargo.
+echo "› rutas de fuentes relativas al CSS"
+node -e "
+const fs = require('fs'), f = '_astro/kit-completo.css';
+const s = fs.readFileSync(f, 'utf8').split('url(/fonts/').join('url(../fonts/');
+if (s.includes('url(/fonts/')) { console.error('  quedan rutas /fonts/ absolutas'); process.exit(1); }
+fs.writeFileSync(f, s);
+console.log('  ' + (s.match(/url\(\.\.\/fonts\//g) || []).length + ' @font-face apuntan a ../fonts/');
+"
+
 # 3) Verificar que manifiesto y kit coinciden. Si no, se para aquí.
 echo "› verificando el manifiesto"
 node "$KIT/build/verificar.mjs"

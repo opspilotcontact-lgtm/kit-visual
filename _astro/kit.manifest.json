@@ -315,35 +315,40 @@
       "grupo": "fondo",
       "n": "Curvas",
       "dice": "plano, medida, ingeniería. Es LÍNEA: no come contraste",
-      "js": "contour"
+      "js": "contour",
+      "sinJs": "blueprint"
     },
     {
       "id": "flowfield",
       "grupo": "fondo",
       "n": "Flujo",
       "dice": "mano, trazo, arte. Se pinta y para; distinto en cada visita",
-      "js": "flowfield"
+      "js": "flowfield",
+      "sinJs": "hatch"
     },
     {
       "id": "gridwarp",
       "grupo": "fondo",
       "n": "Rejilla viva",
       "dice": "técnico pero vivo. En reposo es un plano serio",
-      "js": "gridwarp"
+      "js": "gridwarp",
+      "sinJs": "grid"
     },
     {
       "id": "mesh",
       "grupo": "fondo",
       "n": "Mesh",
       "dice": "luz, color, ambiente, sin bandas",
-      "js": "mesh"
+      "js": "mesh",
+      "sinJs": "orbs"
     },
     {
       "id": "halftone",
       "grupo": "fondo",
       "n": "Semitono",
       "dice": "imprenta, tinta, oficio gráfico",
-      "js": "halftone"
+      "js": "halftone",
+      "sinJs": "dots"
     },
     {
       "id": "grid",
@@ -563,7 +568,8 @@
       "mini": {
         "modo": "propio",
         "fn": "ink"
-      }
+      },
+      "sinJs": "duotono"
     },
     {
       "id": "duotono",
@@ -928,7 +934,8 @@
           "n": "Centrada",
           "dice": "todo al eje, para cuando hay una sola idea"
         }
-      ]
+      ],
+      "protocolo": "P12 · titular: qué es, dónde y qué hacer, legible en 5 segundos, con la búsqueda principal (P11). Subtítulo: la prueba principal (P8). Botón: el canal real de contacto."
     },
     {
       "id": "banda",
@@ -944,19 +951,23 @@
         {
           "id": "frase",
           "n": "Frase",
-          "dice": "una afirmación sola, grande, sin nada más"
+          "dice": "una afirmación sola, grande, sin nada más",
+          "protocolo": "P12 · la objeción principal (bloque de contenido) respondida en una sola frase, sin adornos."
         },
         {
           "id": "marquesina",
           "n": "Marquesina",
-          "dice": "texto que corre; sirve de respiro visual"
+          "dice": "texto que corre; sirve de respiro visual",
+          "protocolo": "P11 · los pueblos o los servicios, por su nombre propio."
         },
         {
           "id": "datos",
           "n": "Cifras",
-          "dice": "tres números en fila, para cortar sin frenar"
+          "dice": "tres números en fila, para cortar sin frenar",
+          "protocolo": "P12 · barra de confianza: tres cifras con prueba enseñable (P8). Sin prueba, no hay cifra."
         }
-      ]
+      ],
+      "protocolo": "P12 · barra de confianza (cifras con prueba, P8) o la objeción principal respondida en una sola frase."
     },
     {
       "id": "servicios",
@@ -984,7 +995,8 @@
           "n": "Bento",
           "dice": "rejilla de piezas de tamaños distintos"
         }
-      ]
+      ],
+      "protocolo": "P12 · por servicio: qué es, para quién, plazo y beneficio; «desde X €» si hay precio real (P9: cómo hablamos del precio). Una página por servicio (P15)."
     },
     {
       "id": "galeria",
@@ -1011,7 +1023,8 @@
           "n": "Una grande",
           "dice": "una foto enorme y tres pequeñas debajo"
         }
-      ]
+      ],
+      "protocolo": "P8/P10 · fotos reales de obra propia, con permiso y el mismo tratamiento. Ni banco ni generadas."
     },
     {
       "id": "datos",
@@ -1034,7 +1047,8 @@
           "n": "En rejilla",
           "dice": "cuatro o más, en dos filas"
         }
-      ]
+      ],
+      "protocolo": "P8 · solo cifras con prueba enseñable (años, trabajos al año, plazo real). Una cifra sin prueba no se publica."
     },
     {
       "id": "proceso",
@@ -1063,7 +1077,8 @@
           "n": "Pestañas",
           "dice": "cada fase en su pestaña, sin JavaScript"
         }
-      ]
+      ],
+      "protocolo": "P12 · cómo funciona en 3 pasos, con el plazo real de cada uno."
     },
     {
       "id": "testimonio",
@@ -1085,7 +1100,8 @@
           "n": "Dos columnas",
           "dice": "dos reseñas enfrentadas"
         }
-      ]
+      ],
+      "protocolo": "P8 · reseñas reales y literales, con nombre (con permiso) y fecha. Nunca inventadas ni «mejoradas»."
     },
     {
       "id": "precios",
@@ -1107,7 +1123,8 @@
           "n": "Tabla",
           "dice": "cifras tabulares, densas, sin adorno"
         }
-      ]
+      ],
+      "protocolo": "P9 · cómo hablamos del precio: precio de partida real, qué incluye y qué no (P18)."
     },
     {
       "id": "faq",
@@ -1129,7 +1146,8 @@
           "n": "Dos columnas",
           "dice": "para cuando son muchas y cortas"
         }
-      ]
+      ],
+      "protocolo": "P12/P13 · la objeción principal primero; solo preguntas que el cliente hace de verdad."
     },
     {
       "id": "zona",
@@ -1153,7 +1171,8 @@
           "n": "Con plano",
           "dice": "la lista sobre un fondo de plano"
         }
-      ]
+      ],
+      "protocolo": "P11 · los pueblos por su nombre propio (servicio × zona). Una página por zona si hay búsquedas (P15)."
     },
     {
       "id": "contacto",
@@ -1178,7 +1197,8 @@
           "n": "Formulario",
           "dice": "cuatro campos, ni uno más"
         }
-      ]
+      ],
+      "protocolo": "P12 · la llamada por el canal que el cliente usa DE VERDAD; horario y tiempo de respuesta reales (P19/P21)."
     },
     {
       "id": "cierre",
@@ -1203,7 +1223,8 @@
           "n": "Partido",
           "dice": "el argumento a un lado, el botón al otro"
         }
-      ]
+      ],
+      "protocolo": "P12 · la llamada final: qué pasa cuando te escriben, por el canal real."
     },
     {
       "id": "ninguno",
@@ -1681,6 +1702,15 @@
         "Ventana y foto dentro de las letras",
         "dos recortes en la misma pantalla. El segundo deja de leerse como idea y pasa a parecer un fallo."
       ]
+    },
+    {
+      "si": {
+        "posicionamiento": "vacio"
+      },
+      "aviso": [
+        "Falta el posicionamiento (P7)",
+        "sin la frase «para quién, qué y la prueba que un competidor no podría firmar», el titular se escribe con tópicos. Está en la plantilla F4 del cliente en NotionPilot."
+      ]
     }
   ],
   "composicionPorDefecto": [
@@ -1720,5 +1750,53 @@
         "fondo"
       ]
     }
-  ]
+  ],
+  "composiciones": {
+    "p12": {
+      "n": "Portada P12",
+      "dice": "El orden del protocolo: qué es y dónde › servicios › confianza › la objeción › cómo funciona › la llamada por el canal real.",
+      "secciones": [
+        {
+          "t": "hero",
+          "v": "columna",
+          "tono": "paper",
+          "capas": [
+            "fondo",
+            "escena",
+            "pieza"
+          ]
+        },
+        {
+          "t": "servicios",
+          "v": "indice",
+          "tono": "alt",
+          "capas": []
+        },
+        {
+          "t": "banda",
+          "v": "datos",
+          "tono": "deep",
+          "capas": []
+        },
+        {
+          "t": "banda",
+          "v": "frase",
+          "tono": "paper",
+          "capas": []
+        },
+        {
+          "t": "proceso",
+          "v": "pasos",
+          "tono": "alt",
+          "capas": []
+        },
+        {
+          "t": "contacto",
+          "v": "formulario",
+          "tono": "paper",
+          "capas": []
+        }
+      ]
+    }
+  }
 }
