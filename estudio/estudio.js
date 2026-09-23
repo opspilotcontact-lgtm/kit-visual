@@ -97,12 +97,17 @@ async function cargaMarcas() {
   }
 }
 
+/* Rutas relativas al `<base href="../">` del lienzo, que ya apunta a la raíz
+   del repo. Llevaban `../img/…` y eso resolvía a la raíz del DOMINIO: las
+   fotos daban 404 y el lienzo enseñaba iconos rotos desde el primer día.
+   No se veía porque nadie miró el lienzo con la consola abierta; ahora hay
+   una prueba que lo comprueba (build/probar-reglas.mjs). */
 const FOTOS_DEMO = [
-  '../img/letras-corporeas-econatur-nave-industrial-800.webp',
-  '../img/letras-corporeas-iluminadas-restaurante-carmen-noche.webp',
-  '../img/rotulacion-integral-furgon-vredestein-800.webp',
-  '../img/fabricacion-monoposte-soldadura-taller.webp',
-  '../img/neon-colores-tubos.webp',
+  'img/letras-corporeas-econatur-nave-industrial-800.webp',
+  'img/letras-corporeas-iluminadas-restaurante-carmen-noche.webp',
+  'img/rotulacion-integral-furgon-vredestein-800.webp',
+  'img/fabricacion-monoposte-soldadura-taller.webp',
+  'img/neon-colores-tubos.webp',
 ];
 
 /* ── Estado ───────────────────────────────────────────────────────────────── */
