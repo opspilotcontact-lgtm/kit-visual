@@ -2255,6 +2255,28 @@ function recetaMarca(ruta) {
 
 const vacio = (v, p, que) => (String(v || '').trim() ? String(v).trim() : `TODO (${p}): ${que}`);
 
+/* Cabecera, botones, pie y pasos. En el kit son COMPONENTES de Astro (NavBar,
+   Button, SiteFooter, Steps), no clases: en la vía B no hay clase que dar. La
+   prueba ciega v3 (Sonnet) lo cazó: el encargo prometía «clase exacta» y tuvo
+   que inventarse las suyas. Ahora se dice, y del botón y la cabecera viaja el
+   marcado del lienzo (estilos en línea con los tokens) como referencia exacta:
+   se pasa a clases en marca-<slug>.css. */
+function estructura() {
+  const compacta = (h) => h.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
+  MARCA_FIJA = '/img/logo.svg';
+  let boton, cabecera;
+  try { boton = compacta(botonHTML('Texto del botón')); cabecera = compacta(headerHTML()); }
+  finally { MARCA_FIJA = null; }
+  return [
+    `· Cabecera: ${HEADERS[S.header].n} — vía A: componente NavBar del kit · vía B: sin clase en el kit; referencia exacta (pásala a clases en marca-<slug>.css):`,
+    `  ${cabecera}`,
+    `· Botones: ${BOTONES[S.boton].n} — vía A: componente Button · vía B, referencia exacta:`,
+    `  ${boton}`,
+    `· Pie: ${FOOTERS[S.footer].n} — vía A: componente SiteFooter · vía B: fondo --color-deep, texto blanco, el logo recoloreado con mask-image y los enlaces legales.`,
+    ...(S.secciones.some((s) => s.t === 'proceso') ? ['· Pasos del proceso — vía A: componente Steps · vía B: número grande en --color-brand con font-display, título y texto debajo; sin tarjetas.'] : []),
+  ].join('\n');
+}
+
 function bloqueContenido() {
   const sv = serviciosCliente(), rs = resenasCliente(), si = sitiosCliente();
   const prohibidas = '«líderes», «soluciones a medida», «vanguardia», «Elevate», «Impulsa», «Transformamos tu…», «calidad-precio»';
@@ -2387,7 +2409,8 @@ Generado con el Estudio de marca del kit OpsPilot · ${new Date().toISOString().
 Maquetar la web de ${S.marca}${S.oficio ? ` (${S.oficio})` : ''} aplicando EXACTAMENTE la dirección de arte y el
 contenido de abajo. No los reinterpretes: están decididos.
 
-Este encargo se basta solo: trae la paleta completa, las piezas con su clase exacta, el orden
+Este encargo se basta solo: trae la paleta completa, las piezas del kit con su clase exacta
+(y, las que en el kit son componentes sin clase, su marcado de referencia), el orden
 de la página y lo que va dentro de cada sección. Lo que no se sabe va marcado como TODO con el
 paso del protocolo que lo rellena (P7, P8…): NO lo inventes, pídeselo a quien te pasó el encargo.
 Los «Pn» son pasos del protocolo de la agencia: no hace falta consultarlos, lo que aportan ya
@@ -2469,9 +2492,7 @@ Si una sección no tiene contenido real que poner, se quita — no se rellena.
 
 ═══ PIEZAS DEL KIT, EXACTAS ═══
 ${piezas.map((p) => '· ' + p).join('\n')}
-· Cabecera: ${HEADERS[S.header].n}
-· Botones: ${BOTONES[S.boton].n}
-· Pie: ${FOOTERS[S.footer].n}
+${estructura()}
 
 ═══ REGLAS QUE NO SE SALTAN ═══
 1. UN fondo principal en toda la web. Un segundo solo si una sección cambia de asunto a propósito.
