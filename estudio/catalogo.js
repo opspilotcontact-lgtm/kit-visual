@@ -113,7 +113,7 @@ async function cargaManifiesto() {
  */
 async function cargaMarcas() {
   try {
-    const r = await fetch('../_astro/marcas.json?v=2bf0b74d', { cache: 'no-cache' });
+    const r = await fetch('../_astro/marcas.json?v=9c2f6f8e', { cache: 'no-cache' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     MARCAS = (await r.json()).marcas || [];
   } catch (e) {

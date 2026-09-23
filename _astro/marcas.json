@@ -299,6 +299,30 @@
       "kit": false,
       "doc": "Briss ambientacion/BRISS_HANDOFF.md",
       "ejesNota": "Estimados por IA el 23-sep leyendo el código de la web (seguridad baja); pendientes de validar (tarea a43844fe). No es una web de marca: es una app interna."
+    },
+    {
+      "id": "ana-jurado",
+      "n": "Clínica Doctora Ana Jurado",
+      "repo": "opspilotcontact-lgtm/anajurado-maqueta",
+      "sector": "medicina estética y nutrición",
+      "fecha": "2026-09-23",
+      "estado": "en obras",
+      "ejes": {
+        "peso": 2,
+        "temperatura": 4,
+        "memoria": 3,
+        "aire": 2
+      },
+      "origenEjes": "est",
+      "display": "Gloock",
+      "acento": "#59BFC7",
+      "acento2": "#2C3E50",
+      "papel": "#FFFFFF",
+      "fondo": "campo turquesa en portada y cierre; crema con pautado (la hoja de consulta); tinta en opiniones; melocotón en nutrición",
+      "foto": "retrato de la doctora dentro del doble aro; motivos en círculo con doble aro (provisionales de IA)",
+      "gesto": "el doble aro del monograma AJ, gigante, con la doctora dentro y el logo como sello + «la hoja de consulta»: cada tratamiento es un motivo de consulta en palabras de la paciente; la web habla en primera persona",
+      "kit": false,
+      "doc": "opspilot-kit/ejemplos/anajurado/web-v2/index.html"
     }
   ]
 }
